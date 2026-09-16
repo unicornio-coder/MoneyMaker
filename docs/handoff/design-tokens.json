@@ -1,0 +1,37 @@
+{
+  "color": {
+    "green": "#16A34A", "greenDark": "#15803D", "greenLight": "#4ADE80", "lime": "#BEF264",
+    "green50": "#F0FDF4", "green100": "#E3EFE6", "green200": "#BBF7D0", "ink": "#0B1F17",
+    "negative": "#2563EB", "negativeSoft": "#DCE6F5", "negative50": "#E8F0FE",
+    "invest": "#6366F1", "investSoft": "#EEF2FF", "warning": "#F59E0B", "warningSoft": "#FFFBEB",
+    "bg": "#FFFFFF", "bgPage": "#F7F8F7", "bgMuted": "#F4F6F4", "bgInput": "#F4F4F2", "bgChip": "#F0F2F0", "bgHover": "#FAFBFA", "frame": "#E9EEEB",
+    "border": "#EEF2EF", "border2": "#E6ECE9", "borderInput": "#E5E7EB", "borderGrid": "#E3E8E5", "borderDashed": "#C9D2CE", "handle": "#D9E1DD",
+    "text": "#0B1F17", "text2": "#5F6B67", "text3": "#8A958F", "textInactive": "#7A8C84",
+    "bank": { "nu": "#820AD1", "amex": "#006FCF", "bbva": "#072146", "gbm": "#0B1F17", "bitso": "#16A34A" },
+    "category": { "fijos": "#0B1F17", "comida": "#16A34A", "transporte": "#2563EB", "online": "#6366F1" }
+  },
+  "dark": {
+    "bg": "#0F1412", "surface": "#16201B", "chip": "#1C2722", "border": "rgba(255,255,255,0.08)",
+    "text": "#F5F7F6", "text2": "rgba(255,255,255,0.6)", "accent": "#4ADE80"
+  },
+  "font": {
+    "display": "Plus Jakarta Sans", "body": "Inter",
+    "weights": { "display": [500, 600, 700, 800], "body": [400, 500, 600, 700] },
+    "scale": [10, 10.3, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 16, 17, 18, 18.9, 22, 27.5, 30, 32, 34, 40, 44],
+    "sectionLabel": { "size": 10.3, "weight": 700, "tracking": "0.9px", "transform": "uppercase", "color": "#5F6B67" }
+  },
+  "space": [4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24],
+  "radius": { "pill": 999, "input": 12, "card": 14, "cardLg": 18, "cardXl": 24, "sheet": 22, "phone": 58, "phoneScreen": 48 },
+  "shadow": {
+    "card": "0 1px 3px rgba(11,31,23,0.09)", "hover": "0 6px 18px rgba(11,31,23,0.12)", "dark": "0 6px 20px rgba(11,31,23,0.18)",
+    "tabbar": "0 14px 34px rgba(11,31,23,0.35)", "green": "0 10px 24px rgba(22,163,74,0.32)", "plus": "0 8px 20px rgba(74,222,128,0.4)"
+  },
+  "motion": {
+    "easeOut": "cubic-bezier(.2,.8,.2,1)", "easeBounce": "cubic-bezier(.34,1.56,.64,1)",
+    "micro": 180, "screen": 250, "chart": 320, "chartBounce": 550
+  },
+  "layout": {
+    "web": { "frameMax": 1380, "sidebar": 208, "sidebarCollapsed": 66, "topbar": 54, "mainMax": 1264, "mainPadding": "22px 24px 64px", "homeGrid": "minmax(0,1.7fr) minmax(0,1fr)" },
+    "mobile": { "width": 393, "height": 852, "statusBar": 48, "mainPadding": "14px 14px 120px", "tabbar": { "height": 66, "inset": 14, "plus": 52 } }
+  }
+}

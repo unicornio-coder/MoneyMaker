@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EDEDEB;font-family:'Inter',system-ui,sans-serif;color:#0B1F3A}
+a{color:#0B1F3A;text-decoration:none} a:hover{color:#081428}
+*{box-sizing:border-box}
+@keyframes mmUp{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes mmFade{from{opacity:0}to{opacity:1}}
+@keyframes mmDraw{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+</style>
+</helmet>
+<div style="display:flex;justify-content:center;padding:32px 12px">
+<div style="width:390px;max-width:100%;background:#F7F8FA;border-radius:24px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;flex-direction:column;min-height:844px">
+  <header style="background:#0B1F3A;color:#fff;padding:16px;min-height:56px;display:flex;align-items:center;justify-content:space-between">
+    <div style="width:28px;height:28px;border-radius:50%;background:#fff;color:#0B1F3A;display:grid;place-items:center;font-weight:700;font-size:13px">M</div>
+    <div style="font-size:15px;font-weight:600">{{ tituloHeader }}</div>
+    <span style="width:22px;height:22px;display:inline-flex;color:#fff;opacity:0.9" dangerouslySetInnerHTML="{{ iconoHeader }}"></span>
+  </header>
+  <div style="flex:1;overflow-y:auto;padding:16px 16px 24px">
+    <sc-if value="{{ esQuincena }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#0B1F3A;border-radius:16px;padding:24px;animation:mmUp 350ms ease-out">
+        <div style="color:rgba(255,255,255,0.8);font-size:13px;font-weight:500;line-height:1.4">Llevas esta quincena</div>
+        <div style="color:#fff;font-size:40px;font-weight:700;line-height:1.2;margin:4px 0 12px">$12,450</div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#2ED47A;color:#0B1F3A;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">✓ $350 arriba de tu promedio</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:500;color:#0B1F3A">Gasto vs. presupuesto</div>
+          <div style="font-size:12px;color:#6B7280">Quincena en 8 días</div>
+        </div>
+        <svg viewBox="0 0 358 160" style="width:100%;height:160px;display:block">
+          <defs><linearGradient id="mmArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1F3A" stop-opacity="0.10"></stop><stop offset="1" stop-color="#0B1F3A" stop-opacity="0"></stop></linearGradient></defs>
+          <line x1="0" y1="40" x2="358" y2="40" stroke="#E8EAED" stroke-opacity="0.5"></line>
+          <line x1="0" y1="80" x2="358" y2="80" stroke="#E8EAED" stroke-opacity="0.5"></line>
+          <line x1="0" y1="120" x2="358" y2="120" stroke="#E8EAED" stroke-opacity="0.5"></line>
+          <path d="M0 140 L120 96 L240 60 L358 20" stroke="#0B1F3A" stroke-width="2" stroke-dasharray="6 6" opacity="0.3" fill="none"></path>
+          <path d="M0 145 L60 128 L120 112 L180 88 L232 70 L232 160 L0 160 Z" fill="url(#mmArea)"></path>
+          <path d="M0 145 L60 128 L120 112 L180 88 L232 70" stroke="#0B1F3A" stroke-width="2" fill="none" stroke-dasharray="600" style="animation:mmDraw 900ms ease-out"></path>
+          <circle cx="232" cy="70" r="4" fill="#0B1F3A"></circle>
+          <text x="0" y="158" font-size="11" fill="#6B7280">1 sep</text>
+          <text x="200" y="58" font-size="11" fill="#6B7280">hoy</text>
+          <text x="330" y="158" font-size="11" fill="#6B7280">15 sep</text>
+        </svg>
+      </div>
+      <sc-for list="{{ insights }}" as="i" hint-placeholder-count="3">
+        <div style="{{ i.style }}">
+          <div style="width:36px;height:36px;flex:none;border-radius:8px;background:{{ i.bg }};display:grid;place-items:center;color:#fff" dangerouslySetInnerHTML="{{ i.icono }}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500;color:#6B7280;line-height:1.4">{{ i.label }}</div>
+            <div style="font-size:15px;font-weight:600;line-height:1.5">{{ i.valor }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ esMovimientos }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:8px;margin-bottom:4px;animation:mmFade 300ms ease-out">
+        <sc-for list="{{ filtrosMov }}" as="f" hint-placeholder-count="3">
+          <div style="background:#fff;border:1px solid #E8EAED;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:500;color:#0B1F3A;display:flex;align-items:center;gap:6px;cursor:pointer" style-hover="background:#F7F8FA">{{ f }} <span style="color:#6B7280;font-size:10px">▾</span></div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ movDias }}" as="d" hint-placeholder-count="2">
+        <div style="font-size:13px;font-weight:500;color:#6B7280;margin:16px 0 4px;animation:mmFade 300ms ease-out">{{ d.fecha }}</div>
+        <div style="background:#fff;border-radius:16px;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmUp 350ms ease-out">
+          <sc-for list="{{ d.items }}" as="m" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #E8EAED;cursor:pointer;transition:background 200ms ease" style-hover="background:#F7F8FA">
+              <div style="width:32px;height:32px;flex:none;border-radius:8px;background:#F7F8FA;border:1px solid #E8EAED;display:grid;place-items:center;font-size:12px;font-weight:700;color:#0B1F3A">{{ m.ini }}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:15px;font-weight:600;line-height:1.4">{{ m.nombre }}</div>
+                <span style="display:inline-block;background:{{ m.chipBg }};color:#fff;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;margin-top:3px;cursor:pointer;transition:opacity 200ms" style-hover="opacity:0.8">{{ m.cat }}</span>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">{{ m.monto }}</div>
+                <div style="font-size:12px;color:#6B7280">{{ m.fuente }}</div>
+              </div>
+              <div style="color:#6B7280;font-size:14px">›</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ esRecurrentes }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#0B1F3A;border-radius:16px;padding:24px;animation:mmUp 350ms ease-out">
+        <div style="color:rgba(255,255,255,0.8);font-size:13px;font-weight:500">Pagas cada mes</div>
+        <div style="color:#fff;font-size:40px;font-weight:700;line-height:1.2;margin-top:4px">$2,500</div>
+      </div>
+      <sc-for list="{{ suscripciones }}" as="s" hint-placeholder-count="3">
+        <div style="{{ s.style }}">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;flex:none;border-radius:8px;background:{{ s.bg }};color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700">{{ s.ini }}</div>
+            <div style="flex:1;font-size:15px;font-weight:600">{{ s.nombre }}</div>
+            <div style="background:{{ s.badgeBg }};color:{{ s.badgeColor }};padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">{{ s.estado }}</div>
+          </div>
+          <div style="font-size:15px;color:#6B7280;margin:8px 0 12px"><b style="color:#0B1F3A">{{ s.monto }}</b> cada 30 días</div>
+          <div style="background:#F7F8FA;color:#0B1F3A;text-align:center;border-radius:12px;padding:12px 24px;font-size:15px;font-weight:600;cursor:pointer;transition:background 200ms ease" style-hover="background:#E8EAED" style-active="transform:scale(0.98)">Cancelar</div>
+        </div>
+      </sc-for>
+      <div style="font-size:13px;font-weight:500;color:#6B7280;margin:20px 0 4px">Pagos iguales detectados (MSI)</div>
+      <div style="background:#fff;border-radius:16px;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out">
+        <sc-for list="{{ msi }}" as="m" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #E8EAED">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:600">{{ m.nombre }}</div>
+              <div style="font-size:12px;color:#6B7280">{{ m.detalle }}</div>
+            </div>
+            <div style="font-size:15px;font-weight:600;font-variant-numeric:tabular-nums">{{ m.monto }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{ esMas }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#0B1F3A;border-radius:16px;padding:24px;animation:mmUp 350ms ease-out">
+        <div style="color:rgba(255,255,255,0.8);font-size:13px;font-weight:500">Ingreso quincenal (nómina 5 y 20)</div>
+        <div style="color:#fff;font-size:40px;font-weight:700;line-height:1.2;margin:4px 0 12px">$14,500</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="background:rgba(255,255,255,0.12);color:#fff;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">Fijos $5,120</div>
+          <div style="background:rgba(255,255,255,0.12);color:#fff;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">Variable $7,380</div>
+          <div style="background:#2ED47A;color:#0B1F3A;padding:4px 12px;border-radius:8px;font-size:13px;font-weight:600">Ahorro $2,000</div>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:600;line-height:1.3;margin:24px 0 8px">Límites por categoría</div>
+      <div style="background:#fff;border-radius:16px;padding:4px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out">
+        <sc-for list="{{ limites }}" as="c" hint-placeholder-count="6">
+          <div style="padding:12px 0;border-bottom:1px solid #E8EAED">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:15px;font-weight:600">{{ c.nombre }}</div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:13px;font-variant-numeric:tabular-nums"><b>{{ c.monto }}</b><span style="color:#6B7280"> / {{ c.limite }}</span></span>
+                <span style="font-size:13px;font-weight:500;color:#0B1F3A;cursor:pointer;text-decoration:underline">Editar</span>
+              </div>
+            </div>
+            <div style="height:8px;border-radius:4px;background:#F7F8FA;border:1px solid #E8EAED;overflow:hidden">
+              <div style="width:{{ c.pct }};height:100%;border-radius:4px;background:{{ c.color }}"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#0B1F3A;color:#fff;text-align:center;border-radius:12px;padding:12px 24px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px;transition:background 200ms ease" style-hover="background:#081428" style-active="transform:scale(0.98)">+ Nueva categoría</div>
+    </sc-if>
+    <!--SC-->
+  </div>
+  <nav style="background:#fff;border-top:1px solid #E8EAED;height:64px;display:flex;align-items:center;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom)">
+    <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+      <div onClick="{{ tb.go }}" style="{{ tb.style }}" style-active="transform:scale(1.05)">
+        <span style="width:24px;height:24px;display:inline-flex" dangerouslySetInnerHTML="{{ tb.icono }}"></span>
+        <span style="font-size:11px;font-weight:600">{{ tb.label }}</span>
+      </div>
+    </sc-for>
+  </nav>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:920}}">
+class Component extends DCLogic {
+  state = { tab: 'quincena' };
+  svg(d) { return { __html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="100%" height="100%"><path d="' + d + '"/></svg>' }; }
+  go(tab) { return () => this.setState({ tab }); }
+  renderVals() {
+    const t = this.state.tab;
+    const titulos = { quincena: 'Quincena', movimientos: 'Movimientos', recurrentes: 'Recurrentes', mas: 'Presupuesto' };
+    const tabsDef = [
+      ['quincena', 'Quincena', 'M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10'],
+      ['movimientos', 'Movimientos', 'M3 17l5-6 4 3 6-8M3 21h18'],
+      ['recurrentes', 'Recurrentes', 'M21 12a9 9 0 1 1-3-6.7M21 3v6h-6'],
+      ['mas', 'Más', 'M4 6h16M4 12h16M4 18h16']
+    ];
+    const tabBase = 'display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 14px;transition:transform 200ms ease;';
+    const cardIn = 'display:flex;gap:12px;align-items:center;background:#fff;border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out both;';
+    return {
+      tituloHeader: titulos[t],
+      iconoHeader: this.svg('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'),
+      esQuincena: t === 'quincena', esMovimientos: t === 'movimientos', esRecurrentes: t === 'recurrentes', esMas: t === 'mas',
+      tabs: tabsDef.map(([id, label, d]) => ({
+        label, icono: this.svg(d), go: this.go(id),
+        style: tabBase + (t === id ? 'color:#0B1F3A' : 'color:#6B7280')
+      })),
+      filtrosMov: ['Quincena', 'Categoría', 'Tarjeta'],
+      movDias: [
+        { fecha: '9 de septiembre', items: [
+          { ini: 'AM', nombre: 'Amazon', cat: 'Entretenimiento', chipBg: '#0B1F3A', monto: '$450.00', fuente: 'Banco', bg: '#0B1F3A' },
+          { ini: 'ST', nombre: 'Starbucks', cat: 'Restaurantes', chipBg: '#F97316', monto: '$85.50', fuente: 'Recibo', bg: '#F97316' },
+          { ini: 'UB', nombre: 'Uber', cat: 'Transporte', chipBg: '#10B981', monto: '$125.00', fuente: 'Manual', bg: '#10B981' }
+        ]},
+        { fecha: '8 de septiembre', items: [
+          { ini: 'SO', nombre: 'Soriana', cat: 'Súper', chipBg: '#4F46E5', monto: '$1,238.40', fuente: 'Banco' },
+          { ini: 'DF', nombre: 'DiDi Food', cat: 'Delivery', chipBg: '#EF4444', monto: '$286.00', fuente: 'Banco' },
+          { ini: 'FG', nombre: 'Farmacias Guadalajara', cat: 'Salud', chipBg: '#EC4899', monto: '$312.80', fuente: 'Recibo' }
+        ]},
+        { fecha: '5 de septiembre', items: [
+          { ini: 'TC', nombre: 'Pago tarjeta Nu', cat: 'Pagos de tarjeta', chipBg: '#78716C', monto: '$3,200.00', fuente: 'Banco' },
+          { ini: 'CI', nombre: 'Cinépolis', cat: 'Entretenimiento', chipBg: '#0B1F3A', monto: '$240.00', fuente: 'Manual' }
+        ]}
+      ],
+      suscripciones: [
+        { ini: 'N', nombre: 'Netflix', monto: '$199', estado: 'activa', badgeBg: '#2ED47A', badgeColor: '#0B1F3A', bg: '#E5484D',
+          style: 'background:#fff;border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out both;animation-delay:0ms' },
+        { ini: 'S', nombre: 'Spotify', monto: '$129', estado: 'activa', badgeBg: '#2ED47A', badgeColor: '#0B1F3A', bg: '#10B981',
+          style: 'background:#fff;border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out both;animation-delay:30ms' },
+        { ini: 'A', nombre: 'Apple One', monto: '$499', estado: 'nueva', badgeBg: '#4F46E5', badgeColor: '#fff', bg: '#6B7280',
+          style: 'background:#fff;border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);animation:mmFade 300ms ease-out both;animation-delay:60ms' }
+      ],
+      msi: [
+        { nombre: 'Amazon', detalle: '$250 x 6 meses · termina en feb 2027', monto: '$250/mes' },
+        { nombre: 'Liverpool', detalle: '$420 x 12 meses · termina en jun 2027', monto: '$420/mes' }
+      ],
+      limites: [
+        { nombre: 'Súper y abarrotes', monto: '$2,610', limite: '$3,500', pct: '75%', color: '#4F46E5' },
+        { nombre: 'Restaurantes y antojos', monto: '$1,480', limite: '$1,500', pct: '99%', color: '#F97316' },
+        { nombre: 'Transporte', monto: '$820', limite: '$1,200', pct: '68%', color: '#10B981' },
+        { nombre: 'Servicios del hogar', monto: '$1,738', limite: '$2,600', pct: '66%', color: '#06B6D4' },
+        { nombre: 'Salud', monto: '$480', limite: '$900', pct: '53%', color: '#EC4899' },
+        { nombre: 'Entretenimiento', monto: '$640', limite: '$800', pct: '80%', color: '#0B1F3A' }
+      ],
+      insights: [
+        { label: 'Top gasto', valor: 'Amazon $450 · Entretenimiento', bg: '#0B1F3A', icono: this.svg('M4 20V10M10 20V4M16 20v-8M22 20H2'), style: cardIn + 'animation-delay:0ms' },
+        { label: 'Suscripciones sin uso', valor: 'Netflix, Spotify · $199/mes', bg: '#F5A623', icono: this.svg('M21 12a9 9 0 1 1-3-6.7M21 3v6h-6'), style: cardIn + 'animation-delay:30ms' },
+        { label: 'Alerta de tarjeta', valor: 'Amex corta en 3 días', bg: '#E5484D', icono: this.svg('M3 7h18v12H3zM3 11h18'), style: cardIn + 'animation-delay:60ms' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

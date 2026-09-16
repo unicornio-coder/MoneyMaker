@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./doc-page.js"></script>
+<style>
+doc-page:not(:defined){visibility:hidden}
+body{margin:0;font-family:'Instrument Sans',system-ui,sans-serif;color:#1F2328;font-size:14px;line-height:1.6}
+a{color:#15803D}a:hover{color:#16A34A}
+h1,h2,h3{font-family:'Sora',sans-serif;letter-spacing:-0.02em;line-height:1.15}
+h1{font-size:34px;font-weight:700;margin:0 0 6px}
+h2{font-size:22px;font-weight:700;margin:36px 0 10px;padding-top:14px;border-top:2px solid #1F2328;break-after:avoid}
+h3{font-size:15px;font-weight:700;margin:22px 0 6px;color:#15803D;break-after:avoid}
+p{margin:0 0 10px;orphans:3;widows:3}
+ul{margin:0 0 10px;padding-left:20px}li{margin:0 0 4px;orphans:3;widows:3}
+table{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:13px}
+th{text-align:left;font-weight:700;font-size:11.5px;letter-spacing:0.5px;color:#6B7280;padding:8px 10px;border-bottom:1.5px solid #1F2328}
+td{padding:8px 10px;border-bottom:1px solid #E5E7EB;vertical-align:top}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E7F6EC;color:#15803D;margin-right:4px}
+.box{background:#F7F9F7;border-radius:12px;padding:14px 16px;margin:10px 0 14px;break-inside:avoid}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px;border:1px solid rgba(0,0,0,0.08)}
+</style>
+</helmet>
+<doc-page margin="0.8in">
+<div slot="footer" style="display:flex;justify-content:space-between;font-size:11px;color:#9CA3AF;padding:0 0.8in 0.35in"><span>MoneyMaker · Documentación de producto</span><span>12 sep 2026</span></div>
+<h1>MoneyMaker — Documentación completa del producto</h1>
+<p style="font-size:15px;color:#6B7280;margin-bottom:22px">Todas las páginas, secciones, elementos e interacciones tal como existen hoy en el prototipo <b>MoneyMaker Web.dc.html</b>. Sirve como referencia para Claude Code, diseño y negocio.</p>
+
+<div class="box">
+<b>Resumen en una línea.</b> App de finanzas personales para México: junta bancos, tarjetas, Bitso y GBM+ en un solo lugar; arma el presupuesto por quincena; detecta y cancela suscripciones; vigila meses sin intereses; dice cuánto invertir; y en el plan top automatiza la contabilidad completa de un patrimonio (Budget vs Actual, balance, inversiones, impuestos).
+</div>
+
+<h2>1. Sistema visual</h2>
+<table><thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead><tbody>
+<tr><td>Verde primario</td><td><span class="sw" style="background:#16A34A"></span>#16A34A</td><td>Botones principales, acentos, hero de la landing</td></tr>
+<tr><td>Verde oscuro</td><td><span class="sw" style="background:#15803D"></span>#15803D</td><td>Hover, texto sobre verde claro</td></tr>
+<tr><td>Verde claro</td><td><span class="sw" style="background:#E7F6EC"></span>#E7F6EC</td><td>Chips y fondos de éxito</td></tr>
+<tr><td>Verde brillante</td><td><span class="sw" style="background:#22C55E"></span>#22C55E / #4ADE80</td><td>Barras y cifras sobre fondo oscuro</td></tr>
+<tr><td>Negro</td><td><span class="sw" style="background:#1F2328"></span>#1F2328</td><td>Texto, tarjetas oscuras, botones secundarios</td></tr>
+<tr><td>Grises</td><td>#374151 · #6B7280 · #9CA3AF · #E5E7EB · #EEF0F2 · #F4F4F2 · #F7F9F7</td><td>Texto secundario, bordes, fondos</td></tr>
+<tr><td>Alerta / error</td><td>#D97706 / #DC2626</td><td>Presupuesto al 80 % / excedido, cargos negativos</td></tr>
+<tr><td>Tipografía</td><td>Sora (titulares, cifras) · Instrument Sans (cuerpo)</td><td>Google Fonts</td></tr>
+<tr><td>Radios</td><td>Tarjetas 18–24 px · botones 12–14 px · píldoras 20 px</td><td></td></tr>
+<tr><td>Fondo</td><td>Blanco. Sin degradados de fondo salvo el degradado negro→verde en tarjetas destacadas</td><td></td></tr>
+</tbody></table>
+<p><b>Animaciones</b> (keyframes globales): mmRise (sube + aparece), mmScreen (cambio de pantalla en teléfono), mmBar (barras que crecen), mmCount (cifras), mmPulse, mmFloat, mmPop, mmGrow, mmMarquee, mmCascada.</p>
+<p><b>Logos:</b> favicons públicos de Google a 256 px (<code>google.com/s2/favicons?domain=…&amp;sz=256</code>). Pendiente sustituir por SVG oficiales.</p>
+
+<h2>2. Landing (página de inicio pública)</h2>
+<p>Fondo blanco, un solo teléfono, poco texto. Orden de secciones:</p>
+<h3>2.1 Barra superior</h3>
+<ul><li>Logo "M" + MoneyMaker · enlaces Funciones · Testimonios · Precio (scroll suave a la sección)</li><li>Botones: "Iniciar sesión" (contorno) → entra a la app · "Crear cuenta" (negro) → registro</li></ul>
+<h3>2.2 Hero (100vh, fondo verde #16A34A)</h3>
+<ul><li>Titular en Sora: "Con MoneyMaker, todos tus goles" + línea gigante "los paro yo." recortada hacia abajo para invitar al scroll</li><li>Subtítulo de una línea: cargos sorpresa, comisiones y suscripciones olvidadas: ninguno entra</li><li>Campo de correo blanco (texto negro, icono de sobre, borde verde al enfocar) + botón "Empezar registro →" negro → hover verde</li><li>Línea legal pequeña: 7 días de prueba, Términos y Aviso de privacidad</li><li><b>Teléfono central animado</b> (loop de 4 pantallas cada 3.2 s con puntos indicadores): 1) Armando tu presupuesto (barras Fijos/MSI/Ahorro/Libre que se llenan) → 2) Notificación "HBO Max cobró $149 · no lo abres desde hace 3 meses" con "Cancelar por mí" → 3) "Suscripción cancelada · $1,788 al año" + "Invertir los $149 cada mes" → 4) "Ese dinero, trabajando": CETES en GBM+, gráfica a 12 meses = $1,880</li><li>Píldora flotante con 5 logos de bancos "+60 bancos · Bitso · GBM+"</li></ul>
+<h3>2.3 Cinta de marcas</h3>
+<ul><li>Título: "Detectamos suscripciones y cuentas de"</li><li>46 marcas mexicanas sin repetir, en gris siempre, tipografía chica (14 px): Netflix, BBVA, Telcel, Disney+, Banco Azteca, Spotify, CFE, Nu, Totalplay, ViX, Elektra, Uber, Banorte, HBO Max, Telmex, Coppel, Amazon, Izzi, Santander, YouTube, Rappi, Liverpool, Megacable, Mercado Pago, Smart Fit, Banamex, Prime Video, AT&amp;T, Bitso, DiDi, HSBC, Apple, Naturgy, Mercado Libre, Scotiabank, Paramount+, Kueski, GBM+, Cinépolis, Stori, Xbox, Oxxo, Klar, Crunchyroll, Inbursa, Walmart</li><li>Gira sola; se puede arrastrar con mouse/dedo con inercia y mover con rueda horizontal; desvanecido en bordes</li></ul>
+<h3>2.4 "Lo que hace por ti" (fila con swipe + flechas)</h3>
+<p>7 bloques de 280 px, cada uno con una mini-animación tipo video sobre fondo negro:</p>
+<ol><li>Todo tu dinero en un solo lugar — saldo total $217,653: BBVA, Nu, Bitso, GBM+</li><li>Tus gastos, solos y ordenados — Oxxo, Uber, Amazon, Rappi → "Categorizado ✓"</li><li>Tu presupuesto, en 2 minutos — barras Fijos / MSI / Ahorro / Libre</li><li>Cancela lo que no usas — HBO Max sin uso → "Cancelada · ahorras $1,788 al año"</li><li>Tus meses sin intereses, claros — Liverpool 5/12, Amazon 2/6, Coppel 9/18; "Liverpool termina en julio · liberas $1,150"</li><li>Invierte lo que te sobra — Puedes invertir $3,150: CETES 9.9 %, ETF S&amp;P 500, Bitcoin</li><li>Beneficios por ser miembro — Telcel −$120/mes, Totalplay −$260/mes, Cinépolis 10 % cashback, Rappi 15 %</li></ol>
+<h3>2.5 "Lo que dicen" (fila con swipe + flechas)</h3>
+<p>6 testimonios cortos con inicial, nombre y ciudad: Daniela R. (Monterrey), Jorge M. (CDMX), Fernanda L. (Guadalajara), Ricardo P. (Querétaro), Paola G. (Puebla), Andrés V. (Mérida).</p>
+<h3>2.6 Cierre</h3>
+<ul><li>Fondo negro con halo verde: "Tu próxima quincena <i>empieza distinta.</i>"</li><li>"7 días gratis. Cancela cuando quieras." + botón verde brillante "Crear mi cuenta gratis →" con sombra y hover</li><li>Línea: Sin tarjeta para empezar · Solo lectura · cifrado bancario · +60 instituciones</li></ul>
+<h3>2.7 Elementos flotantes globales</h3>
+<ul><li>Botón de chat (abajo a la derecha) → abre panel de soporte con cabecera degradada</li><li>Modal "Vincular banco": lista de instituciones con búsqueda, selección y confirmación</li></ul>
+
+<h2>3. Registro y onboarding (4 pasos con barra de progreso)</h2>
+<h3>Paso 1 · Correo</h3>
+<ul><li>"Crea tu cuenta" · "Empieza con tu correo. 7 días gratis, sin tarjeta."</li><li>Campo con icono; botón verde "Continuar" se activa solo con correo válido; Google / Apple; texto legal</li><li>Arriba: "¿Ya tienes cuenta? Iniciar sesión"</li></ul>
+<h3>Paso 2 · Contraseña</h3>
+<ul><li>Correo confirmado con palomita y "Cambiar"</li><li>Campo con Mostrar/Ocultar; medidor de 4 segmentos y etiqueta (Débil / Regular / Buena / Fuerte)</li><li>Requisitos como chips que se vuelven verdes: 8+ caracteres, mayúscula, número, símbolo</li><li>Botón "Continuar" y nota "Nunca guardamos tus claves bancarias. Solo lectura vía Belvo."</li></ul>
+<h3>Paso 
+</x-dc>
+</body>
+</html>

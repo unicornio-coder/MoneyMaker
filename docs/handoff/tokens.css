@@ -1,0 +1,99 @@
+/* MoneyMaker — design tokens */
+:root {
+  /* brand */
+  --mm-green: #16A34A;
+  --mm-green-dark: #15803D;
+  --mm-green-light: #4ADE80;
+  --mm-lime: #BEF264;
+  --mm-green-50: #F0FDF4;
+  --mm-green-100: #E3EFE6;
+  --mm-green-200: #BBF7D0;
+  --mm-ink: #0B1F17;
+
+  /* semantic */
+  --mm-negative: #2563EB;        /* gasto, deuda, exceso — nunca rojo */
+  --mm-negative-soft: #DCE6F5;
+  --mm-negative-50: #E8F0FE;
+  --mm-invest: #6366F1;
+  --mm-invest-soft: #EEF2FF;
+  --mm-warning: #F59E0B;
+  --mm-warning-soft: #FFFBEB;
+
+  /* surfaces */
+  --mm-bg: #FFFFFF;
+  --mm-bg-page: #F7F8F7;
+  --mm-bg-muted: #F4F6F4;
+  --mm-bg-input: #F4F4F2;
+  --mm-bg-chip: #F0F2F0;
+  --mm-bg-hover: #FAFBFA;
+  --mm-frame: #E9EEEB;
+
+  /* borders */
+  --mm-border: #EEF2EF;
+  --mm-border-2: #E6ECE9;
+  --mm-border-input: #E5E7EB;
+  --mm-border-grid: #E3E8E5;
+  --mm-border-dashed: #C9D2CE;
+  --mm-handle: #D9E1DD;
+
+  /* text */
+  --mm-text: #0B1F17;
+  --mm-text-2: #5F6B67;
+  --mm-text-3: #8A958F;
+  --mm-text-inactive: #7A8C84;
+
+  /* banks */
+  --bank-nu: #820AD1;
+  --bank-amex: #006FCF;
+  --bank-bbva: #072146;
+  --bank-gbm: #0B1F17;
+  --bank-bitso: #16A34A;
+
+  /* type */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  /* radius */
+  --r-pill: 999px;
+  --r-input: 12px;
+  --r-card: 14px;
+  --r-card-lg: 18px;
+  --r-card-xl: 24px;
+  --r-sheet: 22px;
+
+  /* shadow */
+  --sh-card: 0 1px 3px rgba(11,31,23,.09);
+  --sh-hover: 0 6px 18px rgba(11,31,23,.12);
+  --sh-dark: 0 6px 20px rgba(11,31,23,.18);
+  --sh-tabbar: 0 14px 34px rgba(11,31,23,.35);
+  --sh-green: 0 10px 24px rgba(22,163,74,.32);
+
+  /* motion */
+  --ease-out: cubic-bezier(.2,.8,.2,1);
+  --ease-bounce: cubic-bezier(.34,1.56,.64,1);
+  --t-micro: 180ms;
+  --t-screen: 250ms;
+  --t-chart: 320ms;
+}
+
+[data-theme="dark"] {
+  --mm-bg: #0F1412;
+  --mm-bg-page: #0F1412;
+  --mm-bg-muted: #16201B;
+  --mm-bg-input: #16201B;
+  --mm-bg-chip: #1C2722;
+  --mm-bg-hover: #1C2722;
+  --mm-border: rgba(255,255,255,.08);
+  --mm-border-2: rgba(255,255,255,.10);
+  --mm-text: #F5F7F6;
+  --mm-text-2: rgba(255,255,255,.6);
+  --mm-text-3: rgba(255,255,255,.4);
+  --mm-green: #4ADE80;
+}
+
+body { margin: 0; background: var(--mm-bg); color: var(--mm-text); font-family: var(--font-body); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+a { color: var(--mm-green); text-decoration: none; } a:hover { color: var(--mm-text); }
+
+@keyframes mmScreen { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes mmSheet { from { transform: translateY(100%) } to { transform: none } }
+@keyframes mmRise2 { 0% { opacity: 0; transform: translateY(10px) scale(.85) } 60% { opacity: 1; transform: translateY(-3px) scale(1.05) } 100% { opacity: 1; transform: none } }
