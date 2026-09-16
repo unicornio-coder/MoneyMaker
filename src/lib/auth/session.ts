@@ -1,4 +1,8 @@
+import { cache } from 'react';
+import { redirect } from 'next/navigation';
 import { iniciales } from '@/lib/format';
+import { MODO_MOCK } from '@/lib/supabase/env';
+import { supabaseServer } from '@/lib/supabase/server';
 
 export type UsuarioSesion = {
   id: string;
@@ -8,11 +12,34 @@ export type UsuarioSesion = {
   iniciales: string;
 };
 
-/**
- * Usuario de la sesión actual. Mientras no haya Supabase configurado (NEXT_PUBLIC_USE_MOCK=true
- * o sin llaves) devuelve el usuario demo del prototipo. Se reemplaza en la tarea de auth.
- */
-export async function usuarioActual(): Promise<UsuarioSesion> {
-  const nombre = 'Juan Costos';
-  return { id: 'demo', email: 'demo@moneymaker.mx', nombre, nombreCorto: 'JC', iniciales: iniciales(nombre) };
+export const USUARIO_DEMO: UsuarioSesion = {
+  id: '00000000-0000-0000-0000-000000000001',
+  email: 'demo@moneymaker.mx',
+  nombre: 'Juan Costos',
+  nombreCorto: 'JC',
+  iniciales: 'JC',
+};
+
+function nombreCorto(nombre: string, email: string) {
+  const primero = nombre.trim().split(/\s+/)[0];
+  return primero || email.split('@')[0];
 }
+
+/** Usuario de la sesión actual. En modo mock devuelve el usuario demo. Redirige a /login si no hay sesión. */
+export const usuarioActual = cache(async (): Promise<UsuarioSesion> => {
+  if (MODO_MOCK) return USUARIO_DEMO;
+  const supabase = supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+  const { data: perfil } = await supabase.from('profiles').select('nombre').eq('id', user.id).maybeSingle();
+  const nombre = perfil?.nombre || (user.user_metadata?.nombre as string) || user.email?.split('@')[0] || 'Tú';
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    nombre,
+    nombreCorto: nombreCorto(nombre, user.email ?? ''),
+    iniciales: iniciales(nombre),
+  };
+});
