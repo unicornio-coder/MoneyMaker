@@ -1,0 +1,35 @@
+/* Tokens semánticos que cambian con el tema. Los colores fijos viven en tailwind.config.ts. */
+:root {
+  --canvas: #f7f8f7;
+  --surface: #ffffff;
+  --surface-2: #f4f6f4;
+  --fg: #0b1f17;
+  --fg-2: #5f6b67;
+  --fg-3: #8a958f;
+  --edge: #eef2ef;
+  --edge-2: #e6ece9;
+  --accent: #16a34a;
+  --accent-soft: #f0fdf4;
+  --primary-bg: #0b1f17;
+  --primary-fg: #ffffff;
+  --shadow-card: 0 1px 3px rgba(11, 31, 23, 0.09);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --canvas: #0f1412;
+  --surface: #16201b;
+  --surface-2: #1c2722;
+  --fg: #f5f7f6;
+  --fg-2: rgba(255, 255, 255, 0.6);
+  --fg-3: rgba(255, 255, 255, 0.45);
+  --edge: rgba(255, 255, 255, 0.08);
+  --edge-2: rgba(255, 255, 255, 0.12);
+  --accent: #4ade80;
+  --accent-soft: rgba(74, 222, 128, 0.12);
+  /* En oscuro los botones primarios van blancos con texto tinta. */
+  --primary-bg: #ffffff;
+  --primary-fg: #0b1f17;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}

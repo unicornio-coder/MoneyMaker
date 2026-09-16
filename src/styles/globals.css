@@ -1,0 +1,70 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: var(--font-body), Inter, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--canvas);
+    color: var(--fg);
+  }
+  h1, h2, h3, .display {
+    font-family: var(--font-display), 'Plus Jakarta Sans', sans-serif;
+  }
+  input, button, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}
+
+@layer components {
+  .card {
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+  }
+  .section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: var(--fg-2);
+  }
+  .btn-primary {
+    background: var(--primary-bg);
+    color: var(--primary-fg);
+    border-radius: 999px;
+    font-weight: 600;
+    transition: background .18s cubic-bezier(.2,.8,.2,1), transform .18s cubic-bezier(.2,.8,.2,1);
+  }
+  .btn-primary:hover { background: #16a34a; color: #fff; }
+  .btn-primary:disabled { background: #c9d2ce; color: #fff; cursor: not-allowed; }
+  .input {
+    background: #f4f4f2;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color .18s;
+  }
+  :root[data-theme='dark'] .input { background: var(--surface-2); border-color: var(--edge-2); }
+  .input:focus { border-color: #16a34a; }
+  .snap-x-carousel {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+  }
+  .snap-x-carousel > * { scroll-snap-align: start; flex: none; }
+}

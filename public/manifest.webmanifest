@@ -1,0 +1,13 @@
+{
+  "name": "MoneyMaker",
+  "short_name": "MoneyMaker",
+  "description": "Tu quincena, clara.",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#F7F8F7",
+  "theme_color": "#16A34A",
+  "lang": "es-MX",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
