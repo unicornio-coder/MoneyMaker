@@ -1,5 +1,12 @@
 # Plan MoneyMaker
 
+## Estado (17 sep 2026) · v0.1
+Bloque A–D hechos: shell web/móvil, auth Supabase (correo + Google) con modo demo sin llaves, esquema con RLS,
+motor de datos con tests (quincena, categorizador, recurrentes/MSI, presupuesto, insights), Belvo sandbox +
+agregador simulado, importación CSV/XLSX/PDF, y todas las pantallas sobre datos reales: Inicio, Gastos, Fijos,
+Presupuesto, Patrimonio, Inversiones, Objetivos, Insights, Ajustes, Planes, Onboarding. PWA instalable. Oscuro.
+Pendiente de la semana: conector Gmail en modo prueba. Pendiente de Fase 2–4: Belvo producción, Stripe, landing.
+
 Objetivo: app funcionando en una semana; bancos reales en 3; usuarios en 5; mercado en 7.
 
 ## Cómo funciona todo (decidido)

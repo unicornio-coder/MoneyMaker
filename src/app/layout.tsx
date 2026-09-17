@@ -23,6 +23,7 @@ export const metadata: Metadata = {
   applicationName: 'MoneyMaker',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'MoneyMaker' },
+  icons: { icon: [{ url: '/icon.svg', type: 'image/svg+xml' }, { url: '/icon-192.png', sizes: '192x192' }], apple: '/apple-touch-icon.png' },
 };
 
 export const viewport: Viewport = {

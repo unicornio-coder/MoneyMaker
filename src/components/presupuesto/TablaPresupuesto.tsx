@@ -26,7 +26,7 @@ function Fila({ presupuestoId, l }: { presupuestoId: string; l: LineaVsActual })
     <div className={cn('rounded-card px-3.5 py-3 transition-all duration-[250ms]', l.excedido ? 'bg-ink text-white shadow-exceeded' : 'card')}>
       <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] items-center gap-2 text-[12.5px]">
         <div className="flex min-w-0 items-center gap-2 font-bold">
-          <span className="h-2 w-2 flex-none rounded-full" style={{ background: l.excedido ? '#4ADE80' : cat.color }} />
+          <span className="h-2 w-2 flex-none rounded-full ring-1 ring-black/10 dark:ring-white/30" style={{ background: l.excedido ? '#4ADE80' : cat.color }} />
           <span className="truncate">{l.nombre ?? cat.nombre}</span>
         </div>
         <div>
