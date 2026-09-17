@@ -1,11 +1,11 @@
-import { Bell } from 'lucide-react';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { contexto } from '@/lib/data/contexto';
+import { Insights } from '@/components/insights/Insights';
 
 export const metadata = { title: 'Insights · MoneyMaker' };
+export const dynamic = 'force-dynamic';
 
-// Pantalla en construcción (Bloque C). Estado vacío real del tab.
-export default function InsightsPage() {
-  return (
-    <EmptyState icon={Bell} titulo="Sin insights por ahora" texto="Cuando tengamos movimientos te avisaremos de suscripciones nuevas, MSI por terminar y cargos duplicados." />
-  );
+export default async function InsightsPage() {
+  const { usuario, repo } = await contexto();
+  const insights = await repo.insights(usuario.id);
+  return <Insights insights={insights} />;
 }

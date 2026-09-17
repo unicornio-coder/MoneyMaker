@@ -1,11 +1,10 @@
-import { Crown } from 'lucide-react';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { contexto } from '@/lib/data/contexto';
+import { Planes } from '@/components/planes/Planes';
 
 export const metadata = { title: 'Planes · MoneyMaker' };
+export const dynamic = 'force-dynamic';
 
-// Pantalla en construcción (Bloque C). Estado vacío real del tab.
-export default function PlanesPage() {
-  return (
-    <EmptyState icon={Crown} titulo="Plan Premium" texto="$250 MXN al mes. 7 días de prueba. Se conecta al cobro en la Fase 4." />
-  );
+export default async function PlanesPage() {
+  const { perfil } = await contexto();
+  return <Planes plan={perfil.plan} trialTermina={perfil.trialTermina} />;
 }
