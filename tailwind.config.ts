@@ -20,6 +20,8 @@ const config: Config = {
         cat: { fijos: '#0B1F17', comida: '#16A34A', transporte: '#2563EB', online: '#6366F1' },
         // Semánticos que cambian con el tema (definidos en tokens.css)
         surface: 'var(--surface)',
+        'surface-2': 'var(--surface-2)',
+        'edge-2': 'var(--edge-2)',
         canvas: 'var(--canvas)',
         fg: 'var(--fg)',
         'fg-2': 'var(--fg-2)',

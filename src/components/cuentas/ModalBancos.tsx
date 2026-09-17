@@ -1,0 +1,93 @@
+'use client';
+
+import { useMemo, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Check, Upload } from 'lucide-react';
+import { cn } from '@/lib/cn';
+import { Panel } from '@/components/ui/Panel';
+import { Avatar } from '@/components/ui/Avatar';
+import { Button } from '@/components/ui/Button';
+import { conectarInstitucion, registrarLinkBelvo } from '@/app/app/acciones';
+import type { DatosInicio } from '@/components/inicio/tipos';
+import { abrirWidgetBelvo } from './belvoWidget';
+
+type Props = { open: boolean; onClose: () => void; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock' };
+
+export function ModalBancos({ open, onClose, instituciones, agregador }: Props) {
+  const [q, setQ] = useState('');
+  const [sel, setSel] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pendiente, startTransition] = useTransition();
+  const router = useRouter();
+
+  const lista = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return instituciones.filter((i) => !s || i.nombre.toLowerCase().includes(s));
+  }, [instituciones, q]);
+  const inst = instituciones.find((i) => i.id === sel) ?? null;
+
+  const conectar = () => {
+    if (!inst) return;
+    setError(null);
+    if (!inst.automatica) {
+      router.push(`/app/importar?banco=${encodeURIComponent(inst.nombre)}`);
+      onClose();
+      return;
+    }
+    if (agregador === 'belvo') {
+      abrirWidgetBelvo({
+        institucion: inst.id,
+        onSuccess: (link, institution) =>
+          startTransition(async () => {
+            const r = await registrarLinkBelvo(link, institution);
+            if (!r.ok) setError(r.error);
+            else {
+              onClose();
+              router.refresh();
+            }
+          }),
+        onError: (m) => setError(m),
+      });
+      return;
+    }
+    startTransition(async () => {
+      const r = await conectarInstitucion(inst.id, inst.nombre);
+      if (!r.ok) setError(r.error);
+      else {
+        onClose();
+        router.refresh();
+      }
+    });
+  };
+
+  return (
+    <Panel open={open} onClose={onClose} mode="modal" title="Vincular banco">
+      <div className="space-y-3 pb-2">
+        <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Solo lectura vía Belvo. Nunca guardamos tus claves bancarias.</p>
+        <label className="relative block">
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-txt-3" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Busca tu banco" className="input pl-11 text-[14px]" />
+        </label>
+        <ul className="max-h-[46dvh] divide-y divide-edge overflow-y-auto">
+          {lista.map((i) => (
+            <li key={i.id}>
+              <button type="button" onClick={() => setSel(i.id)} className={cn('flex h-14 w-full items-center gap-3 rounded-input px-2 text-left transition-colors', sel === i.id ? 'bg-green-50 dark:bg-surface-2' : 'hover:bg-bg-hover dark:hover:bg-surface-2')}>
+                <Avatar domain={i.dominio} nombre={i.nombre} size={40} logoPct={60} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13.5px] font-bold">{i.nombre}</span>
+                  <span className="block text-[11px] text-txt-2 dark:text-fg-2">{i.automatica ? 'Conexión automática' : 'Por estado de cuenta'}</span>
+                </span>
+                {sel === i.id ? <Check size={18} className="text-green" /> : !i.automatica ? <Upload size={16} className="text-txt-3" /> : null}
+              </button>
+            </li>
+          ))}
+          {lista.length === 0 && <li className="py-6 text-center text-[12.5px] text-txt-2">No encontramos ese banco. Sube su estado de cuenta desde Importar.</li>}
+        </ul>
+        {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
+        <Button variant="green" size="lg" full disabled={!inst || pendiente} onClick={conectar}>
+          {pendiente ? 'Conectando…' : inst ? (inst.automatica ? `Conectar ${inst.nombre}` : `Subir estado de cuenta de ${inst.nombre}`) : 'Elige un banco'}
+        </Button>
+      </div>
+    </Panel>
+  );
+}

@@ -11,6 +11,8 @@ export type ComercioConocido = {
   servicio?: boolean;
   /** Enlace directo de cancelación (cancelación guiada). */
   cancelarUrl?: string;
+  /** Patrón genérico (RESTAURANT, CAFE, SEGURO…): solo aplica si ninguna marca coincide. */
+  generico?: boolean;
 };
 
 export const COMERCIOS: ComercioConocido[] = [
@@ -82,7 +84,7 @@ export const COMERCIOS: ComercioConocido[] = [
   { patron: 'COSTCO', nombre: 'Costco', dominio: 'costco.com.mx', categoria: 'super' },
   { patron: 'SAMS', nombre: "Sam's Club", dominio: 'sams.com.mx', categoria: 'super' },
   { patron: 'SUPERAMA', nombre: 'Superama', dominio: 'walmart.com.mx', categoria: 'super' },
-  { patron: 'FARMACIA', nombre: 'Farmacia', dominio: 'farmaciasguadalajara.com', categoria: 'salud' },
+  { generico: true, patron: 'FARMACIA', nombre: 'Farmacia', dominio: 'farmaciasguadalajara.com', categoria: 'salud' },
   { patron: 'FARMACIAS DEL AHORRO', nombre: 'Farmacias del Ahorro', dominio: 'fahorro.com', categoria: 'salud' },
   { patron: 'SAN PABLO', nombre: 'Farmacia San Pablo', dominio: 'farmaciasanpablo.com.mx', categoria: 'salud' },
   // Comida y entrega
@@ -101,14 +103,14 @@ export const COMERCIOS: ComercioConocido[] = [
   { patron: 'CARLS JR', nombre: "Carl's Jr.", dominio: 'carlsjr.com.mx', categoria: 'comida' },
   { patron: 'SUBWAY', nombre: 'Subway', dominio: 'subway.com', categoria: 'comida' },
   { patron: 'KFC', nombre: 'KFC', dominio: 'kfc.com.mx', categoria: 'comida' },
-  { patron: 'RESTAURANT', nombre: 'Restaurante', dominio: '', categoria: 'comida' },
-  { patron: 'TAQUERIA', nombre: 'Taquería', dominio: '', categoria: 'comida' },
-  { patron: 'CAFE', nombre: 'Café', dominio: '', categoria: 'comida' },
+  { generico: true, patron: 'RESTAURANT', nombre: 'Restaurante', dominio: '', categoria: 'comida' },
+  { generico: true, patron: 'TAQUERIA', nombre: 'Taquería', dominio: '', categoria: 'comida' },
+  { generico: true, patron: 'CAFE', nombre: 'Café', dominio: '', categoria: 'comida' },
   // Transporte
   { patron: 'UBER', nombre: 'Uber', dominio: 'uber.com', categoria: 'transporte' },
   { patron: 'DIDI', nombre: 'DiDi', dominio: 'didiglobal.com', categoria: 'transporte' },
   { patron: 'CABIFY', nombre: 'Cabify', dominio: 'cabify.com', categoria: 'transporte' },
-  { patron: 'GASOLINA', nombre: 'Gasolina', dominio: 'pemex.com', categoria: 'transporte' },
+  { generico: true, patron: 'GASOLINA', nombre: 'Gasolina', dominio: 'pemex.com', categoria: 'transporte' },
   { patron: 'PEMEX', nombre: 'Gasolina Pemex', dominio: 'pemex.com', categoria: 'transporte' },
   { patron: 'GAS BP', nombre: 'Gasolina BP', dominio: 'bp.com', categoria: 'transporte' },
   { patron: 'BP ', nombre: 'Gasolina BP', dominio: 'bp.com', categoria: 'transporte' },
@@ -116,11 +118,11 @@ export const COMERCIOS: ComercioConocido[] = [
   { patron: 'MOBIL', nombre: 'Gasolina Mobil', dominio: 'mobil.com.mx', categoria: 'transporte' },
   { patron: 'G500', nombre: 'Gasolina G500', dominio: 'g500.com.mx', categoria: 'transporte' },
   { patron: 'OXXO GAS', nombre: 'Oxxo Gas', dominio: 'oxxogas.com', categoria: 'transporte' },
-  { patron: 'ESTACIONAMIENTO', nombre: 'Estacionamiento', dominio: '', categoria: 'transporte' },
-  { patron: 'AUTOPISTA', nombre: 'Autopista', dominio: '', categoria: 'transporte' },
+  { generico: true, patron: 'ESTACIONAMIENTO', nombre: 'Estacionamiento', dominio: '', categoria: 'transporte' },
+  { generico: true, patron: 'AUTOPISTA', nombre: 'Autopista', dominio: '', categoria: 'transporte' },
   { patron: 'CAPUFE', nombre: 'Caseta Capufe', dominio: 'capufe.gob.mx', categoria: 'transporte' },
-  { patron: 'TELEPEAJE', nombre: 'Telepeaje', dominio: '', categoria: 'transporte' },
-  { patron: 'METRO', nombre: 'Metro', dominio: '', categoria: 'transporte' },
+  { generico: true, patron: 'TELEPEAJE', nombre: 'Telepeaje', dominio: '', categoria: 'transporte' },
+  { generico: true, patron: 'METRO', nombre: 'Metro', dominio: '', categoria: 'transporte' },
   { patron: 'AEROMEXICO', nombre: 'Aeroméxico', dominio: 'aeromexico.com', categoria: 'viajes' },
   { patron: 'VOLARIS', nombre: 'Volaris', dominio: 'volaris.com', categoria: 'viajes' },
   { patron: 'VIVA AEROBUS', nombre: 'Viva Aerobus', dominio: 'vivaaerobus.com', categoria: 'viajes' },
@@ -155,15 +157,15 @@ export const COMERCIOS: ComercioConocido[] = [
   { patron: 'APLAZO', nombre: 'Aplazo', dominio: 'aplazo.mx', categoria: 'msi' },
   { patron: 'KLARNA', nombre: 'Klarna', dominio: 'klarna.com', categoria: 'msi' },
   // Colegiaturas
-  { patron: 'COLEGIATURA', nombre: 'Colegiatura', dominio: '', categoria: 'colegiaturas', servicio: true },
-  { patron: 'COLEGIO', nombre: 'Colegio', dominio: '', categoria: 'colegiaturas', servicio: true },
-  { patron: 'UNIVERSIDAD', nombre: 'Universidad', dominio: '', categoria: 'colegiaturas', servicio: true },
-  { patron: 'ESCUELA', nombre: 'Escuela', dominio: '', categoria: 'colegiaturas', servicio: true },
+  { generico: true, patron: 'COLEGIATURA', nombre: 'Colegiatura', dominio: '', categoria: 'colegiaturas', servicio: true },
+  { generico: true, patron: 'COLEGIO', nombre: 'Colegio', dominio: '', categoria: 'colegiaturas', servicio: true },
+  { generico: true, patron: 'UNIVERSIDAD', nombre: 'Universidad', dominio: '', categoria: 'colegiaturas', servicio: true },
+  { generico: true, patron: 'ESCUELA', nombre: 'Escuela', dominio: '', categoria: 'colegiaturas', servicio: true },
   // Seguros
   { patron: 'GNP', nombre: 'GNP Seguros', dominio: 'gnp.com.mx', categoria: 'fijos', servicio: true },
   { patron: 'AXA', nombre: 'AXA Seguros', dominio: 'axa.mx', categoria: 'fijos', servicio: true },
   { patron: 'QUALITAS', nombre: 'Quálitas', dominio: 'qualitas.com.mx', categoria: 'fijos', servicio: true },
-  { patron: 'SEGURO', nombre: 'Seguro', dominio: '', categoria: 'fijos', servicio: true },
+  { generico: true, patron: 'SEGURO', nombre: 'Seguro', dominio: '', categoria: 'fijos', servicio: true },
 ];
 
 /** Dominio del logo del banco/institución por nombre normalizado. */

@@ -33,6 +33,8 @@ describe('categorizar', () => {
     expect(categorizar(cargo('UBER *EATS PENDING'))).toMatchObject({ comercio: 'Uber Eats', categoriaId: 'comida' });
     expect(categorizar(cargo('UBER *TRIP HELP.UBER.COM'))).toMatchObject({ comercio: 'Uber', categoriaId: 'transporte' });
     expect(categorizar(cargo('CFE SSB PAGO SERVICIO'))).toMatchObject({ comercio: 'CFE', categoriaId: 'servicios', esServicio: true });
+    expect(categorizar(cargo('RAPPI RESTAURANTES CDMX'))).toMatchObject({ comercio: 'Rappi' });
+    expect(categorizar(cargo('RESTAURANTE LA CASA'))).toMatchObject({ comercio: 'Restaurante', categoriaId: 'comida' });
   });
 
   it('MSI gana a la categoría del comercio', () => {

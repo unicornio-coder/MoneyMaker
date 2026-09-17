@@ -64,10 +64,12 @@ const RE_RETIRO = /\b(RETIRO|DISPOSICION|CAJERO|ATM|EFECTIVO)\b/;
 const RE_RENDIMIENTO = /\b(RENDIMIENTO|INTERESES GANADOS|GANANCIA|DIVIDENDO|CETES)\b/;
 const RE_APORTACION = /\b(APORTACION|COMPRA DE TITULOS|INVERSION|GBM|BITSO|KUSPIT|CETESDIRECTO)\b/;
 
+// Marcas primero (patrones más largos ganan: 'UBER EATS' sobre 'UBER'); los genéricos solo si ninguna marca coincide.
+const MARCAS = COMERCIOS.filter((c) => !c.generico).sort((a, b) => b.patron.length - a.patron.length);
+const GENERICOS = COMERCIOS.filter((c) => c.generico).sort((a, b) => b.patron.length - a.patron.length);
+
 function buscarComercio(n: string): ComercioConocido | null {
-  // Patrones más largos primero para que 'UBER EATS' gane a 'UBER'.
-  const ordenados = [...COMERCIOS].sort((a, b) => b.patron.length - a.patron.length);
-  return ordenados.find((c) => n.includes(c.patron)) ?? null;
+  return MARCAS.find((c) => n.includes(c.patron)) ?? GENERICOS.find((c) => n.includes(c.patron)) ?? null;
 }
 
 const MAPA_PROVEEDOR: Record<string, string> = {

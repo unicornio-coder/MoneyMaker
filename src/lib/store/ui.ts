@@ -28,14 +28,11 @@ function aplicarTema(t: Tema) {
   } catch {}
 }
 
-function temaInicial(): Tema {
-  if (typeof document === 'undefined') return 'claro';
-  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'oscuro' : 'claro';
-}
 
 export const useUI = create<UIState>((set, get) => ({
   periodo: 'q',
-  tema: temaInicial(),
+  // Siempre 'claro' en el primer render (coincide con el servidor); ThemeInit lo ajusta tras montar.
+  tema: 'claro',
   sidebarExpandida: true,
   masAbierto: false,
   ocultarSaldos: false,
