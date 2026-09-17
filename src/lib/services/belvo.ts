@@ -4,6 +4,7 @@
 import type { MovimientoCrudo, TipoCuenta } from '@/lib/domain/tipos';
 import { infoBanco } from '@/lib/domain/comercios';
 import type { Aggregator, CuentaExterna, Institucion, ResultadoSync } from './aggregator';
+import { INSTITUCIONES_MX } from './aggregator.mock';
 
 const BASE = { sandbox: 'https://sandbox.belvo.com', development: 'https://development.belvo.com', production: 'https://api.belvo.com' } as const;
 
@@ -84,14 +85,23 @@ export const belvo: Aggregator = {
   nombre: 'belvo',
 
   async listarInstituciones(): Promise<Institucion[]> {
-    const lista = await todas<BelvoInstitution>('/api/institutions/?country_code=MX&page_size=100&status=healthy');
-    return lista
-      .filter((i) => i.type === 'bank' || i.type === 'fintech')
-      .map((i) => {
-        const info = nombreVisible(i.name);
-        const dominio = info.dominio || (i.website ? i.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : '');
-        return { id: i.name, nombre: i.display_name || info.nombre, dominio, tipo: i.type === 'bank' ? 'banco' : 'fintech', automatica: true } as Institucion;
-      });
+    // Lista de Belvo + catálogo fijo de respaldo: si Belvo falla o trae pocas (sandbox), el usuario siempre ve bancos.
+    let deBelvo: Institucion[] = [];
+    try {
+      const lista = await todas<BelvoInstitution>('/api/institutions/?country_code=MX&page_size=100');
+      deBelvo = lista
+        .filter((i) => i.type === 'bank' || i.type === 'fintech')
+        .map((i) => {
+          const info = nombreVisible(i.name);
+          const dominio = info.dominio || (i.website ? i.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : '');
+          return { id: i.name, nombre: i.display_name || info.nombre, dominio, tipo: i.type === 'bank' ? 'banco' : 'fintech', automatica: true } as Institucion;
+        });
+    } catch (e) {
+      console.error('[belvo] no se pudo listar instituciones:', e instanceof Error ? e.message : e);
+    }
+    const vistos = new Set(deBelvo.map((i) => i.nombre.toLowerCase()));
+    const respaldo = INSTITUCIONES_MX.filter((i) => !vistos.has(i.nombre.toLowerCase()));
+    return [...deBelvo, ...respaldo];
   },
 
   async tokenWidget(userId, opciones) {
