@@ -24,6 +24,15 @@ Otros comandos: `npm run build` · `npm run typecheck` · `npm run lint` · `npm
 
 Sin llaves de Belvo, "Vincular banco" usa el agregador simulado. Con o sin Belvo, **Importar** acepta CSV, Excel y PDF de cualquier banco.
 
+## Conectores y cobro (Fase 2–4)
+
+- **Gmail** (`GOOGLE_CLIENT_ID/SECRET`, scope `gmail.readonly` en modo prueba ≤100 usuarios): Ajustes → Cuentas conectadas → Conectar Gmail. Lee solo alertas de compra de bancos conocidos; parsers en `src/lib/services/gmail.parsers.ts`.
+- **Bitso** (llaves de solo lectura del usuario, cifradas con `CREDENTIALS_KEY`): Ajustes → Cuentas conectadas → Bitso.
+- **Stripe** (`STRIPE_*`): Planes → Empezar 7 días gratis abre Checkout; `/api/stripe/webhook` mantiene `profiles.plan`.
+- **Cron** (`vercel.json` + `CRON_SECRET`): `/api/cron/sync` sincroniza Belvo, Gmail y Bitso a diario; además la app refresca al abrir.
+- **Legal**: `/legal/privacidad` y `/legal/terminos` (borradores para revisión).
+- Pasos exactos para cada cuenta: `docs/CHECKLIST-FUNDADOR.md`.
+
 ## Deploy en Vercel
 
 Importa el repo en Vercel, agrega las mismas variables de entorno y despliega. `NEXT_PUBLIC_APP_URL` debe ser la URL pública (la usa el widget de Belvo y los callbacks de auth). En Supabase agrega `https://<dominio>/auth/callback` a las Redirect URLs.

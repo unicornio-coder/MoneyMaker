@@ -2,10 +2,12 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { TabBar } from './TabBar';
 import { MobileHeader } from './MobileHeader';
+import { SyncAlAbrir } from './SyncAlAbrir';
 
 type Props = {
   children: React.ReactNode;
   usuario: { nombre: string; iniciales: string };
+  hayFuentes?: boolean;
 };
 
 function saludoDelDia(nombre: string) {
@@ -15,7 +17,7 @@ function saludoDelDia(nombre: string) {
 }
 
 /** Un solo árbol para web y móvil: la sidebar/topbar aparecen desde md, la tab bar por debajo. */
-export function AppShell({ children, usuario }: Props) {
+export function AppShell({ children, usuario, hayFuentes = false }: Props) {
   const saludo = saludoDelDia(usuario.nombre);
   return (
     <div className="flex min-h-dvh">
@@ -30,6 +32,7 @@ export function AppShell({ children, usuario }: Props) {
         </main>
       </div>
       <TabBar />
+      <SyncAlAbrir hayFuentes={hayFuentes} />
     </div>
   );
 }

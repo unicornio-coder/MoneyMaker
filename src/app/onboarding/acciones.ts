@@ -3,6 +3,7 @@
 import { contexto } from '@/lib/data/contexto';
 import { proponerPresupuesto, excedenteInvertible } from '@/lib/domain/presupuesto';
 import { estimarIngresoQuincenal } from '@/lib/services/ingest';
+import { registrar } from '@/lib/services/analytics';
 
 /** Cifras para el paso Resumen: lo que ya encontramos con las cuentas conectadas. */
 export async function resumenOnboarding() {
@@ -11,6 +12,8 @@ export async function resumenOnboarding() {
   const activos = recs.filter((r) => r.activo);
   const ingreso = perfil.ingresoQuincenal ?? estimarIngresoQuincenal(movs);
   const lineas = proponerPresupuesto(movs, activos, 'q', new Date(), diasPago);
+  const excedente = excedenteInvertible(ingreso, lineas);
+  await registrar(repo, usuario.id, 'wow_visto', { excedente, cuentas: cuentas.length });
   return {
     cuentas: cuentas.length,
     movimientos: movs.length,
@@ -19,7 +22,7 @@ export async function resumenOnboarding() {
     msi: activos.filter((r) => r.tipo === 'msi').length,
     msiMensual: activos.filter((r) => r.tipo === 'msi').reduce((s, r) => s + r.monto, 0),
     ingresoQuincenal: ingreso,
-    excedente: excedenteInvertible(ingreso, lineas),
+    excedente,
     lineas: lineas.length,
   };
 }

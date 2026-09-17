@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { cerrarSesion } from '@/lib/auth/actions';
 import { actualizarPerfil, eliminarFuente, borrarCuenta } from '@/app/app/ajustes/acciones';
+import { guardarLlavesBitso, sincronizarConector, desconectarConector } from '@/app/app/ajustes/conectores';
+import { Mail, Bitcoin, RefreshCw } from 'lucide-react';
 
 type Sec = 'perfil' | 'seguridad' | 'notificaciones' | 'fuentes' | 'familia' | 'exportar' | null;
 
@@ -27,7 +29,7 @@ const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon
   { id: 'exportar', label: 'Exportar datos', sub: 'Descarga tus movimientos en CSV', icon: Download },
 ];
 
-export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean }) {
+export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, aviso }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; aviso?: string | null }) {
   const [sec, setSec] = useState<Sec>((seccionInicial as Sec) ?? null);
   const router = useRouter();
 
@@ -36,7 +38,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock }: { 
       <div className="mx-auto max-w-settings animate-screen space-y-4">
         <button type="button" onClick={() => setSec(null)} className="flex items-center gap-1 text-[13px] font-semibold text-green"><ChevronLeft size={16} /> Ajustes</button>
         {sec === 'perfil' && <SecPerfil perfil={perfil} usuario={usuario} />}
-        {sec === 'fuentes' && <SecFuentes links={links} />}
+        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} aviso={aviso} />}
         {sec === 'seguridad' && <SecSeguridad usuario={usuario} modoMock={modoMock} />}
         {sec === 'notificaciones' && <SecNotificaciones />}
         {sec === 'familia' && <div className="card p-5 text-[13px] text-txt-2 dark:text-fg-2">Familia llega después de la beta: integrantes, cuentas compartidas y gastos por hijo.</div>}
@@ -131,9 +133,16 @@ function SecPerfil({ perfil, usuario }: { perfil: Perfil; usuario: UsuarioSesion
   );
 }
 
-function SecFuentes({ links }: { links: Fuente[] }) {
+function SecFuentes({ links, gmailConfigurado, aviso }: { links: Fuente[]; gmailConfigurado: boolean; aviso?: string | null }) {
   const [pendiente, start] = useTransition();
   const router = useRouter();
+  const [bitsoKey, setBitsoKey] = useState('');
+  const [bitsoSecret, setBitsoSecret] = useState('');
+  const [msg, setMsg] = useState<string | null>(aviso ?? null);
+  const gmail = links.find((l) => l.proveedor === 'gmail');
+  const bitso = links.find((l) => l.proveedor === 'bitso');
+  const sync = (p: 'gmail' | 'bitso') => start(async () => { const r = await sincronizarConector(p); setMsg(r.ok ? `Listo: ${r.insertados} movimientos nuevos.` : r.error ?? 'No se pudo sincronizar.'); router.refresh(); });
+  const desconectar = (p: 'gmail' | 'bitso', nombre: string) => confirm(`¿Desconectar ${nombre}?`) && start(async () => { await desconectarConector(p); router.refresh(); });
   const ESTADO: Record<Fuente['estado'], { label: string; cls: string }> = {
     ok: { label: 'Conectada', cls: 'bg-green-50 text-green dark:bg-surface-2' },
     mfa: { label: 'Requiere token', cls: 'bg-warning-soft text-warning dark:bg-surface-2' },
@@ -159,6 +168,42 @@ function SecFuentes({ links }: { links: Fuente[] }) {
         {links.length === 0 && <li className="py-6 text-center text-[12.5px] text-txt-2">Aún no hay conexiones.</li>}
       </ul>
       <Link href="/app/importar" className="btn-primary mt-3 inline-flex h-10 items-center px-4 text-[12.5px]">Agregar cuenta</Link>
+
+      {msg && <p className="mt-4 rounded-input bg-green-50 px-3 py-2 text-[12.5px] font-semibold text-green dark:bg-surface-2">{msg}</p>}
+
+      <div className="mt-6 border-t border-edge pt-5">
+        <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><Mail size={16} /> Alertas de tu correo (Gmail)</h3>
+        <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">Leemos solo los correos de alerta de compra de tu banco (BBVA, Amex, Nu, Banorte, Santander, HSBC) para que los gastos aparezcan al instante. Nunca leemos otros correos.</p>
+        {gmail ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-pill bg-green-50 px-2.5 py-1 text-[11.5px] font-bold text-green dark:bg-surface-2">Conectado · {gmail.externalId}</span>
+            <button type="button" disabled={pendiente} onClick={() => sync('gmail')} className="flex h-9 items-center gap-1.5 rounded-pill border border-line-2 px-3 text-[12px] font-semibold dark:border-edge"><RefreshCw size={13} className={cn(pendiente && 'animate-spin')} /> Leer ahora</button>
+            <button type="button" disabled={pendiente} onClick={() => desconectar('gmail', 'Gmail')} className="h-9 rounded-pill px-3 text-[12px] font-semibold text-txt-2">Desconectar</button>
+          </div>
+        ) : gmailConfigurado ? (
+          <a href="/api/gmail/auth" className="btn-primary mt-3 inline-flex h-10 items-center gap-2 px-4 text-[12.5px]"><Mail size={15} /> Conectar Gmail</a>
+        ) : (
+          <p className="mt-3 text-[12px] text-txt-3">Disponible cuando se configure el acceso de Google (GOOGLE_CLIENT_ID / SECRET).</p>
+        )}
+      </div>
+
+      <div className="mt-6 border-t border-edge pt-5">
+        <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><Bitcoin size={16} /> Bitso (llaves de API de solo lectura)</h3>
+        <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">En Bitso: Perfil → API → Crear llave con permisos solo de <b>consulta</b> (sin retiros ni trading). Se guardan cifradas.</p>
+        {bitso ? (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-pill bg-green-50 px-2.5 py-1 text-[11.5px] font-bold text-green dark:bg-surface-2">Conectado</span>
+            <button type="button" disabled={pendiente} onClick={() => sync('bitso')} className="flex h-9 items-center gap-1.5 rounded-pill border border-line-2 px-3 text-[12px] font-semibold dark:border-edge"><RefreshCw size={13} className={cn(pendiente && 'animate-spin')} /> Actualizar</button>
+            <button type="button" disabled={pendiente} onClick={() => desconectar('bitso', 'Bitso')} className="h-9 rounded-pill px-3 text-[12px] font-semibold text-txt-2">Desconectar</button>
+          </div>
+        ) : (
+          <form className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await guardarLlavesBitso(bitsoKey, bitsoSecret); setMsg(r.ok ? `Bitso conectado: ${money(r.total)}` : r.error); if (r.ok) { setBitsoKey(''); setBitsoSecret(''); router.refresh(); } }); }}>
+            <Input value={bitsoKey} onChange={(e) => setBitsoKey(e.target.value)} placeholder="API key" autoComplete="off" />
+            <Input value={bitsoSecret} onChange={(e) => setBitsoSecret(e.target.value)} placeholder="API secret" type="password" autoComplete="off" />
+            <Button type="submit" disabled={pendiente || !bitsoKey || !bitsoSecret}>{pendiente ? 'Probando…' : 'Conectar'}</Button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { RegistroForm } from '@/components/auth/RegistroForm';
 
 export const metadata = { title: 'Crea tu cuenta · MoneyMaker' };
 
-export default function RegistroPage() {
+export default function RegistroPage({ searchParams }: { searchParams: { email?: string } }) {
   return (
     <div className="animate-screen">
       <p className="mb-6 text-right text-[13px] text-txt-2 dark:text-fg-2">
@@ -12,7 +12,7 @@ export default function RegistroPage() {
           Iniciar sesión
         </Link>
       </p>
-      <RegistroForm />
+      <RegistroForm emailInicial={searchParams.email} />
     </div>
   );
 }

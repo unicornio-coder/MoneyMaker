@@ -5,6 +5,7 @@ import { contexto } from '@/lib/data/contexto';
 import { conectarLink, sincronizarLink } from '@/lib/services/conectar';
 import { recalcular } from '@/lib/services/ingest';
 import { infoBanco } from '@/lib/domain/comercios';
+import { registrar } from '@/lib/services/analytics';
 
 type R = { ok: true } | { ok: false; error: string };
 
@@ -16,6 +17,7 @@ function revalidarTodo() {
 export async function conectarInstitucion(institucionId: string, nombre: string): Promise<R> {
   const { usuario, repo } = await contexto();
   const r = await conectarLink(repo, usuario.id, institucionId, nombre);
+  if (r.ok) await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'mock', institucion: nombre });
   revalidarTodo();
   return r.ok ? { ok: true } : { ok: false, error: 'No pudimos conectar esa cuenta. Intenta de nuevo.' };
 }
@@ -25,6 +27,7 @@ export async function registrarLinkBelvo(link: string, institution: string): Pro
   const { usuario, repo } = await contexto();
   const info = infoBanco(institution.replace(/_mx.*$/i, '').replace(/_/g, ' '));
   const r = await conectarLink(repo, usuario.id, link, info.nombre);
+  if (r.ok) await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'belvo', institucion: info.nombre });
   revalidarTodo();
   return r.ok ? { ok: true } : { ok: false, error: 'La conexión se creó pero no pudimos descargar tus movimientos. Lo reintentamos en la próxima sincronización.' };
 }

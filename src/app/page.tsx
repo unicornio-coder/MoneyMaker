@@ -1,6 +1,10 @@
-import { redirect } from 'next/navigation';
+import { Landing } from '@/components/landing/Landing';
 
-// La landing pública llega en la Fase 4. Mientras, la raíz manda a la app.
+export const metadata = {
+  title: 'MoneyMaker · Tu quincena, clara',
+  description: 'Bancos, tarjetas, Bitso y GBM+ en un solo lugar. Presupuesto por quincena, suscripciones y meses sin intereses bajo control. 7 días gratis.',
+};
+
 export default function Home() {
-  redirect('/app');
+  return <Landing />;
 }

@@ -1,7 +1,7 @@
 // Repositorio: la única puerta de las pantallas y del pipeline a los datos.
 // Dos implementaciones: memoria (modo mock / demo) y Supabase (producción). Misma interfaz.
 
-import type { Activo, Cuenta, EventoCalendario, Insight, LineaPresupuesto, Movimiento, Objetivo, Pasivo, Perfil, Periodo, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import type { Activo, Credencial, Cuenta, EventoCalendario, Insight, LineaPresupuesto, Movimiento, Objetivo, Pasivo, Perfil, Periodo, Presupuesto, Recurrente } from '@/lib/domain/tipos';
 
 export type Link = {
   id: string;
@@ -83,6 +83,12 @@ export interface Repo {
   eventos(userId: string, desde: string, hasta: string): Promise<EventoCalendario[]>;
   guardarEvento(userId: string, e: Omit<EventoCalendario, 'id'> & { id?: string }): Promise<EventoCalendario>;
   eliminarEvento(userId: string, id: string): Promise<void>;
+
+  // Credenciales de conectores (cifradas) y eventos de producto
+  credencial(userId: string, proveedor: Credencial['proveedor']): Promise<Credencial | null>;
+  guardarCredencial(userId: string, c: Omit<Credencial, 'updatedAt'>): Promise<void>;
+  eliminarCredencial(userId: string, proveedor: Credencial['proveedor']): Promise<void>;
+  registrarEvento(userId: string | null, nombre: string, props?: Record<string, unknown>): Promise<void>;
 
   // Importaciones
   registrarEstadoDeCuenta(userId: string, s: { cuentaId?: string | null; archivo: string; banco?: string | null; estado: 'subido' | 'procesado' | 'error'; transacciones: number; error?: string | null }): Promise<{ id: string }>;

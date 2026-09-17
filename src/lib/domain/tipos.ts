@@ -121,7 +121,13 @@ export type Perfil = {
   plan: 'trial' | 'premium' | 'vencido';
   trialTermina: string;
   onboardingCompleto: boolean;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  planRenueva?: string | null;
+  planIntervalo?: 'mes' | 'anio' | null;
 };
+
+export type Credencial = { proveedor: 'gmail' | 'bitso'; etiqueta?: string | null; datos: Record<string, unknown>; updatedAt: string };
 
 /** Movimiento tal como lo entrega una fuente antes de categorizar y deduplicar. */
 export type MovimientoCrudo = {

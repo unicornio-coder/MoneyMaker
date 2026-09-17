@@ -68,3 +68,8 @@
   }
   .snap-x-carousel > * { scroll-snap-align: start; flex: none; }
 }
+
+/* Cinta de marcas de la landing */
+@keyframes mm-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.marquee { animation: mm-marquee 60s linear infinite; }
+.marquee:hover { animation-play-state: paused; }

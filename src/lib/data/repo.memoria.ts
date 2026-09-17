@@ -1,7 +1,7 @@
 // Repositorio en memoria para el modo mock. Un solo estado por proceso (globalThis) para sobrevivir
 // al hot reload de Next en desarrollo. Se pierde al reiniciar: es a propósito.
 
-import type { Activo, Cuenta, EventoCalendario, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import type { Activo, Credencial, Cuenta, EventoCalendario, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
 import type { FiltroMovimientos, Link, NuevoInsight, NuevoMovimiento, NuevoRecurrente, Repo } from './repo';
 
 type Correccion = { patron: string; nombre: string; dominio: string | null; categoriaId: string; esSuscripcion: boolean };
@@ -21,6 +21,8 @@ type EstadoUsuario = {
   insights: Insight[];
   eventos: EventoCalendario[];
   estados: { id: string }[];
+  credenciales: Credencial[];
+  eventos_producto: { nombre: string; props: Record<string, unknown>; at: string }[];
 };
 
 const g = globalThis as unknown as { __mmMemoria?: Map<string, EstadoUsuario> };
@@ -32,7 +34,7 @@ const nuevoId = () => `m-${Date.now().toString(36)}-${(++contador).toString(36)}
 function estadoDe(userId: string): EstadoUsuario {
   let e = estados.get(userId);
   if (!e) {
-    e = { perfil: null, links: [], cuentas: [], movimientos: [], correcciones: [], recurrentes: [], cancelaciones: [], presupuestos: [], activos: [], pasivos: [], objetivos: [], insights: [], eventos: [], estados: [] };
+    e = { perfil: null, links: [], cuentas: [], movimientos: [], correcciones: [], recurrentes: [], cancelaciones: [], presupuestos: [], activos: [], pasivos: [], objetivos: [], insights: [], eventos: [], estados: [], credenciales: [], eventos_producto: [] };
     estados.set(userId, e);
   }
   return e;
@@ -279,6 +281,22 @@ export const repoMemoria: Repo = {
   async eliminarEvento(userId, id) {
     const e = estadoDe(userId);
     e.eventos = e.eventos.filter((x) => x.id !== id);
+  },
+
+  async credencial(userId, proveedor) {
+    return estadoDe(userId).credenciales.find((c) => c.proveedor === proveedor) ?? null;
+  },
+  async guardarCredencial(userId, c) {
+    const e = estadoDe(userId);
+    e.credenciales = e.credenciales.filter((x) => x.proveedor !== c.proveedor);
+    e.credenciales.push({ ...c, updatedAt: new Date().toISOString() });
+  },
+  async eliminarCredencial(userId, proveedor) {
+    const e = estadoDe(userId);
+    e.credenciales = e.credenciales.filter((x) => x.proveedor !== proveedor);
+  },
+  async registrarEvento(userId, nombre, props = {}) {
+    if (userId) estadoDe(userId).eventos_producto.push({ nombre, props, at: new Date().toISOString() });
   },
 
   async registrarEstadoDeCuenta(userId) {

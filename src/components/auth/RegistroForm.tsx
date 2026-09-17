@@ -29,9 +29,9 @@ function Submit({ disabled, children }: { disabled?: boolean; children: React.Re
 }
 
 /** Paso 1 correo → paso 2 contraseña (medidor de 4 segmentos y requisitos que se vuelven verdes). */
-export function RegistroForm() {
-  const [paso, setPaso] = useState<1 | 2>(1);
-  const [email, setEmail] = useState('');
+export function RegistroForm({ emailInicial }: { emailInicial?: string }) {
+  const [paso, setPaso] = useState<1 | 2>(emailInicial && CORREO.test(emailInicial) ? 2 : 1);
+  const [email, setEmail] = useState(emailInicial ?? '');
   const [password, setPassword] = useState('');
   const [ver, setVer] = useState(false);
   const [estado, action] = useFormState<AuthResult | undefined, FormData>(registrarse, undefined);

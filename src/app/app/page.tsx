@@ -13,6 +13,8 @@ export default async function InicioPage() {
   const hoy = new Date();
   const desde = aISO(sumarMeses(hoy, -7));
   const agg = getAggregator();
+  const credBitso = await repo.credencial(usuario.id, 'bitso').catch(() => null);
+  const posBitso = (credBitso?.datos.posiciones as { ticker: string; nombre: string; dominio: string; cantidad: number; valor: number; variacion: number }[] | undefined) ?? null;
   const [cuentasBase, movimientos, recurrentes, objetivos, instituciones] = await Promise.all([
     repo.cuentas(usuario.id),
     repo.movimientos(usuario.id, { desde }),
@@ -28,7 +30,7 @@ export default async function InicioPage() {
     const aportado = movsCuenta.filter((m) => m.tipo === 'gasto' || m.tipo === 'transferencia').reduce((s, m) => s + m.monto, 0);
     const rendMes = movsCuenta.filter((m) => m.tipo === 'ingreso' && m.fecha >= aISO(sumarMeses(hoy, -1))).reduce((s, m) => s + m.monto, 0);
     const serie = (ext && seriesMock[ext]) || Array.from({ length: 11 }, (_, i) => c.saldo * (0.9 + (i / 10) * 0.1));
-    const posiciones = (ext && posicionesMock[ext]) || [];
+    const posiciones = (c.banco === 'Bitso' && posBitso) || (ext && posicionesMock[ext]) || [];
     const rendimiento = rendMes > 0 ? `+$${Math.round(rendMes).toLocaleString('es-MX')} este mes` : serie.length > 1 ? `${(((serie[serie.length - 1] - serie[0]) / serie[0]) * 100).toFixed(1)} % en 30 días` : '';
     return { ...c, externalId: ext, inversion: { serie, posiciones, rendimiento, aportado } };
   });

@@ -5,7 +5,10 @@ Bloque A–D hechos: shell web/móvil, auth Supabase (correo + Google) con modo 
 motor de datos con tests (quincena, categorizador, recurrentes/MSI, presupuesto, insights), Belvo sandbox +
 agregador simulado, importación CSV/XLSX/PDF, y todas las pantallas sobre datos reales: Inicio, Gastos, Fijos,
 Presupuesto, Patrimonio, Inversiones, Objetivos, Insights, Ajustes, Planes, Onboarding. PWA instalable. Oscuro.
-Pendiente de la semana: conector Gmail en modo prueba. Pendiente de Fase 2–4: Belvo producción, Stripe, landing.
+Fase 2–4 en código (17 sep): conector Gmail (OAuth + parsers), Bitso por API, Stripe (checkout con prueba,
+webhook, portal), cron diario en Vercel, refresco al abrir, landing pública con registro, lista de espera,
+aviso de privacidad y términos (borradores), eventos de producto (activación/wow/retención), credenciales cifradas.
+Lo que falta depende de cuentas y firmas del fundador: ver `docs/CHECKLIST-FUNDADOR.md` y `docs/correo-belvo.md`.
 
 Objetivo: app funcionando en una semana; bancos reales en 3; usuarios en 5; mercado en 7.
 

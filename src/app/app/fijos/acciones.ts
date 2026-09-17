@@ -5,6 +5,7 @@ import { contexto } from '@/lib/data/contexto';
 import type { Frecuencia, TipoRecurrente } from '@/lib/domain/tipos';
 import { COMERCIOS } from '@/lib/domain/comercios';
 import { normalizar } from '@/lib/domain/categorizar';
+import { registrar } from '@/lib/services/analytics';
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -46,6 +47,7 @@ export async function marcarCancelada(recurrenteId: string): Promise<R> {
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos la suscripción.' };
   await repo.guardarRecurrente(usuario.id, { ...r, activo: false, canceladoAt: new Date().toISOString() });
+  await registrar(repo, usuario.id, 'suscripcion_cancelada', { recurrenteId, mensual: r.monto });
   revalidar();
   return { ok: true };
 }
@@ -56,6 +58,7 @@ export async function solicitarCancelacion(recurrenteId: string, notas?: string)
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos la suscripción.' };
   const t = await repo.crearSolicitudCancelacion(usuario.id, recurrenteId, notas);
+  await registrar(repo, usuario.id, 'cancelar_por_mi', { recurrenteId, nombre: r.nombre });
   return { ok: true, id: t.id };
 }
 

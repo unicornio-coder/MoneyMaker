@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { MODO_MOCK, SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/env';
 
-const PUBLICAS = ['/login', '/registro', '/auth', '/manifest.webmanifest', '/icon.svg'];
+const PUBLICAS = ['/login', '/registro', '/auth', '/legal', '/api/waitlist', '/api/stripe/webhook', '/api/belvo/webhook', '/api/cron', '/manifest.webmanifest', '/icon.svg'];
 
 export async function middleware(req: NextRequest) {
   if (MODO_MOCK) return NextResponse.next();
@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = req.nextUrl;
-  const esPublica = PUBLICAS.some((p) => pathname.startsWith(p));
+  const esPublica = pathname === '/' || PUBLICAS.some((p) => pathname.startsWith(p));
 
   if (!user && !esPublica) {
     const url = req.nextUrl.clone();

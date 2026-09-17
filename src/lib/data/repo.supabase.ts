@@ -2,7 +2,8 @@
 // donde se inyecta el cliente de servicio con `repoSupabaseCon(supabaseAdmin())`.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Activo, Cuenta, EventoCalendario, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import type { Activo, Credencial, Cuenta, EventoCalendario, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import { cifrar, descifrar } from '@/lib/crypto';
 import { supabaseServer } from '@/lib/supabase/server';
 import type { FiltroMovimientos, Link, NuevoInsight, NuevoMovimiento, NuevoRecurrente, Repo } from './repo';
 
@@ -17,7 +18,7 @@ const num = (v: unknown) => (v == null ? null : Number(v));
 const str = (v: unknown) => (v == null ? null : String(v));
 
 // ---------- mapeos fila ↔ dominio ----------
-const aPerfil = (f: Fila): Perfil => ({ id: String(f.id), email: String(f.email), nombre: str(f.nombre), diasPago: (f.dias_pago as number[]) ?? [5, 20], ingresoQuincenal: num(f.ingreso_quincenal), metas: (f.metas as string[]) ?? [], plan: f.plan as Perfil['plan'], trialTermina: String(f.trial_termina), onboardingCompleto: !!f.onboarding_completo });
+const aPerfil = (f: Fila): Perfil => ({ id: String(f.id), email: String(f.email), nombre: str(f.nombre), diasPago: (f.dias_pago as number[]) ?? [5, 20], ingresoQuincenal: num(f.ingreso_quincenal), metas: (f.metas as string[]) ?? [], plan: f.plan as Perfil['plan'], trialTermina: String(f.trial_termina), onboardingCompleto: !!f.onboarding_completo, stripeCustomerId: str(f.stripe_customer_id), stripeSubscriptionId: str(f.stripe_subscription_id), planRenueva: str(f.plan_renueva), planIntervalo: (f.plan_intervalo as Perfil['planIntervalo']) ?? null });
 const aLink = (f: Fila): Link => ({ id: String(f.id), proveedor: f.proveedor as Link['proveedor'], externalId: str(f.external_id), institucion: String(f.institucion), institucionDominio: str(f.institucion_dominio), estado: f.estado as Link['estado'], ultimoSync: str(f.ultimo_sync) });
 const aCuenta = (f: Fila): Cuenta & { externalId: string | null } => ({ id: String(f.id), linkId: str(f.link_id), externalId: str(f.external_id), nombre: String(f.nombre), banco: String(f.banco), bancoDominio: str(f.banco_dominio), tipo: f.tipo as Cuenta['tipo'], ultimos4: str(f.ultimos4), saldo: Number(f.saldo), limite: num(f.limite), pagoMinimo: num(f.pago_minimo), fechaCorte: str(f.fecha_corte), fechaLimite: str(f.fecha_limite), color: str(f.color), activo: !!f.activo });
 const aMov = (f: Fila): Movimiento => ({ id: String(f.id), cuentaId: String(f.account_id), fecha: String(f.fecha), descripcionRaw: String(f.descripcion_raw), comercio: String(f.comercio), comercioDominio: str(f.comercio_dominio), monto: Number(f.monto), tipo: f.tipo as Movimiento['tipo'], categoriaId: String(f.categoria_id), categoriaFuente: f.categoria_fuente as Movimiento['categoriaFuente'], esMsi: !!f.es_msi, msiCuota: num(f.msi_cuota), msiTotal: num(f.msi_total), recurrenteId: str(f.recurrent_id), fuente: f.fuente as Movimiento['fuente'], hash: String(f.hash) });
@@ -47,6 +48,10 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       if (c.plan !== undefined) fila.plan = c.plan;
       if (c.trialTermina !== undefined) fila.trial_termina = c.trialTermina;
       if (c.onboardingCompleto !== undefined) fila.onboarding_completo = c.onboardingCompleto;
+      if (c.stripeCustomerId !== undefined) fila.stripe_customer_id = c.stripeCustomerId;
+      if (c.stripeSubscriptionId !== undefined) fila.stripe_subscription_id = c.stripeSubscriptionId;
+      if (c.planRenueva !== undefined) fila.plan_renueva = c.planRenueva;
+      if (c.planIntervalo !== undefined) fila.plan_intervalo = c.planIntervalo;
       const { data, error } = await cli().from('profiles').upsert(fila).select('*').single();
       lanzar('guardarPerfil', error);
       return aPerfil(data);
@@ -301,6 +306,25 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
     async eliminarEvento(userId, id) {
       const { error } = await cli().from('calendar_events').delete().eq('user_id', userId).eq('id', id);
       lanzar('eliminarEvento', error);
+    },
+
+    async credencial(userId, proveedor) {
+      const { data, error } = await cli().from('credentials').select('*').eq('user_id', userId).eq('proveedor', proveedor).maybeSingle();
+      lanzar('credencial', error);
+      if (!data) return null;
+      return { proveedor, etiqueta: str(data.etiqueta), datos: JSON.parse(descifrar(String(data.datos))) as Record<string, unknown>, updatedAt: String(data.updated_at) };
+    },
+    async guardarCredencial(userId, c) {
+      const { error } = await cli().from('credentials').upsert({ user_id: userId, proveedor: c.proveedor, etiqueta: c.etiqueta ?? null, datos: cifrar(JSON.stringify(c.datos)), updated_at: new Date().toISOString() }, { onConflict: 'user_id,proveedor' });
+      lanzar('guardarCredencial', error);
+    },
+    async eliminarCredencial(userId, proveedor) {
+      const { error } = await cli().from('credentials').delete().eq('user_id', userId).eq('proveedor', proveedor);
+      lanzar('eliminarCredencial', error);
+    },
+    async registrarEvento(userId, nombre, props = {}) {
+      const { error } = await cli().from('events').insert({ user_id: userId, nombre, props });
+      if (error) console.warn('registrarEvento', error.message);
     },
 
     async registrarEstadoDeCuenta(userId, s) {

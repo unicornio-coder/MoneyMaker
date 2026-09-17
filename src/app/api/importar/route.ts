@@ -4,6 +4,7 @@ import { importarArchivo } from '@/lib/services/importer';
 import { ingerirMovimientos } from '@/lib/services/ingest';
 import { infoBanco } from '@/lib/domain/comercios';
 import type { TipoCuenta } from '@/lib/domain/tipos';
+import { registrar } from '@/lib/services/analytics';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -65,5 +66,6 @@ export async function POST(req: Request) {
 
   const res = await ingerirMovimientos(repo, usuario.id, cuenta, r.movimientos, 'import');
   await repo.registrarEstadoDeCuenta(usuario.id, { cuentaId, archivo: archivo.name, banco: r.banco, estado: 'procesado', transacciones: res.insertados });
+  await registrar(repo, usuario.id, 'importacion', { formato: r.formato, movimientos: res.insertados, banco: r.banco });
   return NextResponse.json({ ok: true, cuentaId, ...res });
 }

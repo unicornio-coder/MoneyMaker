@@ -29,6 +29,11 @@ export function ModalBancos({ open, onClose, instituciones, agregador }: Props) 
   const conectar = () => {
     if (!inst) return;
     setError(null);
+    if (inst.id === 'bitso') {
+      router.push('/app/ajustes?sec=fuentes');
+      onClose();
+      return;
+    }
     if (!inst.automatica) {
       router.push(`/app/importar?banco=${encodeURIComponent(inst.nombre)}`);
       onClose();
