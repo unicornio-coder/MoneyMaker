@@ -7,7 +7,7 @@ Todo lo de código ya está hecho y probado. Esto requiere **tus cuentas, tus ta
 2. En *Git Branch* elige `claude/gallant-bohr-re8e7b` (o haz merge a `main` primero; el proyecto no tiene `main` todavía).
 3. Framework: Next.js (lo detecta). Deploy sin variables. Al terminar tienes `https://moneymaker-xxx.vercel.app` en modo demo.
 4. Settings → Environment Variables → agrega `NEXT_PUBLIC_APP_URL = https://<tu-dominio>` y `CRON_SECRET` (cualquier cadena larga; Vercel la usa para llamar `/api/cron/sync` a las 6:00 CDMX).
-5. Genera `CREDENTIALS_KEY` en tu terminal: `openssl rand -base64 32` y pégala.
+5. `CREDENTIALS_KEY`: cualquier cadena larga y secreta (32 caracteres o más); con ella se cifran las llaves de Gmail y Bitso.
 6. (Opcional) Settings → Domains → tu dominio.
 
 ## 1. Supabase (20 min) → usuarios reales

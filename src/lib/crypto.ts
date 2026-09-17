@@ -1,14 +1,14 @@
 // Cifrado simétrico para credenciales de conectores (tokens de Gmail, llaves de Bitso).
-// AES-256-GCM con CREDENTIALS_KEY (32 bytes en base64). Sin llave, en modo mock, se guarda en claro con prefijo.
+// AES-256-GCM con una llave de 32 bytes derivada (SHA-256) de CREDENTIALS_KEY, que puede ser cualquier cadena larga.
+// Sin llave, en modo mock, se guarda en claro con prefijo.
 
-import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 
 function llave(): Buffer | null {
-  const k = process.env.CREDENTIALS_KEY;
+  const k = process.env.CREDENTIALS_KEY?.trim();
   if (!k) return null;
-  const b = Buffer.from(k, 'base64');
-  if (b.length !== 32) throw new Error('CREDENTIALS_KEY debe ser 32 bytes en base64 (openssl rand -base64 32)');
-  return b;
+  if (k.length < 16) throw new Error('CREDENTIALS_KEY debe tener al menos 16 caracteres');
+  return createHash('sha256').update(k, 'utf8').digest();
 }
 
 export function cifrar(texto: string): string {
