@@ -54,7 +54,7 @@ const config: Config = {
       },
       animation: {
         rise: 'rise .35s cubic-bezier(.2,.8,.2,1) both',
-        screen: 'screen .25s cubic-bezier(.2,.8,.2,1) both',
+        screen: 'screen .25s cubic-bezier(.2,.8,.2,1)',
         sheet: 'sheet .25s cubic-bezier(.2,.8,.2,1) both',
         drawer: 'drawer .25s cubic-bezier(.2,.8,.2,1) both',
         fade: 'fade .2s ease-out both',

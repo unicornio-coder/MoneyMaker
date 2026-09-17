@@ -10,6 +10,7 @@ describe('normalizar', () => {
   });
   it('nombreLimpio recorta basura bancaria', () => {
     expect(nombreLimpio('COMPRA TDC LA CASA DEL TACO SA DE CV RFC LCT9901 MEXICO')).toBe('La Casa Del');
+    expect(nombreLimpio('REFRIGERADOR PARCIALIDAD 08/18')).toBe('Refrigerador');
   });
 });
 
@@ -51,6 +52,8 @@ describe('categorizar', () => {
     expect(categorizar(cargo('INTERESES DEL PERIODO', 264), 'credito')).toMatchObject({ categoriaId: 'comisiones' });
     expect(categorizar(cargo('RETIRO CAJERO ATM BBVA', 2000))).toMatchObject({ categoriaId: 'efectivo' });
     expect(categorizar(cargo('SPEI ENVIADO GBM APORTACION', 3000))).toMatchObject({ categoriaId: 'inversion', tipo: 'transferencia' });
+    expect(categorizar(cargo('COMPRA BTC', 2000), 'inversion')).toMatchObject({ categoriaId: 'inversion', tipo: 'transferencia' });
+    expect(categorizar(abono('RENDIMIENTO CETES', 1040), 'inversion')).toMatchObject({ categoriaId: 'rendimiento', tipo: 'ingreso' });
   });
 
   it('desconocido cae a proveedor o queda para el LLM', () => {

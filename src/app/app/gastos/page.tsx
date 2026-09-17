@@ -1,11 +1,13 @@
-import { PieChart } from 'lucide-react';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { contexto } from '@/lib/data/contexto';
+import { aISO, sumarMeses } from '@/lib/domain/fechas';
+import { Gastos } from '@/components/gastos/Gastos';
 
 export const metadata = { title: 'Gastos · MoneyMaker' };
+export const dynamic = 'force-dynamic';
 
-// Pantalla en construcción (Bloque B). Estado vacío real del tab.
-export default function GastosPage() {
-  return (
-    <EmptyState icon={PieChart} titulo="Sin movimientos todavía" texto="Cuando conectes una cuenta o subas un estado de cuenta, aquí verás tu gasto por periodo y categoría." cta={{ label: 'Subir estado de cuenta', href: '/app/importar' }} />
-  );
+export default async function GastosPage({ searchParams }: { searchParams: { cuenta?: string; cat?: string; q?: string } }) {
+  const { usuario, repo } = await contexto();
+  const hoy = new Date();
+  const [cuentas, movimientos] = await Promise.all([repo.cuentas(usuario.id), repo.movimientos(usuario.id, { desde: aISO(sumarMeses(hoy, -13)) })]);
+  return <Gastos cuentas={cuentas} movimientos={movimientos} hoy={aISO(hoy)} cuentaInicial={searchParams.cuenta} categoriaInicial={searchParams.cat} busquedaInicial={searchParams.q} />;
 }

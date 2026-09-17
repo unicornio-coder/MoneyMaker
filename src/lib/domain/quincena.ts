@@ -13,7 +13,7 @@ export type Rango = {
   etiqueta: string;
   /** Etiqueta corta para gráficas: 'Q1 sep', 'sep', '2026' */
   corta: string;
-  periodo: Periodo;
+  periodo: Periodo | 'semana' | 'rango';
 };
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -76,6 +76,24 @@ export function anioDe(fecha: Date): Rango {
   return { inicio: `${y}-01-01`, fin: `${y}-12-31`, etiqueta: String(y), corta: String(y), periodo: 'anio' };
 }
 
+/** Semana lunes–domingo que contiene la fecha. */
+export function semanaDe(fecha: Date): Rango {
+  const dow = (fecha.getDay() + 6) % 7; // lunes = 0
+  const inicio = sumarDias(new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()), -dow);
+  const fin = sumarDias(inicio, 6);
+  const etiqueta = `${inicio.getDate()} ${MESES[inicio.getMonth()]} – ${fin.getDate()} ${MESES[fin.getMonth()]}`;
+  return { inicio: aISO(inicio), fin: aISO(fin), etiqueta, corta: `${inicio.getDate()}–${fin.getDate()} ${MESES[fin.getMonth()]}`, periodo: 'semana' };
+}
+
+/** Rango arbitrario (Personalizado). */
+export function rangoPersonalizado(inicioISO: string, finISO: string): Rango {
+  const a = deISO(inicioISO);
+  const b = deISO(finISO);
+  const [i, f] = a <= b ? [a, b] : [b, a];
+  const etiqueta = aISO(i) === aISO(f) ? `${i.getDate()} ${MESES[i.getMonth()]}` : `${i.getDate()} ${MESES[i.getMonth()]} – ${f.getDate()} ${MESES[f.getMonth()]}`;
+  return { inicio: aISO(i), fin: aISO(f), etiqueta, corta: etiqueta, periodo: 'rango' };
+}
+
 /** Rango del periodo elegido que contiene la fecha. */
 export function rangoDe(periodo: Periodo, fecha: Date, diasPago: number[] = [5, 20]): Rango {
   if (periodo === 'q') return quincenaDe(fecha, diasPago);
@@ -95,6 +113,11 @@ export function desplazar(rango: Rango, n: number, diasPago: number[] = [5, 20])
       actual = quincenaDe(punto, diasPago);
     } else if (actual.periodo === 'mes') {
       actual = mesDe(sumarMeses(inicio, paso));
+    } else if (actual.periodo === 'semana') {
+      actual = semanaDe(sumarDias(inicio, 7 * paso));
+    } else if (actual.periodo === 'rango') {
+      const dias = diasDelRango(actual);
+      actual = rangoPersonalizado(aISO(sumarDias(inicio, dias * paso)), aISO(sumarDias(deISO(actual.fin), dias * paso)));
     } else {
       actual = anioDe(new Date(inicio.getFullYear() + paso, 0, 1));
     }

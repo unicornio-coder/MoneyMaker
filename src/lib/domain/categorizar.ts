@@ -37,8 +37,10 @@ export function normalizar(descripcion: string): string {
 export function nombreLimpio(descripcion: string): string {
   const n = normalizar(descripcion)
     .replace(/\b(COMPRA|CARGO|PAGO EN|PAGO|TDC|TDD|POS|RFC|SUC|SUCURSAL|MEXICO|MEX|CDMX|CD MX|MX|S\.?A\.? DE C\.?V\.?|SA DE CV|SAPI|S DE RL)\b/g, ' ')
+    .replace(/\b(MSI|MESES SIN INTERESES|SIN INTERESES|CUOTA|PARCIALIDAD|PARC|DIFERIDO|A MESES)\b/g, ' ')
+    .replace(/\b\d{1,2}\s*(?:DE|\/|-)\s*\d{1,2}\b/g, ' ')
     .replace(/\b\d{2,}\b/g, ' ')
-    .replace(/\*+/g, ' ')
+    .replace(/[*\/]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   const palabras = n.split(' ').filter(Boolean).slice(0, 3);
@@ -135,6 +137,11 @@ export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito'
   }
 
   // Cargos
+  if (tipoCuenta === 'inversion') {
+    // En una cuenta de inversión un cargo es compra de títulos/cripto o retiro: nunca gasto.
+    if (RE_RETIRO.test(n)) return { ...base, comercio: 'Retiro de inversión', categoriaId: 'transferencia', tipo: 'transferencia' };
+    return { ...base, comercio: base.comercio === 'Movimiento' ? 'Aportación' : base.comercio, categoriaId: 'inversion', tipo: 'transferencia' };
+  }
   if (RE_PAGO_TARJETA.test(n) && tipoCuenta !== 'credito') {
     return { ...base, comercio: 'Pago de tarjeta', categoriaId: 'pago_tarjeta', tipo: 'pago_tarjeta' };
   }
@@ -142,7 +149,7 @@ export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito'
     return { ...base, comercio: /ANUALIDAD/.test(n) ? 'Anualidad' : /INTERES/.test(n) ? 'Intereses' : 'Comisión', categoriaId: 'comisiones' };
   }
   if (RE_RETIRO.test(n) && !buscarComercio(n)) return { ...base, comercio: 'Retiro de efectivo', categoriaId: 'efectivo' };
-  if (tipoCuenta !== 'inversion' && RE_APORTACION.test(n) && !buscarComercio(n)) {
+  if (RE_APORTACION.test(n) && !buscarComercio(n)) {
     return { ...base, comercio: 'Aportación a inversión', categoriaId: 'inversion', tipo: 'transferencia' };
   }
 
