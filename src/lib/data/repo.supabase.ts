@@ -39,7 +39,8 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       return data ? aPerfil(data) : null;
     },
     async guardarPerfil(userId, c) {
-      const fila: Fila = { id: userId };
+      // Cambios parciales: UPDATE si el perfil existe (un upsert exigiría todas las columnas not null, como email).
+      const fila: Fila = {};
       if (c.email !== undefined) fila.email = c.email;
       if (c.nombre !== undefined) fila.nombre = c.nombre;
       if (c.diasPago !== undefined) fila.dias_pago = c.diasPago;
@@ -52,7 +53,17 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       if (c.stripeSubscriptionId !== undefined) fila.stripe_subscription_id = c.stripeSubscriptionId;
       if (c.planRenueva !== undefined) fila.plan_renueva = c.planRenueva;
       if (c.planIntervalo !== undefined) fila.plan_intervalo = c.planIntervalo;
-      const { data, error } = await cli().from('profiles').upsert(fila).select('*').single();
+      if (Object.keys(fila).length) {
+        const { data: actualizado, error: eUpd } = await cli().from('profiles').update(fila).eq('id', userId).select('*').maybeSingle();
+        lanzar('guardarPerfil', eUpd);
+        if (actualizado) return aPerfil(actualizado);
+      } else {
+        const { data: actual, error: eSel } = await cli().from('profiles').select('*').eq('id', userId).maybeSingle();
+        lanzar('guardarPerfil', eSel);
+        if (actual) return aPerfil(actual);
+      }
+      // No existe todavía (el trigger de auth no corrió): lo creamos completo.
+      const { data, error } = await cli().from('profiles').insert({ id: userId, email: c.email ?? '', ...fila }).select('*').single();
       lanzar('guardarPerfil', error);
       return aPerfil(data);
     },
