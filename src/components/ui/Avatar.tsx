@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
 import { favicon, iniciales } from '@/lib/format';
 
@@ -19,6 +19,12 @@ type Props = {
 /** Círculo gris con logo; si el logo no carga, iniciales. */
 export function Avatar({ domain, nombre, size = 46, logoPct = 54, className, bg }: Props) {
   const [fallo, setFallo] = useState(false);
+  const ref = useRef<HTMLImageElement>(null);
+  // Si la imagen falló antes de hidratar, onError nunca dispara: lo revisamos al montar.
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0) setFallo(true);
+  }, [domain]);
   const mostrarLogo = domain && !fallo;
   return (
     <span
@@ -29,6 +35,7 @@ export function Avatar({ domain, nombre, size = 46, logoPct = 54, className, bg 
       {mostrarLogo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={ref}
           src={favicon(domain, 128)}
           alt=""
           width={Math.round((size * logoPct) / 100)}

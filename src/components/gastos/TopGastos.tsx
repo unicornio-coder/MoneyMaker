@@ -38,7 +38,6 @@ export function TopGastos({ movimientos, anteriores, rango, onCategoria }: Props
         <div>
           <div className="text-[12px] text-txt-2 dark:text-fg-2">Gasto total · {rango.etiqueta}</div>
           <div className="mt-0.5 font-display text-[30px] font-bold leading-none tracking-[-1px]">
-            <span className="align-top text-[16px]">$</span>
             <Money value={total} className="font-display" />
           </div>
         </div>

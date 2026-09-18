@@ -21,13 +21,13 @@ export function TablasRecurrentes({ recurrentes, onAbrir, seccionInicial }: { re
   }, [seccionInicial]);
 
   return (
-    <div className="snap-x-carousel -mx-3.5 px-3.5 md:mx-0 md:px-0">
+    <div className="snap-x-carousel -mx-3.5 px-3.5 md:mx-0 md:px-0 xl:grid xl:grid-cols-4 xl:gap-3.5">
       {GRUPOS.map((g) => {
         const lista = recurrentes.filter(g.filtro).sort((a, b) => (a.diaCobro ?? 0) - (b.diaCobro ?? 0));
         if (!lista.length) return null;
         const total = lista.reduce((s, r) => s + (r.tipo === 'msi' ? r.monto : costoMensual(r)), 0);
         return (
-          <div key={g.id} ref={(el) => { refs.current[g.id] = el; }} className="w-[330px] rounded-16 bg-ink text-white shadow-dark">
+          <div key={g.id} ref={(el) => { refs.current[g.id] = el; }} className="w-[330px] rounded-16 bg-ink text-white shadow-dark xl:w-auto">
             <div className="flex items-baseline justify-between px-4 pb-2 pt-4">
               <div className="text-[13.3px] font-bold">{g.titulo}</div>
               <div className="font-display text-[19px] font-bold">{money(total)}<span className="ml-1 text-[11px] font-normal text-white/60">/mes</span></div>
