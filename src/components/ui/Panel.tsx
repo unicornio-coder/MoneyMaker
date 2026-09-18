@@ -33,14 +33,14 @@ export function Panel({ open, onClose, title, children, mode = 'drawer', dark, c
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
-      <button type="button" aria-label="Cerrar" onClick={onClose} className="absolute inset-0 animate-fade bg-ink/40" />
+      <button type="button" aria-label="Cerrar" onClick={onClose} className="absolute inset-0 animate-fade bg-ink/45 backdrop-blur-[2px]" />
       <div
         className={cn(
           'absolute flex flex-col overflow-hidden',
           dark ? 'bg-ink text-white' : 'bg-surface text-fg',
           mode === 'drawer' && 'inset-x-0 bottom-0 max-h-[92dvh] animate-sheet rounded-t-sheet md:inset-y-0 md:left-auto md:right-0 md:w-[420px] md:max-h-none md:animate-drawer md:rounded-none',
           mode === 'sheet' && 'inset-x-0 bottom-0 max-h-[92dvh] animate-sheet rounded-t-sheet',
-          mode === 'modal' && 'inset-x-3.5 top-1/2 max-h-[88dvh] -translate-y-1/2 animate-screen rounded-card-xl md:left-1/2 md:right-auto md:w-[520px] md:-translate-x-1/2',
+          mode === 'modal' && 'inset-x-3.5 top-1/2 max-h-[88dvh] -translate-y-1/2 animate-modal rounded-card-xl shadow-dark md:left-1/2 md:right-auto md:w-[520px] md:-translate-x-1/2',
           className,
         )}
       >

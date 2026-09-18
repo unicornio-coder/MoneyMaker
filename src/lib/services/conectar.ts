@@ -21,6 +21,7 @@ export async function sincronizarLink(repo: Repo, userId: string, linkId: string
   try {
     const r = await agg.sincronizar(linkExternalId, desde.toISOString().slice(0, 10));
     let insertados = 0;
+    const cuentaIds: string[] = [];
     for (const ce of r.cuentas) {
       const cuenta = await repo.guardarCuenta(userId, {
         linkId,
@@ -38,11 +39,12 @@ export async function sincronizarLink(repo: Repo, userId: string, linkId: string
         color: infoBanco(ce.banco).color,
         activo: true,
       });
+      cuentaIds.push(cuenta.id);
       const res = await ingerirMovimientos(repo, userId, cuenta, r.movimientos[ce.externalId] ?? [], fuente);
       insertados += res.insertados;
     }
     await repo.guardarLink(userId, { id: linkId, proveedor: fuente === 'belvo' ? 'belvo' : 'manual', externalId: linkExternalId, institucion: (await repo.links(userId)).find((l) => l.id === linkId)?.institucion ?? '', estado: 'ok', ultimoSync: new Date().toISOString() });
-    return { ok: true as const, cuentas: r.cuentas.length, insertados };
+    return { ok: true as const, cuentas: r.cuentas.length, insertados, cuentaIds };
   } catch (err) {
     const mensaje = err instanceof Error ? err.message : String(err);
     const estado = /mfa|token|login|credential/i.test(mensaje) ? 'mfa' : 'roto';

@@ -7,7 +7,14 @@ import { recalcular } from '@/lib/services/ingest';
 import { infoBanco } from '@/lib/domain/comercios';
 import { registrar } from '@/lib/services/analytics';
 
-type R = { ok: true } | { ok: false; error: string };
+export type ResultadoConexion = { cuentas: number; movimientos: number; suscripciones: number };
+type R = { ok: true; resultado?: ResultadoConexion } | { ok: false; error: string };
+
+async function resumenConexion(repo: Awaited<ReturnType<typeof contexto>>['repo'], userId: string, cuentaIds: string[]): Promise<ResultadoConexion> {
+  const ids = new Set(cuentaIds);
+  const [recs, movs] = await Promise.all([repo.recurrentes(userId), repo.movimientos(userId)]);
+  return { cuentas: cuentaIds.length, movimientos: movs.filter((m) => ids.has(m.cuentaId)).length, suscripciones: recs.filter((r) => r.activo && r.tipo === 'suscripcion').length };
+}
 
 function revalidarTodo() {
   for (const p of ['/app', '/app/gastos', '/app/fijos', '/app/presupuesto', '/app/insights', '/app/patrimonio']) revalidatePath(p);
@@ -19,7 +26,7 @@ export async function conectarInstitucion(institucionId: string, nombre: string)
   const r = await conectarLink(repo, usuario.id, institucionId, nombre);
   if (r.ok) await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'mock', institucion: nombre });
   revalidarTodo();
-  return r.ok ? { ok: true } : { ok: false, error: 'No pudimos conectar esa cuenta. Intenta de nuevo.' };
+  return r.ok ? { ok: true, resultado: await resumenConexion(repo, usuario.id, r.cuentaIds) } : { ok: false, error: 'No pudimos conectar esa cuenta. Intenta de nuevo.' };
 }
 
 /** Belvo: el widget ya creó el link; registramos y sincronizamos. */
@@ -29,7 +36,7 @@ export async function registrarLinkBelvo(link: string, institution: string): Pro
   const r = await conectarLink(repo, usuario.id, link, info.nombre);
   if (r.ok) await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'belvo', institucion: info.nombre });
   revalidarTodo();
-  return r.ok ? { ok: true } : { ok: false, error: 'La conexión se creó pero no pudimos descargar tus movimientos. Lo reintentamos en la próxima sincronización.' };
+  return r.ok ? { ok: true, resultado: await resumenConexion(repo, usuario.id, r.cuentaIds) } : { ok: false, error: 'La conexión se creó pero no pudimos descargar tus movimientos. Lo reintentamos en la próxima sincronización.' };
 }
 
 /** Refresco al abrir la app: sincroniza todos los links automáticos del usuario. */

@@ -11,7 +11,7 @@ export function Button({ variant = 'primary', size = 'md', full, className, type
     <button
       type={type}
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-[180ms] ease-out disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-[180ms] ease-out active:scale-[.98] disabled:cursor-not-allowed disabled:active:scale-100',
         size === 'sm' && 'h-8 rounded-pill px-4 text-[11px]',
         size === 'md' && 'h-11 rounded-pill px-5 text-[13px]',
         size === 'lg' && 'h-[50px] rounded-[14px] px-6 text-[14px] font-bold',

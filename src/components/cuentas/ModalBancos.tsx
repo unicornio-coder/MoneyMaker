@@ -7,7 +7,8 @@ import { cn } from '@/lib/cn';
 import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { conectarInstitucion, registrarLinkBelvo } from '@/app/app/acciones';
+import { conectarInstitucion, registrarLinkBelvo, type ResultadoConexion } from '@/app/app/acciones';
+import { ConectandoBanco, type EstadoConexion } from './ConectandoBanco';
 import type { DatosInicio } from '@/components/inicio/tipos';
 import { abrirWidgetBelvo } from './belvoWidget';
 
@@ -18,6 +19,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
   const [sel, setSel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [estado, setEstado] = useState('');
+  const [conexion, setConexion] = useState<{ banco: { nombre: string; dominio?: string | null }; estado: EstadoConexion; resultado?: ResultadoConexion | null; error?: string | null } | null>(null);
   const [pendiente, startTransition] = useTransition();
   const router = useRouter();
 
@@ -47,15 +49,11 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
         institucion: preseleccion,
         onEstado: setEstado,
         onSuccess: (link, institution) => {
-          setEstado('Leyendo tus cuentas y movimientos…');
+          setEstado('');
+          setConexion({ banco: { nombre: inst.nombre, dominio: inst.dominio }, estado: 'proceso' });
           startTransition(async () => {
             const r = await registrarLinkBelvo(link, institution);
-            setEstado('');
-            if (!r.ok) setError(r.error);
-            else {
-              onClose();
-              router.refresh();
-            }
+            setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error }));
           });
         },
         onExit: () => setEstado(''),
@@ -63,17 +61,24 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
       });
       return;
     }
+    setConexion({ banco: { nombre: inst.nombre, dominio: inst.dominio }, estado: 'proceso' });
     startTransition(async () => {
       const r = await conectarInstitucion(inst.id, inst.nombre);
-      if (!r.ok) setError(r.error);
-      else {
-        onClose();
-        router.refresh();
-      }
+      setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error }));
     });
   };
 
+  const terminar = () => {
+    setConexion(null);
+    onClose();
+    router.refresh();
+  };
+
   return (
+    <>
+    {conexion && (
+      <ConectandoBanco banco={conexion.banco} estado={conexion.estado} resultado={conexion.resultado} error={conexion.error} onCerrar={() => setConexion(null)} onListo={terminar} onReintentar={() => { setConexion(null); conectar(); }} />
+    )}
     <Panel open={open} onClose={onClose} mode="modal" title="Vincular banco">
       <div className="space-y-3 pb-2">
         <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Solo lectura vía Belvo. Nunca guardamos tus claves bancarias.</p>
@@ -106,5 +111,6 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
         </Button>
       </div>
     </Panel>
+    </>
   );
 }

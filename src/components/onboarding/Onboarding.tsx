@@ -10,7 +10,8 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { actualizarPerfil } from '@/app/app/ajustes/acciones';
-import { conectarInstitucion, registrarLinkBelvo } from '@/app/app/acciones';
+import { conectarInstitucion, registrarLinkBelvo, type ResultadoConexion } from '@/app/app/acciones';
+import { ConectandoBanco, type EstadoConexion } from '@/components/cuentas/ConectandoBanco';
 import { resumenOnboarding } from '@/app/onboarding/acciones';
 import { abrirWidgetBelvo } from '@/components/cuentas/belvoWidget';
 import type { DatosInicio } from '@/components/inicio/tipos';
@@ -37,6 +38,7 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, sandbox, 
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [estado, setEstado] = useState('');
+  const [conexion, setConexion] = useState<{ banco: { nombre: string; dominio?: string | null }; estado: EstadoConexion; resultado?: ResultadoConexion | null; error?: string | null } | null>(null);
   const [resumen, setResumen] = useState<Awaited<ReturnType<typeof resumenOnboarding>> | null>(null);
   const [pendiente, start] = useTransition();
   const router = useRouter();
@@ -65,12 +67,12 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, sandbox, 
         institucion: inst.origen === 'belvo' && !sandbox ? inst.id : undefined,
         onEstado: setEstado,
         onSuccess: (link, institution) => {
-          setEstado('Leyendo tus cuentas y movimientos…');
+          setEstado('');
+          setConexion({ banco: { nombre: inst.nombre, dominio: inst.dominio }, estado: 'proceso' });
           start(async () => {
             const r = await registrarLinkBelvo(link, institution);
-            setEstado('');
             if (r.ok) setConectadas((c) => [...c, inst.nombre]);
-            else setError(r.error);
+            setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error }));
           });
         },
         onExit: () => setEstado(''),
@@ -78,15 +80,19 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, sandbox, 
       });
       return;
     }
+    setConexion({ banco: { nombre: inst.nombre, dominio: inst.dominio }, estado: 'proceso' });
     start(async () => {
       const r = await conectarInstitucion(inst.id, inst.nombre);
       if (r.ok) setConectadas((c) => [...c, inst.nombre]);
-      else setError(r.error);
+      setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error }));
     });
   };
 
   return (
     <div className="min-h-dvh bg-bg-input dark:bg-canvas">
+      {conexion && (
+        <ConectandoBanco banco={conexion.banco} estado={conexion.estado} resultado={conexion.resultado} error={conexion.error} ctaListo="Conectar otra o continuar" onCerrar={() => setConexion(null)} onListo={() => setConexion(null)} />
+      )}
       <header className="sticky top-0 z-10 bg-surface">
         <div className="mx-auto flex h-[64px] max-w-[640px] items-center gap-3 px-5">
           {paso > 0 ? <button type="button" onClick={() => setPaso((p) => p - 1)} aria-label="Atrás" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-bg-muted"><ChevronLeft size={18} /></button> : <Logo />}
