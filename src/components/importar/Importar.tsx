@@ -1,6 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { ConectandoBanco } from '@/components/cuentas/ConectandoBanco';
+import { infoBanco } from '@/lib/domain/comercios';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -50,9 +52,11 @@ export function Importar({ cuentas, bancoSugerido }: { cuentas: CuentaOpcion[]; 
     }
   };
 
+  const [procesando, setProcesando] = useState<'proceso' | 'listo' | 'error' | null>(null);
   const confirmar = async () => {
     if (!archivo) return;
     setCargando(true);
+    setProcesando('proceso');
     setError(null);
     const fd = new FormData();
     fd.append('archivo', archivo);
@@ -68,13 +72,34 @@ export function Importar({ cuentas, bancoSugerido }: { cuentas: CuentaOpcion[]; 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'No pudimos importar.');
       setListo(json);
+      setProcesando('listo');
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al importar.');
+      setProcesando('error');
     } finally {
       setCargando(false);
     }
   };
+
+  const nombreBanco = (destino !== 'nueva' ? cuentas.find((c) => c.id === destino)?.banco : banco) || 'tu banco';
+  const bancoInfo = infoBanco(nombreBanco);
+  if (procesando) {
+    return (
+      <ConectandoBanco
+        banco={{ nombre: bancoInfo.nombre || nombreBanco, dominio: bancoInfo.dominio }}
+        estado={procesando}
+        titulo={`Leyendo tu estado de cuenta de ${bancoInfo.nombre || nombreBanco}`}
+        pasos={['Leyendo el archivo', 'Detectando movimientos', 'Categorizando cada compra', 'Detectando suscripciones y meses sin intereses', 'Actualizando tu presupuesto']}
+        resultado={listo ? { cuentas: 1, movimientos: listo.insertados, suscripciones: listo.recurrentes } : null}
+        error={error}
+        ctaListo="Ver mi Inicio"
+        onCerrar={() => setProcesando(null)}
+        onListo={() => router.push('/app')}
+        onReintentar={() => { setProcesando(null); confirmar(); }}
+      />
+    );
+  }
 
   if (listo) {
     return (

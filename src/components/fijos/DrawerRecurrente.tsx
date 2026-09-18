@@ -14,12 +14,14 @@ import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { crearEvento, eliminarRecurrente, marcarCancelada, solicitarCancelacion } from '@/app/app/fijos/acciones';
+import { ModalCancelar } from './ModalCancelar';
 
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
 
 export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { recurrente: Recurrente | null; ingresoMensual: number; onClose: () => void }) {
   const [modo, setModo] = useState<'detalle' | 'guiada' | 'porMi' | 'listo'>('detalle');
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const [cancelando, setCancelando] = useState(false);
   const [pendiente, start] = useTransition();
   const router = useRouter();
   if (!r) return null;
@@ -132,7 +134,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
           </div>
           {mensaje && <p className="text-[12.5px] font-semibold text-green-light">{mensaje}</p>}
           {esSuscripcion && !r.canceladoAt && (
-            <button type="button" onClick={() => setModo('guiada')} className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-green font-display text-[16px] font-bold text-white shadow-green transition-colors hover:bg-green-dark">
+            <button type="button" onClick={() => setCancelando(true)} className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-green font-display text-[16px] font-bold text-white shadow-green transition-colors hover:bg-green-dark">
               Cancelar suscripción
             </button>
           )}
@@ -147,6 +149,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
           </div>
         </div>
       )}
+      {cancelando && <ModalCancelar open onClose={() => { setCancelando(false); router.refresh(); }} recurrentes={[r]} inicial={r} />}
     </Panel>
   );
 }
