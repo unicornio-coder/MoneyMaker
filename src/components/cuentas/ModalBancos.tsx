@@ -11,12 +11,13 @@ import { conectarInstitucion, registrarLinkBelvo } from '@/app/app/acciones';
 import type { DatosInicio } from '@/components/inicio/tipos';
 import { abrirWidgetBelvo } from './belvoWidget';
 
-type Props = { open: boolean; onClose: () => void; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock' };
+type Props = { open: boolean; onClose: () => void; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; sandbox?: boolean };
 
-export function ModalBancos({ open, onClose, instituciones, agregador }: Props) {
+export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }: Props) {
   const [q, setQ] = useState('');
   const [sel, setSel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [estado, setEstado] = useState('');
   const [pendiente, startTransition] = useTransition();
   const router = useRouter();
 
@@ -40,17 +41,24 @@ export function ModalBancos({ open, onClose, instituciones, agregador }: Props) 
       return;
     }
     if (agregador === 'belvo') {
+      // Solo preseleccionamos si la institución viene de la lista viva de Belvo; si es de nuestro catálogo (o sandbox), el widget muestra su propia lista.
+      const preseleccion = inst.origen === 'belvo' && !sandbox ? inst.id : undefined;
       abrirWidgetBelvo({
-        institucion: inst.id,
-        onSuccess: (link, institution) =>
+        institucion: preseleccion,
+        onEstado: setEstado,
+        onSuccess: (link, institution) => {
+          setEstado('Leyendo tus cuentas y movimientos…');
           startTransition(async () => {
             const r = await registrarLinkBelvo(link, institution);
+            setEstado('');
             if (!r.ok) setError(r.error);
             else {
               onClose();
               router.refresh();
             }
-          }),
+          });
+        },
+        onExit: () => setEstado(''),
         onError: (m) => setError(m),
       });
       return;
@@ -88,9 +96,13 @@ export function ModalBancos({ open, onClose, instituciones, agregador }: Props) 
           ))}
           {lista.length === 0 && <li className="py-6 text-center text-[12.5px] text-txt-2">No encontramos ese banco. Sube su estado de cuenta desde Importar.</li>}
         </ul>
+        {agregador === 'belvo' && sandbox && (
+          <p className="rounded-input bg-bg-muted px-3 py-2 text-[12px] text-txt-2 dark:bg-surface-2 dark:text-fg-2">Modo de prueba de Belvo: en la ventana que se abre elige cualquier banco y entra con usuario <span className="font-semibold text-fg">bnk100</span> y contraseña <span className="font-semibold text-fg">full</span>. Verás cuentas y movimientos de prueba.</p>
+        )}
+        {estado && <p className="text-[12.5px] font-semibold text-green">{estado}</p>}
         {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
-        <Button variant="green" size="lg" full disabled={!inst || pendiente} onClick={conectar}>
-          {pendiente ? 'Conectando…' : inst ? (inst.automatica ? `Conectar ${inst.nombre}` : `Subir estado de cuenta de ${inst.nombre}`) : 'Elige un banco'}
+        <Button variant="green" size="lg" full disabled={!inst || pendiente || !!estado} onClick={conectar}>
+          {pendiente || estado ? 'Conectando…' : inst ? (inst.automatica ? `Conectar ${inst.nombre}` : `Subir estado de cuenta de ${inst.nombre}`) : 'Elige un banco'}
         </Button>
       </div>
     </Panel>

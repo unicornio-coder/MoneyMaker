@@ -12,6 +12,8 @@ export type Institucion = {
   tipo: 'banco' | 'fintech' | 'inversion';
   /** Cubierta por el agregador (true) o requiere estado de cuenta / manual (false). */
   automatica: boolean;
+  /** 'belvo' si viene de la lista viva del proveedor; 'catalogo' si es nuestro respaldo fijo. */
+  origen?: 'belvo' | 'catalogo';
 };
 
 export type CuentaExterna = {
@@ -36,6 +38,8 @@ export type ResultadoSync = {
 
 export interface Aggregator {
   readonly nombre: 'belvo' | 'mock';
+  /** Entorno del proveedor: en 'sandbox' las credenciales son de prueba (bnk100 / full). */
+  readonly entorno: 'sandbox' | 'production' | 'mock';
   listarInstituciones(): Promise<Institucion[]>;
   /** Token de un solo uso para abrir el widget en el cliente. */
   tokenWidget(userId: string, opciones?: { linkId?: string }): Promise<{ access: string; refresh?: string }>;

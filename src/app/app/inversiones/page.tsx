@@ -26,5 +26,5 @@ export default async function InversionesPage() {
       const rendimiento = rendMes > 0 ? `+${Math.round(rendMes).toLocaleString('es-MX')} este mes` : `${(((serie[serie.length - 1] - serie[0]) / (serie[0] || 1)) * 100).toFixed(1)} % en 30 días`;
       return { ...c, externalId: ext, inversion: { serie, posiciones: (c.banco === 'Bitso' && posBitso) || (ext && posicionesMock[ext]) || [], rendimiento, aportado } };
     });
-  return <Inversiones cuentas={cuentas} movimientos={movimientos} instituciones={instituciones.filter((i) => i.tipo === 'inversion' || ['GBM+', 'Bitso', 'CetesDirecto', 'Kuspit'].includes(i.nombre))} agregador={agg.nombre} hoy={aISO(hoy)} />;
+  return <Inversiones cuentas={cuentas} movimientos={movimientos} instituciones={instituciones.filter((i) => i.tipo === 'inversion' || ['GBM+', 'Bitso', 'CetesDirecto', 'Kuspit'].includes(i.nombre))} agregador={agg.nombre} sandbox={agg.entorno === 'sandbox'} hoy={aISO(hoy)} />;
 }

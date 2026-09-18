@@ -26,9 +26,9 @@ const METAS = [
 
 const PASOS = ['Metas', 'Cuentas', 'Quincena', 'Plan', 'Resumen'];
 
-type Props = { nombre: string; perfil: { metas: string[]; diasPago: number[]; ingresoQuincenal: number | null }; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; pasoInicial: number };
+type Props = { nombre: string; perfil: { metas: string[]; diasPago: number[]; ingresoQuincenal: number | null }; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; sandbox?: boolean; pasoInicial: number };
 
-export function Onboarding({ nombre, perfil, instituciones, agregador, pasoInicial }: Props) {
+export function Onboarding({ nombre, perfil, instituciones, agregador, sandbox, pasoInicial }: Props) {
   const [paso, setPaso] = useState(pasoInicial);
   const [metas, setMetas] = useState<string[]>(perfil.metas);
   const [dias, setDias] = useState<number[]>(perfil.diasPago?.length ? perfil.diasPago : [5, 20]);
@@ -36,6 +36,7 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, pasoInici
   const [conectadas, setConectadas] = useState<string[]>([]);
   const [q, setQ] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [estado, setEstado] = useState('');
   const [resumen, setResumen] = useState<Awaited<ReturnType<typeof resumenOnboarding>> | null>(null);
   const [pendiente, start] = useTransition();
   const router = useRouter();
@@ -60,7 +61,21 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, pasoInici
     setError(null);
     if (!inst.automatica) return router.push(`/app/importar?banco=${encodeURIComponent(inst.nombre)}`);
     if (agregador === 'belvo') {
-      abrirWidgetBelvo({ institucion: inst.id, onSuccess: (link, institution) => start(async () => { const r = await registrarLinkBelvo(link, institution); if (r.ok) setConectadas((c) => [...c, inst.nombre]); else setError(r.error); }), onError: setError });
+      abrirWidgetBelvo({
+        institucion: inst.origen === 'belvo' && !sandbox ? inst.id : undefined,
+        onEstado: setEstado,
+        onSuccess: (link, institution) => {
+          setEstado('Leyendo tus cuentas y movimientos…');
+          start(async () => {
+            const r = await registrarLinkBelvo(link, institution);
+            setEstado('');
+            if (r.ok) setConectadas((c) => [...c, inst.nombre]);
+            else setError(r.error);
+          });
+        },
+        onExit: () => setEstado(''),
+        onError: setError,
+      });
       return;
     }
     start(async () => {
@@ -128,8 +143,12 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, pasoInici
                 );
               })}
             </ul>
+            {agregador === 'belvo' && sandbox && (
+              <p className="mt-3 rounded-input bg-surface px-3 py-2 text-[12px] text-txt-2 shadow-card dark:text-fg-2">Modo de prueba de Belvo: en la ventana que se abre elige cualquier banco y entra con usuario <span className="font-semibold text-fg">bnk100</span> y contraseña <span className="font-semibold text-fg">full</span>.</p>
+            )}
+            {estado && <p className="mt-3 text-[12.5px] font-semibold text-green">{estado}</p>}
             {error && <p className="mt-3 text-[12.5px] font-semibold text-negative">{error}</p>}
-            {pendiente && <p className="mt-3 text-[12.5px] font-semibold text-green">Conectando y leyendo movimientos…</p>}
+            {pendiente && !estado && <p className="mt-3 text-[12.5px] font-semibold text-green">Conectando y leyendo movimientos…</p>}
           </>
         )}
 

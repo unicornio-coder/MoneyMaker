@@ -83,6 +83,9 @@ function nombreVisible(nombreInstitucion: string) {
 
 export const belvo: Aggregator = {
   nombre: 'belvo',
+  get entorno() {
+    return process.env.BELVO_ENV === 'production' ? 'production' : 'sandbox';
+  },
 
   async listarInstituciones(): Promise<Institucion[]> {
     // Lista de Belvo + catálogo fijo de respaldo: si Belvo falla o trae pocas (sandbox), el usuario siempre ve bancos.
@@ -94,13 +97,13 @@ export const belvo: Aggregator = {
         .map((i) => {
           const info = nombreVisible(i.name);
           const dominio = info.dominio || (i.website ? i.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : '');
-          return { id: i.name, nombre: i.display_name || info.nombre, dominio, tipo: i.type === 'bank' ? 'banco' : 'fintech', automatica: true } as Institucion;
+          return { id: i.name, nombre: i.display_name || info.nombre, dominio, tipo: i.type === 'bank' ? 'banco' : 'fintech', automatica: true, origen: 'belvo' } as Institucion;
         });
     } catch (e) {
       console.error('[belvo] no se pudo listar instituciones:', e instanceof Error ? e.message : e);
     }
     const vistos = new Set(deBelvo.map((i) => i.nombre.toLowerCase()));
-    const respaldo = INSTITUCIONES_MX.filter((i) => !vistos.has(i.nombre.toLowerCase()));
+    const respaldo = INSTITUCIONES_MX.filter((i) => !vistos.has(i.nombre.toLowerCase())).map((i) => ({ ...i, origen: 'catalogo' as const }));
     return [...deBelvo, ...respaldo];
   },
 

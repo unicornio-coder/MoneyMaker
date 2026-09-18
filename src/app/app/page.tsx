@@ -44,6 +44,7 @@ export default async function InicioPage() {
     hoy: aISO(hoy),
     instituciones,
     agregador: agg.nombre,
+    sandbox: agg.entorno === 'sandbox',
   };
   return <Inicio datos={datos} />;
 }

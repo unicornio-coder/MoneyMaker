@@ -15,7 +15,7 @@ import { DrawerCuenta } from '@/components/inicio/DrawerCuenta';
 import { ModalBancos } from '@/components/cuentas/ModalBancos';
 import type { CuentaVista, DatosInicio } from '@/components/inicio/tipos';
 
-type Props = { cuentas: CuentaVista[]; movimientos: Movimiento[]; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; hoy: string };
+type Props = { cuentas: CuentaVista[]; movimientos: Movimiento[]; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; sandbox?: boolean; hoy: string };
 
 function Linea({ serie, alto = 120 }: { serie: number[]; alto?: number }) {
   const mx = Math.max(...serie);
@@ -32,7 +32,7 @@ function Linea({ serie, alto = 120 }: { serie: number[]; alto?: number }) {
   );
 }
 
-export function Inversiones({ cuentas, movimientos, instituciones, agregador, hoy }: Props) {
+export function Inversiones({ cuentas, movimientos, instituciones, agregador, sandbox, hoy }: Props) {
   const [sel, setSel] = useState<string | 'total'>('total');
   const [abierta, setAbierta] = useState<string | null>(null);
   const [bancos, setBancos] = useState(false);
@@ -60,7 +60,7 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, ho
     return (
       <>
         <EmptyState icon={TrendingUp} titulo="Conecta una cuenta de inversión" texto="GBM+, Bitso, CetesDirecto o Kuspit. También puedes subir su estado de cuenta." cta={{ label: 'Conectar', onClick: () => setBancos(true) }} />
-        <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} />
+        <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
       </>
     );
   }
@@ -124,7 +124,7 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, ho
       <p className="text-center text-[10.3px] text-txt-3">Información educativa, no es asesoría de inversión.</p>
 
       <DrawerCuenta cuenta={cuenta} movimientos={movimientos} cuentas={cuentas} onClose={() => setAbierta(null)} />
-      <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} />
+      <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
     </div>
   );
 }

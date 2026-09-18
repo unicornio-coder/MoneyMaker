@@ -10,5 +10,5 @@ export default async function OnboardingPage({ searchParams }: { searchParams: {
   const agg = getAggregator();
   const instituciones = await agg.listarInstituciones().catch(() => []);
   const paso = Math.min(4, Math.max(0, Number(searchParams.paso ?? 0) || 0));
-  return <Onboarding nombre={usuario.nombreCorto} perfil={{ metas: perfil.metas, diasPago: perfil.diasPago, ingresoQuincenal: perfil.ingresoQuincenal ?? null }} instituciones={instituciones} agregador={agg.nombre} pasoInicial={paso} />;
+  return <Onboarding nombre={usuario.nombreCorto} perfil={{ metas: perfil.metas, diasPago: perfil.diasPago, ingresoQuincenal: perfil.ingresoQuincenal ?? null }} instituciones={instituciones} agregador={agg.nombre} sandbox={agg.entorno === 'sandbox'} pasoInicial={paso} />;
 }

@@ -38,7 +38,7 @@ export function Inicio({ datos }: { datos: DatosInicio }) {
       </aside>
 
       <DrawerCuenta cuenta={cuenta} movimientos={datos.movimientos} cuentas={datos.cuentas} onClose={() => setCuentaSel(null)} />
-      <ModalBancos open={bancosAbierto} onClose={() => setBancosAbierto(false)} instituciones={datos.instituciones} agregador={datos.agregador} />
+      <ModalBancos open={bancosAbierto} onClose={() => setBancosAbierto(false)} instituciones={datos.instituciones} agregador={datos.agregador} sandbox={datos.sandbox} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ export type DatosInicio = {
   diasPago: number[];
   hoy: string;
   /** Instituciones disponibles para conectar. */
-  instituciones: { id: string; nombre: string; dominio: string; tipo: 'banco' | 'fintech' | 'inversion'; automatica: boolean }[];
+  instituciones: { id: string; nombre: string; dominio: string; tipo: 'banco' | 'fintech' | 'inversion'; automatica: boolean; origen?: 'belvo' | 'catalogo' }[];
   agregador: 'belvo' | 'mock';
+  /** true cuando Belvo está en sandbox: credenciales de prueba bnk100 / full. */
+  sandbox?: boolean;
 };

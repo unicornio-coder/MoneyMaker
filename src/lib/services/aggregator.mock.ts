@@ -13,6 +13,7 @@ export const INSTITUCIONES_MX: Institucion[] = [
 
 export const mockAggregator: Aggregator = {
   nombre: 'mock',
+  entorno: 'mock',
   async listarInstituciones() {
     return INSTITUCIONES_MX;
   },
