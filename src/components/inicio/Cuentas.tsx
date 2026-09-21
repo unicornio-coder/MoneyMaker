@@ -13,10 +13,11 @@ export function Plastico({ cuenta, className, size = 'md' }: { cuenta: CuentaVis
       className={cn('relative overflow-hidden rounded-card text-white', size === 'md' ? 'aspect-[1.62] w-full' : 'h-[72px] w-[112px] rounded-[10px]', className)}
       style={{ background: `linear-gradient(135deg, ${color} 0%, ${color} 55%, rgba(255,255,255,0.28) 100%), ${color}`, boxShadow: '0 8px 20px rgba(11,31,23,0.18)' }}
     >
-      <span className={cn('absolute rounded-[11px] bg-white/20 p-1.5', size === 'md' ? 'right-3.5 top-3.5' : 'right-2 top-2 scale-75')}>
-        <Avatar domain={cuenta.bancoDominio} nombre={cuenta.banco} size={size === 'md' ? 28 : 22} logoPct={80} bg="transparent" className="text-white" />
+      <span className={cn('absolute flex items-center justify-center rounded-full bg-white', size === 'md' ? 'right-3.5 top-3.5 h-9 w-9' : 'right-2 top-2 h-6 w-6')}>
+        <Avatar domain={cuenta.bancoDominio} nombre={cuenta.banco} size={size === 'md' ? 34 : 22} logoPct={66} bg="transparent" className="text-ink" />
       </span>
-      <span className={cn('absolute rounded-[4px] bg-[#F5D77A]', size === 'md' ? 'left-4 top-5 h-5 w-7' : 'left-2.5 top-3 h-3 w-4')} />
+      <span className={cn('absolute font-display font-bold tracking-[0.5px] text-white/90', size === 'md' ? 'left-4 top-3.5 text-[13px]' : 'left-2.5 top-1.5 text-[8px]')}>{cuenta.banco}</span>
+      <span className={cn('absolute rounded-[4px] bg-[#F5D77A]', size === 'md' ? 'left-4 top-12 h-5 w-7' : 'left-2.5 top-6 h-3 w-4')} />
       <span className={cn('absolute bottom-3.5 left-4 font-display font-extrabold tracking-[3px]', size === 'md' ? 'text-[15px]' : 'text-[9px] bottom-2 left-2.5')}>
         {cuenta.ultimos4 ? `•••• ${cuenta.ultimos4}` : cuenta.tipo === 'inversion' ? 'INVERSIÓN' : cuenta.tipo === 'efectivo' ? '$' : ''}
       </span>
@@ -52,10 +53,10 @@ export function Cuentas({ cuentas, onAbrir, onAgregar }: { cuentas: CuentaVista[
           <span className="text-[14px] font-bold">Agregar tarjeta</span>
           <span className="text-[11px] text-txt-2 dark:text-fg-2">Crédito, débito o inversión</span>
         </button>
-        {cuentas.map((c) => {
+        {cuentas.map((c, i) => {
           const esCredito = c.tipo === 'credito';
           return (
-            <button key={c.id} type="button" onClick={() => onAbrir(c.id)} className="w-[236px] text-left transition-transform duration-[180ms] hover:-translate-y-[3px]">
+            <button key={c.id} type="button" onClick={() => onAbrir(c.id)} className="w-[236px] text-left transition-transform duration-[180ms] animate-rise hover:-translate-y-[3px]" style={{ animationDelay: `${80 + i * 70}ms` }}>
               <Plastico cuenta={c} />
               <div className="mt-2 px-1">
                 <div className="truncate text-[13px] font-bold">{c.nombre}</div>

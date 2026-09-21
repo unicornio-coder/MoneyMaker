@@ -322,7 +322,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
               const imp = it.importacion;
               const info = imp?.resumen.institucion ? infoBanco(imp.resumen.institucion) : null;
               return (
-                <li key={it.key} className="card px-4 py-3" data-estado={it.estado}>
+                <li key={it.key} className="card px-4 py-3 animate-rise" data-estado={it.estado}>
                   <div className="flex items-center gap-3">
                     <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-bg-muted dark:bg-surface-2">
                       {it.estado === 'revisar' && info ? <Avatar domain={info.dominio} nombre={info.nombre} size={40} logoPct={60} /> : it.estado === 'contraseña' ? <Lock size={18} /> : it.estado === 'error' ? <AlertCircle size={18} className="text-warning" /> : <FileText size={18} />}
@@ -373,7 +373,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
       )}
 
       {revisables.length > 0 && (
-        <section className="card space-y-4 p-5" data-testid="revision">
+        <section className="card space-y-4 p-5 animate-rise" data-testid="revision">
           <div>
             <h2 className="font-display text-[17px] font-bold">{revisables.length === 1 ? TEXTOS.revision.individual : t(TEXTOS.revision.combinada, { n: revisables.length })}</h2>
             <p className="mt-0.5 text-[12.5px] text-txt-2 dark:text-fg-2">{TEXTOS.revision.subtitulo}</p>
@@ -387,7 +387,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
               const r = imp.resumen;
               const esEdicion = editando === it.key;
               return (
-                <li key={it.key} className="rounded-card border border-edge p-4">
+                <li key={it.key} className="rounded-card border border-edge p-4 animate-rise">
                   <div className="flex items-start gap-3">
                     <Avatar domain={info.dominio} nombre={info.nombre} size={44} logoPct={60} />
                     <div className="min-w-0 flex-1">

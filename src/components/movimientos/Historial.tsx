@@ -80,8 +80,8 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
               <span className="h-px flex-1 bg-edge" />
             </div>
             <ul>
-              {g.items.map((m) => (
-                <li key={m.id}>
+              {g.items.map((m, i) => (
+                <li key={m.id} className={cn(i < 8 && 'animate-rise')} style={i < 8 ? { animationDelay: `${i * 45}ms` } : undefined}>
                   <button type="button" onClick={() => onSeleccionar?.(m)} className="flex h-[66px] w-full items-center gap-3 rounded-card px-1.5 text-left transition-colors hover:bg-bg-hover dark:hover:bg-surface-2">
                     <Avatar domain={m.comercioDominio} nombre={m.comercio} size={46} />
                     <div className="min-w-0 flex-1">

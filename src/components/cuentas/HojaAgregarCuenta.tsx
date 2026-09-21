@@ -26,10 +26,10 @@ export function HojaAgregarCuenta({ open, onClose, bancoSugerido }: Props) {
   return (
     <Panel open={open} onClose={onClose} mode="modal" title={t.titulo}>
       <ul className="space-y-2 pb-2">
-        {opciones.map((o) => {
+        {opciones.map((o, i) => {
           const Icon = o.icon;
           return (
-            <li key={o.id}>
+            <li key={o.id} className="animate-rise" style={{ animationDelay: `${60 + i * 70}ms` }}>
               <button
                 type="button"
                 disabled={!o.activo}
