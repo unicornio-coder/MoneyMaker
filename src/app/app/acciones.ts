@@ -52,6 +52,17 @@ export async function sincronizarTodo(): Promise<{ ok: boolean; actualizados: nu
   return { ok: true, actualizados };
 }
 
+/** Acepta los días de quincena (e ingreso) detectados en la nómina y rearma presupuesto e insights. */
+export async function aplicarDiasDePago(dias: number[], ingresoQuincenal?: number | null): Promise<R> {
+  const { usuario, repo } = await contexto();
+  const limpios = Array.from(new Set(dias.map((d) => Math.round(d)).filter((d) => d >= 1 && d <= 31))).sort((a, b) => a - b);
+  if (!limpios.length || limpios.length > 2) return { ok: false, error: 'Elige uno o dos días del mes.' };
+  await repo.guardarPerfil(usuario.id, { diasPago: limpios, ...(ingresoQuincenal && ingresoQuincenal > 0 ? { ingresoQuincenal: Math.round(ingresoQuincenal) } : {}) });
+  await recalcular(repo, usuario.id);
+  revalidarTodo();
+  return { ok: true };
+}
+
 export async function recalcularTodo(): Promise<void> {
   const { usuario, repo } = await contexto();
   await recalcular(repo, usuario.id);

@@ -5,7 +5,7 @@ const nextConfig = {
     remotePatterns: [{ protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons' }],
   },
   experimental: {
-    serverComponentsExternalPackages: ['pdf-parse'],
+    serverComponentsExternalPackages: ['pdfjs-dist'],
   },
 };
 

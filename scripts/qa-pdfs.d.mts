@@ -1,0 +1,22 @@
+export type MovimientoPrueba = { fecha: string; descripcion: string; centavos: number; abono?: boolean };
+export type CasoPdf = {
+  archivo: string;
+  banco: string;
+  tipo: 'credito' | 'debito';
+  producto: string;
+  ultimos4: string;
+  periodoInicio: string;
+  periodoFin: string;
+  fechaCorte: string;
+  fechaLimite?: string;
+  pagoMinimo?: number;
+  saldoAlCorte: number;
+  limite?: number;
+  movimientos: MovimientoPrueba[];
+  msi?: { comercio: string; cuota: number; total: number; centavos: number }[];
+};
+export const CASOS: CasoPdf[];
+export function casos(hoy?: Date): CasoPdf[];
+export function iso(ddmmyyyy: string): string;
+export function crearPdfEstado(spec: CasoPdf): Promise<Buffer>;
+export function generarEstadosDePrueba(dir?: string): Promise<string[]>;

@@ -24,8 +24,8 @@ Pendiente de la sesión dedicada (prompt 2). Hoy: middleware + Supabase SSR + p�
 | # | Paso | Estado | Hora |
 |---|---|---|---|
 | 0 | Auditoría y tablero | hecho | 14:25 |
-| 1 | Migraciones + ingesta (`services/ingestion/`) + extracción PDF + pruebas de dominio | en curso | |
-| 2 | Subida múltiple desde "Agregar cuenta" (cola de 3, contraseña, revisión combinada) | pendiente | |
+| 1 | Migraciones + ingesta (`services/ingestion/`) + extracción PDF + pruebas de dominio | hecho | 14:45 |
+| 2 | Subida múltiple desde "Agregar cuenta" (cola de 3, contraseña, revisión combinada) | en curso | |
 | 3 | Pantallas con datos reales (carrusel, drawer, historial, Gastos, Patrimonio) | pendiente | |
 | 4 | Suscripciones, MSI, nómina y días de quincena, presupuesto sugerido | pendiente | |
 | 5 | E2E con Playwright + tabla "campo del PDF → valor detectado" | pendiente | |
@@ -42,7 +42,9 @@ Pendiente de la sesión dedicada (prompt 2). Hoy: middleware + Supabase SSR + p�
 Ninguno recibido todavía. Provisionales creados por Claude Code en `qa/entregables/` (marcados `"provisional": true`); al llegar los definitivos se reemplazan sin tocar código.
 
 ## LISTO PARA PROBAR
-(Se llena al cerrar cada paso.)
+- **Paso 1 · API de importación (sin pantalla todavía)** · Con la app corriendo (`npm run dev`, modo demo), desde una terminal:
+  `curl -s -F "archivo=@qa/entregables/estados/provisional-01-credito-bbva-1.pdf" http://localhost:3000/api/imports | jq '.importacion | {estado, metodo, resumen, n: (.movimientos|length)}'` → `estado: "revisar"`, banco BBVA, últimos 4 `0001`, 11 movimientos. Luego `curl -s -X POST -H 'content-type: application/json' -d '{"items":[{"id":"<id>"}]}' http://localhost:3000/api/imports/confirmar` → cuenta creada, `propuestaQuincena` con días 14 y 30 si también subiste el de débito. La UI llega en el Paso 2.
+- Pruebas automáticas: `npm test` (93) cubre: cambio de precio, cobro anual, mes saltado, duplicado exacto, reembolso, MSI 1/1, MSI que termina este mes, febrero, quincena en fin de semana, 3 PDFs a la vez, periodos traslapados, mismo archivo dos veces.
 
 ## Tickets
 Sin tickets. Carpeta `qa/tickets/`. Formato: `qa/tickets/QA-###.md` con estado propuesto / aprobado / listo-para-verificar / cerrado.
@@ -53,7 +55,9 @@ Sin tickets. Carpeta `qa/tickets/`. Formato: `qa/tickets/QA-###.md` con estado p
 3. Correr `supabase/migrations/0003_imports.sql` en el SQL Editor del proyecto (statement_imports, unmatched_descriptors).
 
 ## Riesgos
-- Sin `ANTHROPIC_API_KEY` no hay reconocimiento de banco/tarjeta confiable en PDF.
+- Sin `ANTHROPIC_API_KEY` no hay reconocimiento de banco/tarjeta confiable en PDF (cae a reglas: solo PDFs con texto limpio tipo "fecha  descripción  monto").
+- El camino con modelo (Claude, PDF como documento + salida estructurada) está escrito pero **SIN CONFIRMAR** en vivo: en este entorno no hay llave. Primera prueba real: SOLO JC #1.
+- PDF con contraseña: el código lo maneja (pdf.js en memoria) pero no hay forma de generar un PDF cifrado aquí (sin qpdf/pypdf); queda SIN CONFIRMAR hasta que llegue el caso `_pass-1234.pdf` de T-003.
 - Un PDF de 20+ páginas puede exceder el tiempo de la función en Vercel; mitigación en Paso 1 (streaming, `maxDuration`), plan B: cola por etapas.
 - Los documentos de referencia no están en el repo (T-001): el esquema JSON de extracción lo define Claude Code y puede no coincidir con HOY-ESTADO-DE-CUENTA.md paso 1.
 
@@ -67,3 +71,4 @@ Sin tickets. Carpeta `qa/tickets/`. Formato: `qa/tickets/QA-###.md` con estado p
 - 21 sep 14:05 · Claude Code · Sesión iniciada. Los documentos citados no están en el repo; se trabaja con PROMPTS-V2.md como especificación.
 - 21 sep 14:12 · Claude Code · Baseline: typecheck limpio, 47 pruebas verdes. SDK de Anthropic 0.52 → 0.127; `pdfjs-dist` agregado.
 - 21 sep 14:25 · Claude Code · Paso 0 terminado: `qa/` creado, tablero, talachas T-001 a T-003, entregables provisionales.
+- 21 sep 14:45 · Claude Code · Paso 1 terminado: `services/ingestion/` (TransactionSource + statement-pdf, statement-table, email y belvo "próximamente"), migración `0003_imports.sql` (statement_imports, unmatched_descriptors), `/api/imports` (POST analizar, GET pendientes), `/api/imports/[id]` (GET, DELETE), `/api/imports/confirmar`; dominio: money (centavos), nómina y días de quincena, dedupe con repetidos y cuadre ±1 %/±$50, recurrentes con cambio de precio, mes saltado, horizonte de datos y confirmación de "posible suscripción" al verla 2 meses; catálogos de `qa/entregables` leídos por el categorizador. 93 pruebas, lint y build en verde. Decisión: se mantienen los módulos de dominio en español ya probados (ver Decisiones pendientes #3).

@@ -25,6 +25,10 @@ describe('detectarMsi', () => {
     expect(detectarMsi('OXXO 10/09')).toBeNull();
     expect(detectarMsi('UBER 2 DE 3 PASAJEROS')).toBeNull();
   });
+  it('MSI 1/1 es un pago único', () => {
+    expect(detectarMsi('LIVERPOOL MSI 01/01')).toBeNull();
+    expect(detectarMsi('LIVERPOOL MSI 01/03')).toEqual({ cuota: 1, total: 3 });
+  });
 });
 
 describe('categorizar', () => {
@@ -59,6 +63,25 @@ describe('categorizar', () => {
   it('desconocido cae a proveedor o queda para el LLM', () => {
     expect(categorizar({ ...cargo('XYZ COMERCIO RARO'), categoriaProveedor: 'Restaurants' })).toMatchObject({ categoriaId: 'comida', categoriaFuente: 'proveedor', desconocido: false });
     expect(categorizar(cargo('XYZ COMERCIO RARO'))).toMatchObject({ categoriaId: 'otros', desconocido: true, comercio: 'Xyz Comercio Raro' });
+  });
+
+  it('reembolso en tarjeta de crédito no es pago ni gasto', () => {
+    expect(categorizar(abono('REEMBOLSO AMAZON MX', 450), 'credito')).toMatchObject({ categoriaId: 'ingreso', tipo: 'ingreso', comercio: 'Reembolso Amazon' });
+    expect(categorizar(abono('DEVOLUCION COMPRA', 450), 'credito')).toMatchObject({ categoriaId: 'ingreso', tipo: 'ingreso' });
+  });
+
+  it('palabras clave del catálogo de Producto (categorias.json)', () => {
+    expect(categorizar(cargo('CINEPOLIS PERISUR'))).toMatchObject({ categoriaId: 'entretenimiento' });
+    expect(categorizar(cargo('HOME DEPOT MEXICO'))).toMatchObject({ categoriaId: 'hogar' });
+    expect(categorizar(cargo('AEROMEXICO 1234'))).toMatchObject({ categoriaId: 'viajes' });
+  });
+
+  it('la IA marcó posible suscripción y nadie más la reconoce', () => {
+    expect(categorizar({ ...cargo('GIMNASIO DEL VALLE', 650), esPosibleSuscripcion: true })).toMatchObject({ categoriaId: 'suscripciones', esSuscripcion: true, desconocido: true });
+  });
+
+  it('MSI ya separado por la fuente gana al texto', () => {
+    expect(categorizar({ ...cargo('LIVERPOOL', 1000), msi: { cuota: 3, total: 12 } }, 'credito')).toMatchObject({ categoriaId: 'msi', esMsi: true, msiCuota: 3, msiTotal: 12 });
   });
 
   it('hash estable e insensible a formato', () => {

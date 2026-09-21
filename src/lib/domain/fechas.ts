@@ -35,6 +35,15 @@ export function ultimoDiaDelMes(d: Date): number {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 }
 
+export const ZONA_HORARIA = 'America/Mexico_City';
+
+const fmtMX = new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA, year: 'numeric', month: '2-digit', day: '2-digit' });
+
+/** Hoy en la Ciudad de México como Date local a medianoche (el servidor corre en UTC). */
+export function hoyMX(ahora = new Date()): Date {
+  return deISO(fmtMX.format(ahora));
+}
+
 export function mismoDia(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
