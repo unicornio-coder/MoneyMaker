@@ -1,0 +1,105 @@
+{
+  "institucion": "BBVA",
+  "tipoCuenta": "credito",
+  "ultimos4": "0001",
+  "periodoInicio": "2026-06-16",
+  "periodoFin": "2026-07-15",
+  "fechaCorte": "2026-07-15",
+  "fechaLimitePago": "2026-08-05",
+  "pagoMinimoCentavos": 120000,
+  "limiteCreditoCentavos": 6000000,
+  "saldoAlCorteCentavos": 1845000,
+  "totalCargosCentavos": 390400,
+  "totalAbonosCentavos": 945000,
+  "movimientos": [
+    {
+      "fecha": "2026-06-18",
+      "descripcion": "NETFLIX.COM",
+      "montoCentavos": 21900,
+      "esAbono": false,
+      "categoriaEsperada": "suscripciones"
+    },
+    {
+      "fecha": "2026-06-20",
+      "descripcion": "SPOTIFY MEXICO",
+      "montoCentavos": 12900,
+      "esAbono": false,
+      "categoriaEsperada": "suscripciones"
+    },
+    {
+      "fecha": "2026-06-22",
+      "descripcion": "OXXO SUC 4521 CDMX",
+      "montoCentavos": 18800,
+      "esAbono": false,
+      "categoriaEsperada": "super"
+    },
+    {
+      "fecha": "2026-06-25",
+      "descripcion": "UBER *TRIP HELP.UBER.COM",
+      "montoCentavos": 14500,
+      "esAbono": false,
+      "categoriaEsperada": "transporte"
+    },
+    {
+      "fecha": "2026-06-28",
+      "descripcion": "AMAZON MX MSI 02/06",
+      "montoCentavos": 65000,
+      "esAbono": false,
+      "categoriaEsperada": "msi"
+    },
+    {
+      "fecha": "2026-07-01",
+      "descripcion": "SU PAGO GRACIAS",
+      "montoCentavos": 900000,
+      "esAbono": true,
+      "categoriaEsperada": "pago_tarjeta"
+    },
+    {
+      "fecha": "2026-07-03",
+      "descripcion": "RAPPI RESTAURANTES CDMX",
+      "montoCentavos": 31800,
+      "esAbono": false,
+      "categoriaEsperada": "comida"
+    },
+    {
+      "fecha": "2026-07-05",
+      "descripcion": "WAL-MART SUPERCENTER",
+      "montoCentavos": 124500,
+      "esAbono": false,
+      "categoriaEsperada": "super"
+    },
+    {
+      "fecha": "2026-07-09",
+      "descripcion": "CINEPOLIS PERISUR",
+      "montoCentavos": 36000,
+      "esAbono": false,
+      "categoriaEsperada": "entretenimiento"
+    },
+    {
+      "fecha": "2026-07-12",
+      "descripcion": "GIMNASIO DEL VALLE",
+      "montoCentavos": 65000,
+      "esAbono": false,
+      "categoriaEsperada": "otros"
+    },
+    {
+      "fecha": "2026-07-14",
+      "descripcion": "REEMBOLSO AMAZON MX",
+      "montoCentavos": 45000,
+      "esAbono": true,
+      "categoriaEsperada": "ingreso"
+    }
+  ],
+  "suscripcionesEsperadas": [
+    "Netflix",
+    "Spotify"
+  ],
+  "msiEsperados": [
+    {
+      "comercio": "Amazon",
+      "cuota": 2,
+      "total": 6
+    }
+  ],
+  "nomina": null
+}

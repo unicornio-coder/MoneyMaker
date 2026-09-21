@@ -10,7 +10,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "qa:pdfs": "node scripts/qa-pdfs.mjs"
+    "qa:pdfs": "node scripts/qa-pdfs.mjs",
+    "qa:seed": "node scripts/qa-seed.mjs",
+    "qa:reset": "node scripts/qa-seed.mjs reset",
+    "qa:precision": "vitest run --config vitest.precision.config.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

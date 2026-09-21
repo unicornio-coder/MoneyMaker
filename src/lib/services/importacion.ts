@@ -48,6 +48,12 @@ export async function analizarArchivo(repo: Repo, userId: string, archivo: { nom
   try {
     const r = await extraerArchivo({ nombre: archivo.nombre, datos: archivo.datos, contraseña: archivo.contraseña });
     const cuadre = evaluarCuadre(r.movimientos, r.resumen).cuadre;
+    // Mismo estado (banco, tarjeta, tipo y periodo) ya confirmado aunque los bytes cambien (otra descarga): no se repite.
+    const repetido = await mismoPeriodoConfirmado(repo, userId, r.resumen, imp.id);
+    if (repetido) {
+      imp = await repo.guardarImportacion(userId, { ...base, id: imp.id, estado: 'error', error: 'ya_subido', resumen: r.resumen, metodo: r.metodo, tokensEntrada: r.tokens.entrada, tokensSalida: r.tokens.salida });
+      return { importacion: imp, codigo: 'ya_subido' };
+    }
     imp = await repo.guardarImportacion(userId, { ...base, id: imp.id, estado: 'revisar', metodo: r.metodo, resumen: r.resumen, movimientos: r.movimientos, advertencias: r.advertencias, cuadre, tokensEntrada: r.tokens.entrada, tokensSalida: r.tokens.salida });
     return { importacion: imp };
   } catch (e) {
@@ -57,6 +63,13 @@ export async function analizarArchivo(repo: Repo, userId: string, archivo: { nom
     imp = await repo.guardarImportacion(userId, { ...base, id: imp.id, estado, error: codigo });
     return { importacion: imp, codigo };
   }
+}
+
+async function mismoPeriodoConfirmado(repo: Repo, userId: string, resumen: ResumenEstado, propioId: string): Promise<boolean> {
+  if (!resumen.institucion || !resumen.periodoInicio || !resumen.periodoFin) return false;
+  const banco = infoBanco(resumen.institucion).nombre;
+  const confirmadas = await repo.importaciones(userId, { estados: ['confirmado'] });
+  return confirmadas.some((c) => c.id !== propioId && c.resumen.institucion && infoBanco(c.resumen.institucion).nombre === banco && (c.resumen.tipoCuenta ?? null) === (resumen.tipoCuenta ?? null) && (c.resumen.ultimos4 ?? null) === (resumen.ultimos4 ?? null) && c.resumen.periodoInicio === resumen.periodoInicio && c.resumen.periodoFin === resumen.periodoFin);
 }
 
 export type ConfirmacionItem = { id: string; cuentaId?: string | null; institucion?: string | null; tipoCuenta?: TipoCuentaEstado | null; ultimos4?: string | null };

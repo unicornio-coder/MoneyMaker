@@ -1,4 +1,4 @@
-export type MovimientoPrueba = { fecha: string; descripcion: string; centavos: number; abono?: boolean };
+export type MovimientoPrueba = { fecha: string; descripcion: string; centavos: number; abono?: boolean; categoria?: string };
 export type CasoPdf = {
   archivo: string;
   banco: string;
@@ -14,9 +14,31 @@ export type CasoPdf = {
   limite?: number;
   movimientos: MovimientoPrueba[];
   msi?: { comercio: string; cuota: number; total: number; centavos: number }[];
+  suscripcionesEsperadas?: string[];
+  msiEsperados?: { comercio: string; cuota: number; total: number }[];
+  nomina?: { montoCentavos: number; diasQuincena: number[] } | null;
+};
+export type Esperado = {
+  institucion: string | null;
+  tipoCuenta: 'credito' | 'debito' | 'inversion' | null;
+  ultimos4: string | null;
+  periodoInicio: string | null;
+  periodoFin: string | null;
+  fechaCorte: string | null;
+  fechaLimitePago: string | null;
+  pagoMinimoCentavos: number | null;
+  limiteCreditoCentavos: number | null;
+  saldoAlCorteCentavos: number | null;
+  totalCargosCentavos: number | null;
+  totalAbonosCentavos: number | null;
+  movimientos: { fecha: string; descripcion: string; montoCentavos: number; esAbono: boolean; categoriaEsperada: string | null }[];
+  suscripcionesEsperadas: string[];
+  msiEsperados: { comercio: string; cuota: number; total: number }[];
+  nomina: { montoCentavos: number; diasQuincena: number[] } | null;
 };
 export const CASOS: CasoPdf[];
 export function casos(hoy?: Date): CasoPdf[];
 export function iso(ddmmyyyy: string): string;
+export function esperadoDe(caso: CasoPdf): Esperado;
 export function crearPdfEstado(spec: CasoPdf): Promise<Buffer>;
 export function generarEstadosDePrueba(dir?: string): Promise<string[]>;

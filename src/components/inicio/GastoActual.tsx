@@ -18,7 +18,11 @@ export function GastoActual({ movimientos, diasPago, hoy }: { movimientos: Movim
   const setPeriodoGlobal = useUI((s) => s.setPeriodo);
   const periodo = periodoGlobal === 'anio' ? 'mes' : periodoGlobal;
   const serie = useMemo(() => seriePeriodos(movimientos, periodo, 6, deISO(hoy), diasPago), [movimientos, periodo, hoy, diasPago]);
-  const [sel, setSel] = useState(5);
+  // Arranca en el periodo actual; si está vacío (los estados de cuenta terminan antes), en el último con datos.
+  const [sel, setSel] = useState(() => {
+    const conDatos = serie.map((p, i) => (p.gasto > 0 || p.ingreso > 0 ? i : -1)).filter((i) => i >= 0);
+    return conDatos.length && !conDatos.includes(serie.length - 1) ? conDatos[conDatos.length - 1] : serie.length - 1;
+  });
   const idx = Math.min(sel, serie.length - 1);
   const punto = serie[idx];
   const anterior = serie[idx - 1];

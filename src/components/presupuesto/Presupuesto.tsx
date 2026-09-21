@@ -11,6 +11,7 @@ import type { Movimiento, Periodo, Presupuesto as PresupuestoT } from '@/lib/dom
 import { useUI } from '@/lib/store/ui';
 import { ChipGroup } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { TEXTOS } from '@/lib/textos';
 import { AnilloTicks } from './AnilloTicks';
 import { TablaPresupuesto } from './TablaPresupuesto';
 import { ModalNuevoPresupuesto } from './ModalNuevoPresupuesto';
@@ -32,7 +33,7 @@ export function Presupuesto({ presupuestos, movimientos, diasPago, hoy }: Props)
   const resumen = useMemo(() => (p ? presupuestoVsActual(p.lineas, movimientos, rango, p.ingreso, h) : null), [p, movimientos, rango, h]);
 
   if (!p || !resumen) {
-    return <EmptyState icon={Wallet} titulo="Tu presupuesto se arma solo" texto="Con movimientos de dos periodos te proponemos un presupuesto. Conecta una cuenta o sube un estado de cuenta." cta={{ label: 'Empezar', href: '/app/importar' }} />;
+    return <EmptyState icon={Wallet} titulo={TEXTOS.vacios.presupuesto.titulo} texto={TEXTOS.vacios.presupuesto.texto} cta={{ label: TEXTOS.vacios.presupuesto.cta, href: '/app/importar' }} />;
   }
 
   const pct = Math.min(999, resumen.pctGastado);

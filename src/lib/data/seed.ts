@@ -21,6 +21,11 @@ export async function asegurarDemo(repo: Repo, userId: string): Promise<void> {
 }
 
 async function sembrar(repo: Repo, userId: string) {
+  // MOCK_SIN_DEMO=true: usuario demo vacío (para probar el flujo "primer estado de cuenta" y las pruebas E2E).
+  if (process.env.MOCK_SIN_DEMO === 'true') {
+    await repo.guardarPerfil(userId, { email: USUARIO_DEMO.email, nombre: USUARIO_DEMO.nombre, diasPago: [5, 20], onboardingCompleto: true });
+    return;
+  }
   await repo.guardarPerfil(userId, { email: USUARIO_DEMO.email, nombre: USUARIO_DEMO.nombre, diasPago: [5, 20], ingresoQuincenal: 14500, metas: ['ahorrar', 'deudas', 'invertir'], onboardingCompleto: true });
 
   for (const [id, nombre] of [['nu_mx_retail', 'Nu'], ['amex_mx_retail', 'Amex'], ['coppel_mx_retail', 'Coppel'], ['bbva_mx_retail', 'BBVA'], ['bitso', 'Bitso'], ['gbm', 'GBM+']]) {

@@ -7,6 +7,7 @@ import { money } from '@/lib/format';
 import { costoMensual } from '@/lib/domain/recurrentes';
 import type { EventoCalendario, Recurrente } from '@/lib/domain/tipos';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { TEXTOS } from '@/lib/textos';
 import { TablasRecurrentes } from './TablasRecurrentes';
 import { DrawerRecurrente } from './DrawerRecurrente';
 import { Calendario } from './Calendario';
@@ -39,7 +40,7 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
   if (!recurrentes.length) {
     return (
       <>
-        <EmptyState icon={Repeat} titulo="Sin gastos fijos detectados" texto="Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos. También puedes agregarlos a mano." cta={{ label: 'Nuevo recurrente', onClick: () => setNuevo(true) }} />
+        <EmptyState icon={Repeat} titulo={TEXTOS.vacios.fijos.titulo} texto={`${TEXTOS.vacios.fijos.texto} También puedes agregarlos a mano desde "Nuevo".`} cta={cuentas.length ? { label: 'Nuevo recurrente', onClick: () => setNuevo(true) } : { label: TEXTOS.vacios.fijos.cta, href: '/app/importar' }} />
         <ModalNuevoRecurrente open={nuevo} onClose={() => setNuevo(false)} cuentas={cuentas} />
       </>
     );

@@ -36,6 +36,16 @@ describe('analizarArchivo', () => {
     expect((await repoMemoria.importaciones(U)).length).toBe(1);
   });
 
+  it('el mismo periodo de la misma tarjeta con otros bytes también es ya_subido', async () => {
+    const a = await analizarArchivo(repoMemoria, U, { nombre: 'a.pdf', datos: pdfs[0] });
+    await confirmarImportaciones(repoMemoria, U, [{ id: a.importacion.id }]);
+    const otraDescarga = await crearPdfEstado({ ...CASOS[0], producto: 'Azul (reimpresión)' });
+    expect(otraDescarga.equals(pdfs[0])).toBe(false);
+    const b = await analizarArchivo(repoMemoria, U, { nombre: 'b.pdf', datos: otraDescarga });
+    expect(b.codigo).toBe('ya_subido');
+    expect(b.importacion.estado).toBe('error');
+  });
+
   it('archivo inválido queda en error con código', async () => {
     const { importacion, codigo } = await analizarArchivo(repoMemoria, U, { nombre: 'x.pdf', datos: Buffer.from('%PDF-1.4 nada') });
     expect(codigo).toBe('corrupto');

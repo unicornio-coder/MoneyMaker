@@ -50,6 +50,7 @@
     "periodo": "Periodo",
     "sin_cuadre": "Los totales no cuadran con el resumen del banco. Puedes guardarlo y revisar después.",
     "ya_existe": "Se unirá a tu cuenta {cuenta}.",
+    "misma_tarjeta": "Se unirá al otro estado de cuenta de esta misma tarjeta.",
     "nueva": "Se creará una cuenta nueva.",
     "quitar": "Quitar",
     "confirmar_todo": "Guardar {n} estados de cuenta",

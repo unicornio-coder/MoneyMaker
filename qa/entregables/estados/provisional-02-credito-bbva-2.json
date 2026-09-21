@@ -1,0 +1,103 @@
+{
+  "institucion": "BBVA",
+  "tipoCuenta": "credito",
+  "ultimos4": "0001",
+  "periodoInicio": "2026-07-16",
+  "periodoFin": "2026-08-15",
+  "fechaCorte": "2026-08-15",
+  "fechaLimitePago": "2026-09-05",
+  "pagoMinimoCentavos": 135000,
+  "limiteCreditoCentavos": 6000000,
+  "saldoAlCorteCentavos": 2010000,
+  "totalCargosCentavos": 379700,
+  "totalAbonosCentavos": 1000000,
+  "movimientos": [
+    {
+      "fecha": "2026-07-18",
+      "descripcion": "NETFLIX.COM",
+      "montoCentavos": 24900,
+      "esAbono": false,
+      "categoriaEsperada": "suscripciones"
+    },
+    {
+      "fecha": "2026-07-20",
+      "descripcion": "SPOTIFY MEXICO",
+      "montoCentavos": 12900,
+      "esAbono": false,
+      "categoriaEsperada": "suscripciones"
+    },
+    {
+      "fecha": "2026-07-28",
+      "descripcion": "AMAZON MX MSI 03/06",
+      "montoCentavos": 65000,
+      "esAbono": false,
+      "categoriaEsperada": "msi"
+    },
+    {
+      "fecha": "2026-08-01",
+      "descripcion": "SU PAGO GRACIAS",
+      "montoCentavos": 1000000,
+      "esAbono": true,
+      "categoriaEsperada": "pago_tarjeta"
+    },
+    {
+      "fecha": "2026-08-02",
+      "descripcion": "OXXO SUC 4521 CDMX",
+      "montoCentavos": 9500,
+      "esAbono": false,
+      "categoriaEsperada": "super"
+    },
+    {
+      "fecha": "2026-08-02",
+      "descripcion": "OXXO SUC 4521 CDMX",
+      "montoCentavos": 9500,
+      "esAbono": false,
+      "categoriaEsperada": "super"
+    },
+    {
+      "fecha": "2026-08-06",
+      "descripcion": "UBER *EATS PENDING",
+      "montoCentavos": 28900,
+      "esAbono": false,
+      "categoriaEsperada": "comida"
+    },
+    {
+      "fecha": "2026-08-11",
+      "descripcion": "GIMNASIO DEL VALLE",
+      "montoCentavos": 65000,
+      "esAbono": false,
+      "categoriaEsperada": "otros"
+    },
+    {
+      "fecha": "2026-08-13",
+      "descripcion": "CFE SSB PAGO SERVICIO",
+      "montoCentavos": 64000,
+      "esAbono": false,
+      "categoriaEsperada": "servicios"
+    },
+    {
+      "fecha": "2026-08-15",
+      "descripcion": "LIVERPOOL CUOTA 11 DE 12",
+      "montoCentavos": 100000,
+      "esAbono": false,
+      "categoriaEsperada": "msi"
+    }
+  ],
+  "suscripcionesEsperadas": [
+    "Netflix",
+    "Spotify"
+  ],
+  "msiEsperados": [
+    {
+      "comercio": "Amazon",
+      "cuota": 3,
+      "total": 6
+    },
+    {
+      "comercio": "Liverpool",
+      "cuota": 11,
+      "total": 12
+    }
+  ],
+  "nomina": null
+}
