@@ -1,13 +1,52 @@
 // Lectura de PDF en memoria con pdf.js: valida, abre (con contraseña si hace falta) y reconstruye el texto por líneas.
 // La contraseña solo vive en esta llamada. Nada de aquí se registra en logs.
+// En Vercel el worker de pdf.js se resuelve por ruta absoluta (el import dinámico relativo no sobrevive al empaquetado).
 
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { ErrorImportacion } from './tipos';
 
 export const PDF_MAX_BYTES = 10 * 1024 * 1024;
 
+// Rutas por directorio de trabajo (sin require.resolve/createRequire: webpack los convertiría en un contexto sobre todo el paquete).
+// En desarrollo es la raíz del proyecto; en Vercel, /var/task, donde outputFileTracingIncludes deja node_modules/pdfjs-dist.
+function rutaPaquete(relativa: string): string | null {
+  for (const base of [process.cwd(), path.join(process.cwd(), '..'), '/var/task']) {
+    const ruta = path.join(base, 'node_modules', 'pdfjs-dist', relativa);
+    if (existsSync(ruta)) return ruta;
+  }
+  return null;
+}
+
+const RUTA_WORKER = rutaPaquete('legacy/build/pdf.worker.mjs');
+const RUTA_CMAPS = rutaPaquete('cmaps');
+const RUTA_FUENTES = rutaPaquete('standard_fonts');
+
+if (RUTA_WORKER && !pdfjs.GlobalWorkerOptions.workerSrc) pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(RUTA_WORKER).href;
+
 export function esPdf(datos: Buffer): boolean {
   return datos.length > 5 && datos.subarray(0, 5).toString('latin1') === '%PDF-';
+}
+
+/** Cifrado por bytes (sin abrirlo): los PDF protegidos llevan /Encrypt en el trailer. */
+export function esPdfCifrado(datos: Buffer): boolean {
+  return datos.includes('/Encrypt');
+}
+
+/**
+ * true si el texto extraído parece texto real (fechas, palabras) y no símbolos de una fuente sin mapa de caracteres.
+ * Muchos bancos ofuscan las fuentes: entonces solo el modelo puede leer el documento (como imagen).
+ */
+export function textoLegible(texto: string): boolean {
+  const t = texto.trim();
+  if (t.length < 40) return false;
+  const normales = (t.match(/[A-Za-zÁÉÍÓÚÑáéíóúñÜü0-9 .,:/$%\-\n]/g) ?? []).length;
+  if (normales / t.length < 0.85) return false;
+  const fechas = (t.match(/\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b|\b\d{1,2}\s+(?:de\s+)?(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-z]*\b/gi) ?? []).length;
+  const palabras = (t.match(/\b[A-Za-zÁÉÍÓÚÑáéíóúñ]{4,}\b/g) ?? []).length;
+  return fechas >= 2 && palabras >= 15;
 }
 
 export type PdfLeido = { paginas: number; texto: string; cifrado: boolean };
@@ -20,6 +59,9 @@ function abrir(datos: Buffer, contraseña?: string | null) {
     password: contraseña ?? undefined,
     useSystemFonts: false,
     disableFontFace: true,
+    cMapUrl: RUTA_CMAPS ? RUTA_CMAPS + '/' : undefined,
+    cMapPacked: true,
+    standardFontDataUrl: RUTA_FUENTES ? RUTA_FUENTES + '/' : undefined,
     verbosity: 0,
   });
   return { tarea, promesa: tarea.promise };
@@ -54,7 +96,11 @@ function lineasDePagina(items: ItemTexto[]): string[] {
     });
 }
 
-/** Abre el PDF y devuelve el texto por líneas. Lanza ErrorImportacion: corrupto, necesita_contraseña, contraseña_incorrecta. */
+/**
+ * Abre el PDF y devuelve el texto por líneas.
+ * Lanza ErrorImportacion: no_pdf, muy_grande, necesita_contraseña, contraseña_incorrecta; o el error original de pdf.js
+ * (para que quien llama decida si sigue sin texto, p. ej. mandando el PDF al modelo).
+ */
 export async function leerPdf(datos: Buffer, contraseña?: string | null): Promise<PdfLeido> {
   if (!esPdf(datos)) throw new ErrorImportacion('no_pdf');
   if (datos.length > PDF_MAX_BYTES) throw new ErrorImportacion('muy_grande');
@@ -75,10 +121,10 @@ export async function leerPdf(datos: Buffer, contraseña?: string | null): Promi
       } catch (e2) {
         await abierto.tarea.destroy().catch(() => undefined);
         if (esExcepcion(e2, 'PasswordException')) throw new ErrorImportacion('contraseña_incorrecta');
-        throw new ErrorImportacion('corrupto');
+        throw e2;
       }
     } else {
-      throw new ErrorImportacion('corrupto');
+      throw e;
     }
   }
 

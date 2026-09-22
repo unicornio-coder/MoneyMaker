@@ -80,7 +80,12 @@ Reglas:
 - Si hay tarjetas adicionales, lístalas en tarjetasAdicionales y, cuando el documento lo distinga, indica en cada movimiento con qué tarjeta se hizo.
 - Cargos en otra moneda: monto es el equivalente en pesos que trae el documento; montoOriginal y monedaOriginal traen el original. Si no hay equivalente en pesos, monto=0 y deja el original.
 - Marca esPosibleSuscripcion=true con una razón corta cuando el cargo parezca una membresía o servicio recurrente (streaming, música, apps, software, gimnasio, telefonía, seguros mensuales).
-- Si el documento no es un estado de cuenta (recibo, ticket, factura, otra cosa), devuelve esEstadoDeCuenta=false y movimientos vacío.`;
+- Si el documento no es un estado de cuenta (recibo, ticket, factura, otra cosa), devuelve esEstadoDeCuenta=false y movimientos vacío.
+Pistas por formato:
+- American Express: el periodo aparece como "del … al …" o en el encabezado; "Nuevo saldo" o "Saldo total" es saldoAlCorte; "Total de cargos" y "Total de pagos y créditos" son los totales; un monto seguido de "CR" o entre paréntesis es abono; los cargos se agrupan por tarjeta (titular y adicionales, cada una con sus últimos dígitos); "Pago para no generar intereses" y "Pago mínimo" van en sus campos.
+- BBVA, Banamex, Banorte, Santander, HSBC: la tabla trae fecha de operación y fecha de cargo (usa la de operación), columnas de cargos y abonos separadas; "Fecha de corte", "Fecha límite de pago", "Límite de crédito", "Pago mínimo" y "Pago para no generar intereses" están en el resumen de la primera página.
+- Nu, Stori, Klar, Hey: estados sencillos de una o dos páginas; los pagos aparecen como "Pago recibido".
+- Cuentas de débito y nómina: tipoCuenta=debito; depósitos de nómina y transferencias recibidas son abonos; saldoAlCorte es el saldo final del periodo.`;
 
 type EntradaLLM = { pdf?: Buffer | null; texto?: string | null };
 

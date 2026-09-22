@@ -84,6 +84,7 @@
     "sin_conexion": "Se perdió la conexión. Revisa tu internet y vuelve a intentarlo.",
     "limite_api": "Estamos leyendo muchos documentos en este momento. Espera un minuto y reintenta.",
     "sesion_expirada": "Tu sesión terminó. Vuelve a entrar; tus archivos siguen aquí.",
+    "sin_modelo": "Este estado de cuenta necesita la lectura inteligente y no está activada en el servidor (falta ANTHROPIC_API_KEY). Actívala e inténtalo de nuevo.",
     "moneda_sin_equivalente": "Hay cargos en otra moneda sin equivalente en pesos; los guardamos con el monto original."
   },
   "vacios": {
