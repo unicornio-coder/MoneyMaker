@@ -31,10 +31,37 @@ function frecuenciaDe(intervaloDias: number): Frecuencia | null {
   return null;
 }
 
-function montosParecidos(montos: number[], tolerancia = 0.12): boolean {
+/**
+ * Frecuencia dominante de una serie de fechas. Un intervalo del doble (mes saltado, cargo fallido y
+ * reintentado al mes siguiente) cuenta para la misma frecuencia.
+ */
+function frecuenciaDeSerie(fechasISO: string[]): Frecuencia | null {
+  if (fechasISO.length < 2) return null;
+  const intervalos = fechasISO.slice(1).map((f, i) => diasEntre(deISO(fechasISO[i]), deISO(f)));
+  const votos = new Map<Frecuencia, number>();
+  for (const d of intervalos) {
+    const f = frecuenciaDe(d) ?? frecuenciaDe(d / 2);
+    if (f) votos.set(f, (votos.get(f) ?? 0) + 1);
+  }
+  if (!votos.size) return null;
+  const [mejor, n] = [...votos.entries()].sort((a, b) => b[1] - a[1])[0];
+  // Más de la mitad de los intervalos deben encajar; con dos cargos basta uno.
+  return n * 2 >= intervalos.length ? mejor : null;
+}
+
+/**
+ * Montos compatibles: todos dentro de ±10 % de la mediana, o cada uno dentro de ±15 % del anterior
+ * (una suscripción que sube de precio sigue siendo la misma suscripción).
+ */
+function montosParecidos(montos: number[], tolerancia = 0.1): boolean {
   const med = mediana(montos);
   if (med === 0) return false;
-  return montos.every((x) => Math.abs(x - med) / med <= tolerancia);
+  if (montos.every((x) => Math.abs(x - med) / med <= tolerancia)) return true;
+  return montos.slice(1).every((x, i) => montos[i] > 0 && Math.abs(x - montos[i]) / montos[i] <= 0.15);
+}
+
+function mesesDistintos(fechasISO: string[]): number {
+  return new Set(fechasISO.map((f) => f.slice(0, 7))).size;
 }
 
 function tipoDe(m: Movimiento): TipoRecurrente {
@@ -58,6 +85,18 @@ export function detectarRecurrentes(movs: Movimiento[], hoy = new Date()): Recur
     const k = claveRecurrente(m);
     grupos.set(k, [...(grupos.get(k) ?? []), m]);
   }
+  // Horizonte de datos por cuenta: con estados de cuenta, lo último que sabemos es la fecha del último movimiento,
+  // no hoy. Un cargo se considera vigente si está dentro de la ventana respecto a ese horizonte.
+  const horizonte = new Map<string, Date>();
+  for (const m of movs) {
+    const f = deISO(m.fecha);
+    const h = horizonte.get(m.cuentaId);
+    if (!h || f > h) horizonte.set(m.cuentaId, f);
+  }
+  const referencia = (cuentaId: string): Date => {
+    const h = horizonte.get(cuentaId);
+    return h && h < hoy ? h : hoy;
+  };
 
   const out: RecurrenteDetectado[] = [];
   for (const [clave, lista] of grupos) {
@@ -97,15 +136,16 @@ export function detectarRecurrentes(movs: Movimiento[], hoy = new Date()): Recur
 
     let frecuencia: Frecuencia | null = null;
     if (orden.length >= 2) {
-      const intervalos = orden.slice(1).map((m, i) => diasEntre(deISO(orden[i].fecha), deISO(m.fecha)));
-      frecuencia = frecuenciaDe(mediana(intervalos));
+      frecuencia = frecuenciaDeSerie(orden.map((m) => m.fecha));
       if (!frecuencia || !montosParecidos(montos)) frecuencia = null;
     }
     const conocido = tipo === 'suscripcion' || tipo === 'servicio' || tipo === 'colegiatura';
+    // Suscripción o servicio conocido (o marcado por la IA) visto en dos meses distintos: se confirma aunque la cadencia no sea exacta.
+    if (!frecuencia && conocido && orden.length >= 2 && mesesDistintos(orden.map((m) => m.fecha)) >= 2) frecuencia = 'mensual';
     if (!frecuencia && !(conocido && orden.length === 1)) continue;
-    if (!frecuencia && conocido && orden.length >= 2) continue; // conocido pero irregular (p. ej. Oxxo recargas): no es fijo
+    if (!frecuencia && conocido && orden.length >= 2) continue; // conocido pero dos cargos en el mismo mes (p. ej. recargas): no es fijo
 
-    const diasDesdeUltimo = diasEntre(deISO(ultimo.fecha), hoy);
+    const diasDesdeUltimo = diasEntre(deISO(ultimo.fecha), referencia(ultimo.cuentaId));
     const ventana = { semanal: 14, quincenal: 30, mensual: 45, anual: 400 }[frecuencia ?? 'mensual'];
     out.push({
       clave,
@@ -113,7 +153,8 @@ export function detectarRecurrentes(movs: Movimiento[], hoy = new Date()): Recur
       nombre: ultimo.comercio,
       comercioDominio: ultimo.comercioDominio ?? null,
       tipo,
-      monto: mediana(montos),
+      // Precio vigente: el último cargo (si la suscripción subió, el presupuesto debe usar el nuevo precio).
+      monto: ultimo.monto,
       diaCobro: deISO(ultimo.fecha).getDate(),
       frecuencia: frecuencia ?? 'mensual',
       primerCargo: primero.fecha,

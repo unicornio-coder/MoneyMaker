@@ -1,7 +1,7 @@
 // Repositorio en memoria para el modo mock. Un solo estado por proceso (globalThis) para sobrevivir
 // al hot reload de Next en desarrollo. Se pierde al reiniciar: es a propósito.
 
-import type { Activo, Credencial, Cuenta, EventoCalendario, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import type { Activo, Credencial, Cuenta, EventoCalendario, Importacion, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
 import type { FiltroMovimientos, Link, NuevoInsight, NuevoMovimiento, NuevoRecurrente, Repo } from './repo';
 
 type Correccion = { patron: string; nombre: string; dominio: string | null; categoriaId: string; esSuscripcion: boolean };
@@ -21,6 +21,8 @@ type EstadoUsuario = {
   insights: Insight[];
   eventos: EventoCalendario[];
   estados: { id: string }[];
+  importaciones: Importacion[];
+  descriptores: { descriptor: string; veces: number; comercioLlm: string | null; categoriaLlm: string | null }[];
   credenciales: Credencial[];
   eventos_producto: { nombre: string; props: Record<string, unknown>; at: string }[];
 };
@@ -34,7 +36,7 @@ const nuevoId = () => `m-${Date.now().toString(36)}-${(++contador).toString(36)}
 function estadoDe(userId: string): EstadoUsuario {
   let e = estados.get(userId);
   if (!e) {
-    e = { perfil: null, links: [], cuentas: [], movimientos: [], correcciones: [], recurrentes: [], cancelaciones: [], presupuestos: [], activos: [], pasivos: [], objetivos: [], insights: [], eventos: [], estados: [], credenciales: [], eventos_producto: [] };
+    e = { perfil: null, links: [], cuentas: [], movimientos: [], correcciones: [], recurrentes: [], cancelaciones: [], presupuestos: [], activos: [], pasivos: [], objetivos: [], insights: [], eventos: [], estados: [], importaciones: [], descriptores: [], credenciales: [], eventos_producto: [] };
     estados.set(userId, e);
   }
   return e;
@@ -297,6 +299,44 @@ export const repoMemoria: Repo = {
   },
   async registrarEvento(userId, nombre, props = {}) {
     if (userId) estadoDe(userId).eventos_producto.push({ nombre, props, at: new Date().toISOString() });
+  },
+
+  async importaciones(userId, filtro = {}) {
+    const lista = estadoDe(userId).importaciones.filter((i) => !filtro.estados || filtro.estados.includes(i.estado));
+    return [...lista].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async importacion(userId, id) {
+    return estadoDe(userId).importaciones.find((i) => i.id === id) ?? null;
+  },
+  async importacionPorHash(userId, archivoHash) {
+    return estadoDe(userId).importaciones.find((i) => i.archivoHash === archivoHash) ?? null;
+  },
+  async guardarImportacion(userId, imp) {
+    const e = estadoDe(userId);
+    const ahora = new Date().toISOString();
+    const existente = imp.id ? e.importaciones.find((i) => i.id === imp.id) : undefined;
+    if (existente) {
+      Object.assign(existente, imp, { id: existente.id, updatedAt: ahora });
+      return existente;
+    }
+    const nueva: Importacion = { ...imp, id: imp.id ?? nuevoId(), createdAt: ahora, updatedAt: ahora };
+    e.importaciones.push(nueva);
+    return nueva;
+  },
+  async eliminarImportacion(userId, id) {
+    const e = estadoDe(userId);
+    e.importaciones = e.importaciones.filter((i) => i.id !== id);
+  },
+  async registrarDescriptoresSinCategoria(userId, lista) {
+    const e = estadoDe(userId);
+    for (const d of lista) {
+      const ex = e.descriptores.find((x) => x.descriptor === d.descriptor);
+      if (ex) {
+        ex.veces++;
+        ex.comercioLlm = d.comercioLlm ?? ex.comercioLlm;
+        ex.categoriaLlm = d.categoriaLlm ?? ex.categoriaLlm;
+      } else e.descriptores.push({ descriptor: d.descriptor, veces: 1, comercioLlm: d.comercioLlm ?? null, categoriaLlm: d.categoriaLlm ?? null });
+    }
   },
 
   async registrarEstadoDeCuenta(userId) {

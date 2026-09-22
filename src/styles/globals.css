@@ -76,6 +76,11 @@
 
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
+/* Quien pide menos movimiento, lo recibe: sin entradas, flotaciones ni rotaciones. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
 /* Cinta de marcas de la landing */
 @keyframes mm-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .marquee { animation: mm-marquee 60s linear infinite; }

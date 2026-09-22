@@ -10,6 +10,8 @@ import { Panel } from '@/components/ui/Panel';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Money } from '@/components/ui/Money';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TEXTOS } from '@/lib/textos';
 import { eliminarActivo, eliminarPasivo, guardarActivo, guardarPasivo } from '@/app/app/patrimonio/acciones';
 
 type Vista = 'act' | 'pas';
@@ -67,6 +69,18 @@ export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo
   const total = vista === 'act' ? totalAct : totalPas;
   const rubro = rubros.find((r) => r.id === rubroSel) ?? null;
   const flujo = pnl.ingresos - pnl.fijos - pnl.variables - pnl.ahorro;
+
+  if (!cuentas.length && !activos.length && !pasivos.length) {
+    return (
+      <div className="mx-auto max-w-[720px] space-y-4">
+        <EmptyState icon={Landmark} titulo={TEXTOS.vacios.patrimonio.titulo} texto={TEXTOS.vacios.patrimonio.texto} cta={{ label: TEXTOS.vacios.patrimonio.cta, href: '/app/importar' }} />
+        <div className="text-center">
+          <button type="button" onClick={() => setAgregar('act')} className="text-[12.5px] font-bold text-green">O captura un activo o una deuda a mano</button>
+        </div>
+        <ModalAgregar tipo={agregar} onClose={() => setAgregar(null)} />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[720px] space-y-6">

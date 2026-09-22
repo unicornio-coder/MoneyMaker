@@ -10,3 +10,8 @@ coverage
 .DS_Store
 supabase/.temp
 .tooling
+
+# QA (credenciales locales de cuentas de prueba)
+qa/cuentas.local.md
+test-results
+playwright-report

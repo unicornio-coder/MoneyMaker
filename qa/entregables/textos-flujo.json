@@ -1,0 +1,101 @@
+{
+  "provisional": true,
+  "nota": "Versión mínima creada por Claude Code (T-002). Conservar las claves al sustituir.",
+  "modal": {
+    "titulo": "Agregar cuenta",
+    "opciones": {
+      "pdf": { "titulo": "Subir estado de cuenta", "texto": "PDF de tu tarjeta o cuenta. Puedes subir varios a la vez." },
+      "banco": { "titulo": "Conectar mi banco automáticamente", "texto": "Próximamente" },
+      "correo": { "titulo": "Reenviar por correo", "texto": "Próximamente" }
+    }
+  },
+  "carga": {
+    "titulo": "Sube tus estados de cuenta",
+    "subtitulo": "PDF de cualquier banco o tarjeta. Hasta 10 archivos de 10 MB.",
+    "ayuda": "Arrastra los archivos aquí o elige desde tu celular o computadora.",
+    "boton": "Elegir archivos",
+    "boton_movil": "Abrir desde Archivos o Correo"
+  },
+  "multiple": {
+    "titulo": "Tus archivos",
+    "agregar_mas": "Agregar otro archivo",
+    "en_cola": "En cola",
+    "subiendo": "Subiendo",
+    "leyendo": "Leyendo",
+    "contraseña": "Necesita contraseña",
+    "revisar": "Listo para revisar",
+    "listo": "Guardado",
+    "error": "No se pudo leer",
+    "reintentar": "Reintentar",
+    "quitar": "Quitar"
+  },
+  "leyendo": {
+    "mensajes": ["Leyendo el documento", "Detectando banco, tarjeta y periodo", "Separando cargos, abonos y meses sin intereses"]
+  },
+  "contraseña": {
+    "titulo": "Este PDF tiene contraseña",
+    "texto": "Algunos bancos protegen el estado de cuenta. Escríbela para poder leerlo.",
+    "porque": "La usamos solo para abrir el archivo en este momento. No la guardamos ni la vemos.",
+    "campo": "Contraseña del PDF",
+    "boton": "Abrir",
+    "incorrecta": "La contraseña no es correcta. Te quedan {intentos} intentos.",
+    "agotada": "Se agotaron los intentos. Quita el archivo y vuelve a intentarlo."
+  },
+  "revision": {
+    "individual": "Encontramos un estado de cuenta",
+    "combinada": "Encontramos {n} estados de cuenta",
+    "subtitulo": "Revisa que banco, tarjeta y periodo sean correctos antes de guardar.",
+    "movimientos": "{n} movimientos",
+    "saldo_corte": "Saldo al corte",
+    "periodo": "Periodo",
+    "sin_cuadre": "Los totales no cuadran con el resumen del banco. Puedes guardarlo y revisar después.",
+    "ya_existe": "Se unirá a tu cuenta {cuenta}.",
+    "misma_tarjeta": "Se unirá al otro estado de cuenta de esta misma tarjeta.",
+    "nueva": "Se creará una cuenta nueva.",
+    "quitar": "Quitar",
+    "confirmar_todo": "Guardar {n} estados de cuenta",
+    "confirmar_uno": "Guardar estado de cuenta",
+    "cuenta_destino": "Cuenta",
+    "tipo": { "credito": "Crédito", "debito": "Débito", "inversion": "Inversión" }
+  },
+  "exito": {
+    "titulo": "Listo",
+    "texto": "{movimientos} movimientos nuevos en {cuentas} cuentas. Detectamos {suscripciones} suscripciones y {msi} compras a meses.",
+    "duplicados": "{n} movimientos ya los teníamos y no se repitieron.",
+    "quincena_titulo": "Detectamos tu nómina los días {dias}",
+    "quincena_texto": "¿Usamos esos días como tu quincena? Así tu presupuesto sigue el ritmo real de tu dinero.",
+    "quincena_si": "Sí, usar esos días",
+    "quincena_no": "Dejar 5 y 20",
+    "ver_inicio": "Ver mi Inicio",
+    "subir_otro": "Subir otro"
+  },
+  "errores": {
+    "no_pdf": "Ese archivo no es un PDF. Sube el estado de cuenta que descargaste de tu banco.",
+    "corrupto": "No pudimos abrir este PDF. Descárgalo de nuevo desde tu banco e inténtalo otra vez.",
+    "muy_grande": "El archivo pesa más de 10 MB. Descarga solo el estado de cuenta del mes.",
+    "demasiados": "Puedes subir hasta 10 archivos a la vez.",
+    "ilegible": "El documento está escaneado y no se lee bien. Descarga el PDF original desde la app de tu banco.",
+    "no_es_estado": "Este archivo no parece un estado de cuenta. Sube el PDF mensual de tu tarjeta o cuenta.",
+    "contraseña_incorrecta": "La contraseña no es correcta.",
+    "ya_subido": "Este estado de cuenta ya está en tu cuenta.",
+    "sin_cuadre": "Los totales no cuadran con el resumen del banco.",
+    "sin_movimientos": "Este periodo no tiene movimientos. Lo guardamos solo para actualizar el saldo.",
+    "servidor": "Algo falló de nuestro lado. Inténtalo de nuevo en un momento.",
+    "sin_conexion": "Se perdió la conexión. Revisa tu internet y vuelve a intentarlo.",
+    "limite_api": "Estamos leyendo muchos documentos en este momento. Espera un minuto y reintenta.",
+    "sesion_expirada": "Tu sesión terminó. Vuelve a entrar; tus archivos siguen aquí.",
+    "moneda_sin_equivalente": "Hay cargos en otra moneda sin equivalente en pesos; los guardamos con el monto original."
+  },
+  "vacios": {
+    "inicio": { "titulo": "Aún no hay cuentas", "texto": "Sube tu estado de cuenta y en dos minutos ves qué pagas cada mes y cuánto te sobra.", "cta": "Sube tu estado de cuenta" },
+    "gastos": { "titulo": "Sin movimientos todavía", "texto": "Cuando subas un estado de cuenta, aquí verás tu gasto por periodo y categoría.", "cta": "Sube tu estado de cuenta" },
+    "fijos": { "titulo": "Sin gastos fijos detectados", "texto": "Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos.", "cta": "Sube tu estado de cuenta" },
+    "presupuesto": { "titulo": "Tu presupuesto se arma solo", "texto": "Con los movimientos de un estado de cuenta te proponemos un presupuesto por quincena.", "cta": "Sube tu estado de cuenta" },
+    "patrimonio": { "titulo": "Sin cuentas todavía", "texto": "Sube el estado de cuenta de tus tarjetas y verás lo que debes al corte.", "cta": "Sube tu estado de cuenta" }
+  },
+  "confianza": {
+    "no_guardamos_pdf": "El PDF se lee y se descarta. No lo guardamos.",
+    "no_pedimos_contraseña_banco": "Nunca pedimos las claves de tu banco.",
+    "solo_lectura": "Solo leemos movimientos. No movemos dinero."
+  }
+}

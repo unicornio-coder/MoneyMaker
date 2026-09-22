@@ -8,7 +8,7 @@ import type { CuentaVista, DatosInicio } from '@/components/inicio/tipos';
 export const metadata = { title: 'Inicio · MoneyMaker' };
 export const dynamic = 'force-dynamic';
 
-export default async function InicioPage() {
+export default async function InicioPage({ searchParams }: { searchParams: { cuenta?: string } }) {
   const { usuario, repo, diasPago } = await contexto();
   const hoy = new Date();
   const desde = aISO(sumarMeses(hoy, -7));
@@ -46,5 +46,5 @@ export default async function InicioPage() {
     agregador: agg.nombre,
     sandbox: agg.entorno === 'sandbox',
   };
-  return <Inicio datos={datos} />;
+  return <Inicio datos={datos} cuentaInicial={searchParams.cuenta ?? null} />;
 }

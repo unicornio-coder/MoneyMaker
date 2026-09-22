@@ -1,20 +1,10 @@
-// Importador de estados de cuenta: CSV / XLSX / PDF → MovimientoCrudo[].
-// Funciona sin LLM para CSV/XLSX (mapeo de columnas por heurística). PDF usa texto + LLM; sin llave, regex de líneas.
+// Utilidades de parseo compartidas por las fuentes de ingesta (fechas, montos, columnas, líneas de texto).
+// La lectura de archivos completa vive en services/ingestion/.
 
-import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import type { MovimientoCrudo } from '@/lib/domain/tipos';
 import { infoBanco } from '@/lib/domain/comercios';
-import { extraerMovimientosDeTexto } from './llm';
-
-export type ResultadoImportacion = {
-  movimientos: MovimientoCrudo[];
-  banco: string | null;
-  formato: 'csv' | 'xlsx' | 'pdf';
-  /** Ultimos 4 dígitos si aparecen en el archivo. */
-  ultimos4: string | null;
-  advertencias: string[];
-};
+import { aPesos, parsearMontoCentavos } from '@/lib/domain/money';
 
 const COL_FECHA = /^(fecha|date|fecha de operaci|fecha operaci|fecha de cargo|fecha valor|f\. ?operaci|dia)/i;
 const COL_DESC = /^(descripci|concepto|detalle|description|movimiento|referencia|establecimiento|comercio|memo)/i;
@@ -24,11 +14,10 @@ const COL_MONTO = /^(monto|importe|amount|cantidad|valor|total)/i;
 
 const MESES: Record<string, number> = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, sept: 9, oct: 10, nov: 11, dic: 12, jan: 1, apr: 4, aug: 8, dec: 12 };
 
-/** Acepta dd/mm/yyyy, dd-mm-yy, yyyy-mm-dd, '12 sep 2026', '12/sep', números de Excel. */
+/** Acepta dd/mm/yyyy, dd-mm-yy, yyyy-mm-dd, '12 sep 2026', '12/sep', '05 de septiembre de 2026', números de Excel. */
 export function parsearFecha(v: unknown, anioPorDefecto = new Date().getFullYear()): string | null {
   if (v == null || v === '') return null;
   if (typeof v === 'number') {
-    // Serial de Excel
     const d = XLSX.SSF.parse_date_code(v);
     if (!d) return null;
     return `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`;
@@ -50,20 +39,10 @@ export function parsearFecha(v: unknown, anioPorDefecto = new Date().getFullYear
   return null;
 }
 
-/** '$1,238.00' → 1238 · '(450.00)' → -450 · '-1,200' → -1200 */
+/** '$1,238.00' → 1238 · '(450.00)' → -450 · '-1,200' → -1200 (pesos). */
 export function parsearMonto(v: unknown): number | null {
-  if (v == null || v === '') return null;
-  if (typeof v === 'number') return v;
-  let s = String(v).replace(/[^\d.,()\-+]/g, '');
-  if (!s) return null;
-  const negativo = /^\(.*\)$/.test(s) || s.startsWith('-');
-  s = s.replace(/[()\-+]/g, '');
-  // 1.234,56 (formato europeo) vs 1,234.56
-  if (/,\d{2}$/.test(s) && !/\.\d{2}$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
-  else s = s.replace(/,/g, '');
-  const n = Number(s);
-  if (Number.isNaN(n)) return null;
-  return negativo ? -n : n;
+  const c = parsearMontoCentavos(v);
+  return c == null ? null : aPesos(c);
 }
 
 type Fila = Record<string, unknown>;
@@ -128,62 +107,25 @@ export function filasAMovimientos(filas: Fila[], advertencias: string[]): Movimi
   return out;
 }
 
-function detectarBanco(texto: string): string | null {
+const BANCOS_TEXTO = ['bbva', 'banorte', 'santander', 'hsbc', 'banamex', 'citibanamex', 'scotiabank', 'inbursa', 'azteca', 'nu', 'american express', 'amex', 'coppel', 'hey banco', 'klar', 'stori', 'gbm', 'bitso', 'cetesdirecto', 'kuspit', 'mercado pago'];
+
+/** Banco emisor: el que aparece en el título gana; si no, el más mencionado (un pago a otra tarjeta no cambia el banco). */
+export function detectarBanco(texto: string): string | null {
   const t = texto.toLowerCase();
-  for (const k of ['bbva', 'banorte', 'santander', 'hsbc', 'banamex', 'citibanamex', 'scotiabank', 'inbursa', 'azteca', 'nu', 'american express', 'amex', 'coppel', 'hey banco', 'klar', 'stori', 'gbm', 'bitso', 'cetesdirecto', 'kuspit', 'mercado pago']) {
-    if (new RegExp(`\\b${k}\\b`).test(t)) return infoBanco(k === 'american express' ? 'amex' : k === 'hey banco' ? 'hey' : k).nombre;
+  const titulo = t.slice(0, 300);
+  let mejor: { k: string; n: number } | null = null;
+  for (const k of BANCOS_TEXTO) {
+    const re = new RegExp(`\\b${k}\\b`, 'g');
+    if (re.test(titulo)) return infoBanco(k === 'american express' ? 'amex' : k === 'hey banco' ? 'hey' : k).nombre;
+    const n = (t.match(re) ?? []).length;
+    if (n && (!mejor || n > mejor.n)) mejor = { k, n };
   }
-  return null;
+  return mejor ? infoBanco(mejor.k === 'american express' ? 'amex' : mejor.k === 'hey banco' ? 'hey' : mejor.k).nombre : null;
 }
 
-function detectarUltimos4(texto: string): string | null {
-  const m = /(?:tarjeta|cuenta|no\.?|número|numero)[^\d]{0,30}(?:\*{2,}|x{2,}|•{2,}|\d{4}[\s-]){0,3}(\d{4})\b/i.exec(texto);
+export function detectarUltimos4(texto: string): string | null {
+  const m = /(?:tarjeta|cuenta|no\.?|número|numero|terminaci[oó]n)[^\d]{0,30}(?:\*{2,}|x{2,}|•{2,}|\d{4}[\s-]){0,3}(\d{4})\b/i.exec(texto);
   return m ? m[1] : null;
-}
-
-/** Punto de entrada: detecta el formato por nombre y parsea. */
-export async function importarArchivo(nombre: string, datos: Buffer): Promise<ResultadoImportacion> {
-  const advertencias: string[] = [];
-  const ext = nombre.toLowerCase().split('.').pop() ?? '';
-
-  if (ext === 'csv' || ext === 'txt') {
-    const texto = datos.toString('utf8');
-    const parsed = Papa.parse<Fila>(texto, { header: true, skipEmptyLines: true, dynamicTyping: false });
-    const movimientos = filasAMovimientos(parsed.data, advertencias);
-    return { movimientos, banco: detectarBanco(texto.slice(0, 2000)), formato: 'csv', ultimos4: detectarUltimos4(texto.slice(0, 2000)), advertencias };
-  }
-
-  if (ext === 'xlsx' || ext === 'xls') {
-    const wb = XLSX.read(datos, { type: 'buffer', cellDates: false });
-    let movimientos: MovimientoCrudo[] = [];
-    let textoCabecera = '';
-    for (const hoja of wb.SheetNames) {
-      const ws = wb.Sheets[hoja];
-      const filas = XLSX.utils.sheet_to_json<Fila>(ws, { defval: '' });
-      textoCabecera += XLSX.utils.sheet_to_csv(ws).slice(0, 1500) + '\n';
-      const m = filasAMovimientos(filas, advertencias);
-      if (m.length > movimientos.length) movimientos = m;
-    }
-    return { movimientos, banco: detectarBanco(textoCabecera), formato: 'xlsx', ultimos4: detectarUltimos4(textoCabecera), advertencias };
-  }
-
-  if (ext === 'pdf') {
-    // pdf-parse se carga bajo demanda (Node only).
-    const pdfParse = (await import('pdf-parse')).default;
-    const { text } = await pdfParse(datos);
-    const banco = detectarBanco(text.slice(0, 4000));
-    const ultimos4 = detectarUltimos4(text.slice(0, 4000));
-    let movimientos = await extraerMovimientosDeTexto(text, banco);
-    if (!movimientos) {
-      movimientos = movimientosPorRegex(text);
-      if (!movimientos.length) advertencias.push('No pudimos leer este PDF automáticamente. Prueba con el CSV o Excel del banco.');
-      else advertencias.push('PDF leído con reglas básicas; revisa fechas y montos.');
-    }
-    return { movimientos, banco, formato: 'pdf', ultimos4, advertencias };
-  }
-
-  advertencias.push('Formato no soportado. Sube CSV, Excel o PDF.');
-  return { movimientos: [], banco: null, formato: 'csv', ultimos4: null, advertencias };
 }
 
 /** Respaldo sin LLM: líneas "dd/mm[/yyyy]  descripción  $monto" o "dd mmm  descripción  monto". */
@@ -197,7 +139,7 @@ export function movimientosPorRegex(texto: string): MovimientoCrudo[] {
     const monto = parsearMonto(m[3]);
     if (!fecha || monto == null || monto === 0) continue;
     const desc = m[2].trim();
-    const esAbono = /abono|pago recibido|deposito|depósito|su pago|nomina|nómina/i.test(desc) || (m[4] != null && monto < 0);
+    const esAbono = /abono|pago recibido|deposito|depósito|su pago|nomina|nómina|reembolso|devolucion|devolución/i.test(desc) || (m[4] != null && monto < 0) || /^\(.*\)$/.test(m[3].trim()) || m[3].trim().startsWith('-');
     out.push({ fecha, descripcion: desc, monto: Math.abs(monto), esAbono });
   }
   return out;

@@ -6,6 +6,7 @@ import { deISO } from '@/lib/domain/fechas';
 import { desplazar, enRango, mesDe, rangoPersonalizado, semanaDe, type Rango } from '@/lib/domain/quincena';
 import type { Cuenta, Movimiento } from '@/lib/domain/tipos';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { TEXTOS } from '@/lib/textos';
 import { Historial } from '@/components/movimientos/Historial';
 import { DetalleMovimiento } from '@/components/movimientos/DetalleMovimiento';
 import { SelectorPeriodo, type ModoPeriodo } from './SelectorPeriodo';
@@ -20,7 +21,13 @@ type Props = { cuentas: Cuenta[]; movimientos: Movimiento[]; hoy: string; cuenta
 export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInicial }: Props) {
   const h = deISO(hoy);
   const [modo, setModo] = useState<ModoPeriodo>('mes');
-  const [rango, setRango] = useState<Rango>(() => mesDe(h));
+  // Si el mes en curso no tiene gastos (p. ej. el último estado de cuenta cerró el mes pasado), abre en el último mes con datos.
+  const [rango, setRango] = useState<Rango>(() => {
+    const actual = mesDe(h);
+    if (movimientos.some((m) => m.tipo === 'gasto' && enRango(m.fecha, actual))) return actual;
+    const ultimo = movimientos.filter((m) => m.tipo === 'gasto').map((m) => m.fecha).sort().pop();
+    return ultimo ? mesDe(deISO(ultimo)) : actual;
+  });
   const [cuentaId, setCuentaId] = useState<string | null>(cuentaInicial && cuentas.some((c) => c.id === cuentaInicial) ? cuentaInicial : null);
   const [categoriaSel, setCategoriaSel] = useState<string | null>(categoriaInicial ?? null);
   const [movSel, setMovSel] = useState<Movimiento | null>(null);
@@ -39,7 +46,7 @@ export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInic
   }, [movimientos, rango, cuentaId]);
 
   if (!cuentas.length) {
-    return <EmptyState icon={PieChart} titulo="Sin movimientos todavía" texto="Cuando conectes una cuenta o subas un estado de cuenta, aquí verás tu gasto por periodo y categoría." cta={{ label: 'Subir estado de cuenta', href: '/app/importar' }} />;
+    return <EmptyState icon={PieChart} titulo={TEXTOS.vacios.gastos.titulo} texto={TEXTOS.vacios.gastos.texto} cta={{ label: TEXTOS.vacios.gastos.cta, href: '/app/importar' }} />;
   }
 
   return (

@@ -9,14 +9,16 @@ import { DrawerCuenta } from './DrawerCuenta';
 import { Historial } from '@/components/movimientos/Historial';
 import { ObjetivosBloque } from './ObjetivosBloque';
 import { SubeExcel } from './SubeExcel';
-import { ModalBancos } from '@/components/cuentas/ModalBancos';
+import { HojaAgregarCuenta } from '@/components/cuentas/HojaAgregarCuenta';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { TEXTOS } from '@/lib/textos';
 
-export function Inicio({ datos }: { datos: DatosInicio }) {
-  const [cuentaSel, setCuentaSel] = useState<string | null>(null);
-  const [bancosAbierto, setBancosAbierto] = useState(false);
+export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaInicial?: string | null }) {
+  const [cuentaSel, setCuentaSel] = useState<string | null>(cuentaInicial && datos.cuentas.some((c) => c.id === cuentaInicial) ? cuentaInicial : null);
+  const [agregarAbierto, setAgregarAbierto] = useState(false);
   const cuenta = datos.cuentas.find((c) => c.id === cuentaSel) ?? null;
   const hayCuentas = datos.cuentas.length > 0;
+  const vacio = TEXTOS.vacios.inicio;
 
   return (
     <div className="grid gap-5 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
@@ -24,9 +26,9 @@ export function Inicio({ datos }: { datos: DatosInicio }) {
         {hayCuentas ? (
           <GastoActual movimientos={datos.movimientos} diasPago={datos.diasPago} hoy={datos.hoy} />
         ) : (
-          <EmptyState icon={Home} titulo="Aún no hay cuentas" texto="Agrega tu primera cuenta o sube un estado de cuenta para ver tu quincena." cta={{ label: 'Agregar cuenta', onClick: () => setBancosAbierto(true) }} />
+          <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={{ label: vacio.cta, href: '/app/importar' }} />
         )}
-        <Cuentas cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setBancosAbierto(true)} />
+        <Cuentas cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
         <div className="md:hidden">
           <SubeExcel />
         </div>
@@ -38,7 +40,7 @@ export function Inicio({ datos }: { datos: DatosInicio }) {
       </aside>
 
       <DrawerCuenta cuenta={cuenta} movimientos={datos.movimientos} cuentas={datos.cuentas} onClose={() => setCuentaSel(null)} />
-      <ModalBancos open={bancosAbierto} onClose={() => setBancosAbierto(false)} instituciones={datos.instituciones} agregador={datos.agregador} sandbox={datos.sandbox} />
+      <HojaAgregarCuenta open={agregarAbierto} onClose={() => setAgregarAbierto(false)} />
     </div>
   );
 }

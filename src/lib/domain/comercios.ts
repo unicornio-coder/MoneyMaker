@@ -1,6 +1,8 @@
 // Diccionario de comercios de México. Capa 1 del categorizador: barato, explicable y editable.
 // patron = fragmento normalizado (sin acentos, mayúsculas, sin dígitos) que debe aparecer en la descripción.
 
+import { bancoDelCatalogo } from './catalogo';
+
 export type ComercioConocido = {
   patron: string;
   nombre: string;
@@ -193,7 +195,11 @@ export const BANCOS: Record<string, { nombre: string; dominio: string; color: st
   efectivo: { nombre: 'Efectivo', dominio: '', color: '#16A34A' },
 };
 
-export function infoBanco(nombre: string) {
+export function infoBanco(nombre: string): { nombre: string; dominio: string; color: string } {
   const k = nombre.toLowerCase().replace(/[^a-z]/g, '');
-  return BANCOS[k] ?? Object.values(BANCOS).find((b) => k.includes(b.nombre.toLowerCase().replace(/[^a-z]/g, ''))) ?? { nombre, dominio: '', color: '#0B1F17' };
+  const interno = BANCOS[k] ?? Object.values(BANCOS).find((b) => k.includes(b.nombre.toLowerCase().replace(/[^a-z]/g, '')));
+  if (interno) return interno;
+  const cat = bancoDelCatalogo(nombre);
+  if (cat) return { nombre: cat.nombre_corto, dominio: cat.dominio, color: cat.color ?? '#0B1F17' };
+  return { nombre: nombre.trim() || 'Banco', dominio: '', color: '#0B1F17' };
 }

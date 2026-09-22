@@ -1,0 +1,81 @@
+{
+  "institucion": "Banorte",
+  "tipoCuenta": "debito",
+  "ultimos4": "0003",
+  "periodoInicio": "2026-08-01",
+  "periodoFin": "2026-08-31",
+  "fechaCorte": "2026-08-31",
+  "fechaLimitePago": null,
+  "pagoMinimoCentavos": null,
+  "limiteCreditoCentavos": null,
+  "saldoAlCorteCentavos": 2312000,
+  "totalCargosCentavos": 1687300,
+  "totalAbonosCentavos": 2900000,
+  "movimientos": [
+    {
+      "fecha": "2026-08-01",
+      "descripcion": "PAGO TARJETA BBVA 0001",
+      "montoCentavos": 1000000,
+      "esAbono": false,
+      "categoriaEsperada": "pago_tarjeta"
+    },
+    {
+      "fecha": "2026-08-03",
+      "descripcion": "SORIANA HIPER",
+      "montoCentavos": 123800,
+      "esAbono": false,
+      "categoriaEsperada": "super"
+    },
+    {
+      "fecha": "2026-08-08",
+      "descripcion": "RETIRO CAJERO ATM BANORTE",
+      "montoCentavos": 200000,
+      "esAbono": false,
+      "categoriaEsperada": "efectivo"
+    },
+    {
+      "fecha": "2026-08-14",
+      "descripcion": "PAGO DE NOMINA EMPRESA SA DE CV",
+      "montoCentavos": 1450000,
+      "esAbono": true,
+      "categoriaEsperada": "nomina"
+    },
+    {
+      "fecha": "2026-08-16",
+      "descripcion": "TELCEL RECARGA",
+      "montoCentavos": 20000,
+      "esAbono": false,
+      "categoriaEsperada": "servicios"
+    },
+    {
+      "fecha": "2026-08-20",
+      "descripcion": "FARMACIAS SAN PABLO",
+      "montoCentavos": 43500,
+      "esAbono": false,
+      "categoriaEsperada": "salud"
+    },
+    {
+      "fecha": "2026-08-25",
+      "descripcion": "SPEI ENVIADO GBM APORTACION",
+      "montoCentavos": 300000,
+      "esAbono": false,
+      "categoriaEsperada": "inversion"
+    },
+    {
+      "fecha": "2026-08-31",
+      "descripcion": "PAGO DE NOMINA EMPRESA SA DE CV",
+      "montoCentavos": 1450000,
+      "esAbono": true,
+      "categoriaEsperada": "nomina"
+    }
+  ],
+  "suscripcionesEsperadas": [],
+  "msiEsperados": [],
+  "nomina": {
+    "montoCentavos": 1450000,
+    "diasQuincena": [
+      14,
+      30
+    ]
+  }
+}

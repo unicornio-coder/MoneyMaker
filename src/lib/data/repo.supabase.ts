@@ -2,7 +2,7 @@
 // donde se inyecta el cliente de servicio con `repoSupabaseCon(supabaseAdmin())`.
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Activo, Credencial, Cuenta, EventoCalendario, Insight, Movimiento, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import type { Activo, Credencial, Cuenta, EventoCalendario, Importacion, Insight, Movimiento, MovimientoNormalizado, Objetivo, Pasivo, Perfil, Presupuesto, Recurrente, ResumenEstado } from '@/lib/domain/tipos';
 import { cifrar, descifrar } from '@/lib/crypto';
 import { supabaseServer } from '@/lib/supabase/server';
 import type { FiltroMovimientos, Link, NuevoInsight, NuevoMovimiento, NuevoRecurrente, Repo } from './repo';
@@ -30,6 +30,27 @@ const aPasivo = (f: Fila): Pasivo => ({ id: String(f.id), tipo: f.tipo as Pasivo
 const aObjetivo = (f: Fila): Objetivo => ({ id: String(f.id), grupo: f.grupo as Objetivo['grupo'], nombre: String(f.nombre), meta: Number(f.meta), avance: Number(f.avance), fecha: str(f.fecha), cuentaId: str(f.account_id), completado: !!f.completado });
 const aInsight = (f: Fila): Insight => ({ id: String(f.id), tipo: String(f.tipo), titulo: String(f.titulo), texto: String(f.texto), monto: num(f.monto), ctaLabel: str(f.cta_label), ctaHref: str(f.cta_href), leido: !!f.leido, descartado: !!f.descartado, referencia: (f.referencia as Record<string, unknown>) ?? {}, createdAt: String(f.created_at) });
 const aEvento = (f: Fila): EventoCalendario => ({ id: String(f.id), fecha: String(f.fecha), nombre: String(f.nombre), monto: num(f.monto), tipo: f.tipo as EventoCalendario['tipo'], recurrenteId: str(f.recurrent_id) });
+const aImportacion = (f: Fila): Importacion => ({
+  id: String(f.id),
+  archivo: String(f.archivo),
+  archivoHash: String(f.archivo_hash),
+  tamanoBytes: Number(f.tamano_bytes ?? 0),
+  estado: f.estado as Importacion['estado'],
+  metodo: (f.metodo as Importacion['metodo']) ?? null,
+  resumen: (f.resumen as ResumenEstado) ?? ({} as ResumenEstado),
+  movimientos: (f.movimientos as MovimientoNormalizado[]) ?? [],
+  advertencias: (f.advertencias as string[]) ?? [],
+  cuadre: (f.cuadre as Importacion['cuadre']) ?? null,
+  cuentaId: str(f.account_id),
+  insertados: Number(f.insertados ?? 0),
+  duplicados: Number(f.duplicados ?? 0),
+  tokensEntrada: Number(f.tokens_entrada ?? 0),
+  tokensSalida: Number(f.tokens_salida ?? 0),
+  error: str(f.error),
+  createdAt: String(f.created_at),
+  updatedAt: String(f.updated_at),
+});
+const deImportacion = (userId: string, i: Omit<Importacion, 'id' | 'createdAt' | 'updatedAt'>) => ({ user_id: userId, account_id: i.cuentaId ?? null, archivo: i.archivo, archivo_hash: i.archivoHash, tamano_bytes: i.tamanoBytes, estado: i.estado, metodo: i.metodo, resumen: i.resumen, movimientos: i.movimientos, advertencias: i.advertencias, cuadre: i.cuadre, insertados: i.insertados, duplicados: i.duplicados, tokens_entrada: i.tokensEntrada, tokens_salida: i.tokensSalida, error: i.error ?? null, updated_at: new Date().toISOString() });
 
 export function repoSupabaseCon(cli: () => Cli): Repo {
   return {
@@ -132,6 +153,7 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       if (c.categoriaId !== undefined) fila.categoria_id = c.categoriaId;
       if (c.categoriaFuente !== undefined) fila.categoria_fuente = c.categoriaFuente;
       if (c.comercio !== undefined) fila.comercio = c.comercio;
+      if (c.tipo !== undefined) fila.tipo = c.tipo;
       if (c.esMsi !== undefined) fila.es_msi = c.esMsi;
       if (c.msiCuota !== undefined) fila.msi_cuota = c.msiCuota;
       if (c.msiTotal !== undefined) fila.msi_total = c.msiTotal;
@@ -336,6 +358,44 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
     async registrarEvento(userId, nombre, props = {}) {
       const { error } = await cli().from('events').insert({ user_id: userId, nombre, props });
       if (error) console.warn('registrarEvento', error.message);
+    },
+
+    async importaciones(userId, filtro = {}) {
+      let q = cli().from('statement_imports').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(50);
+      if (filtro.estados?.length) q = q.in('estado', filtro.estados);
+      const { data, error } = await q;
+      lanzar('importaciones', error);
+      return (data ?? []).map(aImportacion);
+    },
+    async importacion(userId, id) {
+      const { data, error } = await cli().from('statement_imports').select('*').eq('user_id', userId).eq('id', id).maybeSingle();
+      lanzar('importacion', error);
+      return data ? aImportacion(data) : null;
+    },
+    async importacionPorHash(userId, archivoHash) {
+      const { data, error } = await cli().from('statement_imports').select('*').eq('user_id', userId).eq('archivo_hash', archivoHash).maybeSingle();
+      lanzar('importacionPorHash', error);
+      return data ? aImportacion(data) : null;
+    },
+    async guardarImportacion(userId, imp) {
+      const fila: Fila = deImportacion(userId, imp);
+      if (imp.id) fila.id = imp.id;
+      const q = imp.id ? cli().from('statement_imports').upsert(fila) : cli().from('statement_imports').upsert(fila, { onConflict: 'user_id,archivo_hash' });
+      const { data, error } = await q.select('*').single();
+      lanzar('guardarImportacion', error);
+      return aImportacion(data);
+    },
+    async eliminarImportacion(userId, id) {
+      const { error } = await cli().from('statement_imports').delete().eq('user_id', userId).eq('id', id);
+      lanzar('eliminarImportacion', error);
+    },
+    async registrarDescriptoresSinCategoria(userId, lista) {
+      if (!lista.length) return;
+      const { data: existentes } = await cli().from('unmatched_descriptors').select('descriptor, veces').eq('user_id', userId).in('descriptor', lista.map((d) => d.descriptor));
+      const veces = new Map((existentes ?? []).map((f: Fila) => [String(f.descriptor), Number(f.veces)]));
+      const filas = lista.map((d) => ({ user_id: userId, descriptor: d.descriptor, veces: (veces.get(d.descriptor) ?? 0) + 1, comercio_llm: d.comercioLlm ?? null, categoria_llm: d.categoriaLlm ?? null }));
+      const { error } = await cli().from('unmatched_descriptors').upsert(filas, { onConflict: 'user_id,descriptor' });
+      if (error) console.warn('registrarDescriptoresSinCategoria', error.message);
     },
 
     async registrarEstadoDeCuenta(userId, s) {

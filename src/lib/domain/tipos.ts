@@ -129,7 +129,7 @@ export type Perfil = {
 
 export type Credencial = { proveedor: 'gmail' | 'bitso'; etiqueta?: string | null; datos: Record<string, unknown>; updatedAt: string };
 
-/** Movimiento tal como lo entrega una fuente antes de categorizar y deduplicar. */
+/** Movimiento tal como lo entrega una fuente antes de categorizar y deduplicar. Monto en pesos. */
 export type MovimientoCrudo = {
   fecha: string;
   descripcion: string;
@@ -138,4 +138,75 @@ export type MovimientoCrudo = {
   esAbono: boolean;
   externalId?: string | null;
   categoriaProveedor?: string | null;
+  /** 0 la primera vez que aparece (fecha, descripción, monto) en el lote; 1, 2… para repetidos reales del mismo archivo. */
+  repeticion?: number;
+  /** La fuente (IA) cree que es una suscripción. */
+  esPosibleSuscripcion?: boolean;
+  /** Cuota/total si la fuente lo trae ya separado (sección de meses sin intereses). */
+  msi?: { cuota: number; total: number } | null;
+};
+
+// ---------- Importación de estados de cuenta ----------
+
+export type TipoCuentaEstado = 'credito' | 'debito' | 'inversion';
+
+/** Movimiento normalizado por cualquier fuente de ingesta (PDF hoy; correo y Belvo mañana). Montos en centavos enteros MXN. */
+export type MovimientoNormalizado = {
+  fecha: string;
+  descripcion: string;
+  montoCentavos: number;
+  esAbono: boolean;
+  moneda: string;
+  montoOriginalCentavos?: number | null;
+  monedaOriginal?: string | null;
+  esPosibleSuscripcion: boolean;
+  razonSuscripcion?: string | null;
+  msi?: { cuota: number; total: number } | null;
+  /** Últimos 4 de la tarjeta adicional que hizo el cargo, si el estado lo distingue. */
+  tarjetaUltimos4?: string | null;
+};
+
+/** Lo que el estado de cuenta dice de sí mismo. null cuando el documento no lo trae. */
+export type ResumenEstado = {
+  institucion: string | null;
+  producto: string | null;
+  tipoCuenta: TipoCuentaEstado | null;
+  ultimos4: string | null;
+  periodoInicio: string | null;
+  periodoFin: string | null;
+  fechaCorte: string | null;
+  fechaLimitePago: string | null;
+  pagoMinimoCentavos: number | null;
+  saldoAlCorteCentavos: number | null;
+  limiteCreditoCentavos: number | null;
+  totalCargosCentavos: number | null;
+  totalAbonosCentavos: number | null;
+  tarjetasAdicionales: string[];
+  esEstadoDeCuenta: boolean;
+  paginas: number | null;
+};
+
+export type EstadoImportacion = 'subido' | 'procesando' | 'necesita_contraseña' | 'revisar' | 'confirmado' | 'descartado' | 'error';
+export type Cuadre = 'ok' | 'sin_cuadre' | 'sin_resumen';
+export type MetodoExtraccion = 'claude-pdf' | 'claude-texto' | 'reglas' | 'tabla';
+
+export type Importacion = {
+  id: string;
+  archivo: string;
+  archivoHash: string;
+  tamanoBytes: number;
+  estado: EstadoImportacion;
+  metodo: MetodoExtraccion | null;
+  resumen: ResumenEstado;
+  movimientos: MovimientoNormalizado[];
+  advertencias: string[];
+  cuadre: Cuadre | null;
+  cuentaId?: string | null;
+  insertados: number;
+  duplicados: number;
+  tokensEntrada: number;
+  tokensSalida: number;
+  error?: string | null;
+  createdAt: string;
+  updatedAt: string;
 };

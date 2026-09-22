@@ -3,6 +3,7 @@
 // → diccionario de comercios → categoría del proveedor → 'otros' (candidato a LLM).
 
 import { COMERCIOS, type ComercioConocido } from './comercios';
+import { categoriaPorPalabrasClave, COMERCIOS_DESDE_CATALOGO } from './catalogo';
 import type { MovimientoCrudo, TipoMovimiento } from './tipos';
 
 export type Categorizado = {
@@ -54,7 +55,8 @@ export function detectarMsi(descripcionNormalizada: string): { cuota: number; to
   if (!m) return null;
   const cuota = Number(m[1] ?? m[3]);
   const total = Number(m[2] ?? m[4]);
-  if (!cuota || !total || cuota > total || total > 48) return null;
+  // "1 de 1" es un pago único, no meses sin intereses.
+  if (!cuota || !total || cuota > total || total > 48 || total < 2) return null;
   return { cuota, total };
 }
 
@@ -65,9 +67,11 @@ const RE_COMISION = /\b(COMISION|INTERES|INTERESES|IVA COMISION|ANUALIDAD|CARGO 
 const RE_RETIRO = /\b(RETIRO|DISPOSICION|CAJERO|ATM|EFECTIVO)\b/;
 const RE_RENDIMIENTO = /\b(RENDIMIENTO|INTERESES GANADOS|GANANCIA|DIVIDENDO|CETES)\b/;
 const RE_APORTACION = /\b(APORTACION|COMPRA DE TITULOS|INVERSION|GBM|BITSO|KUSPIT|CETESDIRECTO)\b/;
+const RE_REEMBOLSO = /\b(REEMBOLSO|DEVOLUCION|BONIFICACION|CASHBACK|REVERSO|CANCELACION DE CARGO)\b/;
 
 // Marcas primero (patrones más largos ganan: 'UBER EATS' sobre 'UBER'); los genéricos solo si ninguna marca coincide.
-const MARCAS = COMERCIOS.filter((c) => !c.generico).sort((a, b) => b.patron.length - a.patron.length);
+// El diccionario interno va antes que el catálogo de Producto para que las pruebas existentes no cambien de resultado.
+const MARCAS = [...COMERCIOS.filter((c) => !c.generico), ...COMERCIOS_DESDE_CATALOGO].sort((a, b) => b.patron.length - a.patron.length);
 const GENERICOS = COMERCIOS.filter((c) => c.generico).sort((a, b) => b.patron.length - a.patron.length);
 
 function buscarComercio(n: string): ComercioConocido | null {
@@ -110,7 +114,7 @@ const MAPA_PROVEEDOR: Record<string, string> = {
 /** Categoriza un movimiento crudo con reglas y diccionario. */
 export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito' | 'inversion' | 'efectivo' = 'debito'): Categorizado {
   const n = normalizar(m.descripcion);
-  const msi = detectarMsi(n);
+  const msi = m.msi && m.msi.total >= 2 && m.msi.cuota <= m.msi.total ? m.msi : detectarMsi(n);
   const base: Categorizado = {
     comercio: nombreLimpio(m.descripcion),
     comercioDominio: null,
@@ -127,12 +131,20 @@ export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito'
 
   // Abonos
   if (m.esAbono) {
+    // Un reembolso en tarjeta de crédito no es ingreso ni pago: devuelve un cargo.
+    if (RE_REEMBOLSO.test(n)) {
+      const c = buscarComercio(n);
+      return { ...base, comercio: c ? `Reembolso ${c.nombre}` : 'Reembolso', comercioDominio: c?.dominio || null, categoriaId: 'ingreso', tipo: 'ingreso' };
+    }
     if (tipoCuenta === 'credito' && (RE_PAGO_TARJETA.test(n) || RE_SPEI.test(n) || /\bPAGO\b/.test(n))) {
       return { ...base, comercio: 'Pago de tarjeta', categoriaId: 'pago_tarjeta', tipo: 'pago_tarjeta' };
     }
     if (RE_NOMINA.test(n)) return { ...base, comercio: 'Nómina', categoriaId: 'nomina', tipo: 'ingreso' };
     if (tipoCuenta === 'inversion' && RE_RENDIMIENTO.test(n)) return { ...base, comercio: 'Rendimiento', categoriaId: 'rendimiento', tipo: 'ingreso' };
     if (RE_SPEI.test(n)) return { ...base, comercio: base.comercio === 'Movimiento' ? 'Transferencia recibida' : base.comercio, categoriaId: 'transferencia', tipo: 'transferencia' };
+    const kw = categoriaPorPalabrasClave(n, 'abono');
+    if (kw === 'nomina') return { ...base, comercio: 'Nómina', categoriaId: 'nomina', tipo: 'ingreso' };
+    if (kw === 'rendimiento') return { ...base, comercio: 'Rendimiento', categoriaId: 'rendimiento', tipo: 'ingreso' };
     return { ...base, categoriaId: 'ingreso', tipo: 'ingreso' };
   }
 
@@ -169,15 +181,25 @@ export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito'
 
   if (RE_SPEI.test(n)) return { ...base, comercio: base.comercio === 'Movimiento' ? 'Transferencia enviada' : base.comercio, categoriaId: 'transferencia', tipo: 'transferencia' };
 
+  // Palabras clave del catálogo de Producto (categorias.json): más amplias que el diccionario de marcas.
+  const kw = categoriaPorPalabrasClave(n, 'cargo');
+  if (kw) return { ...base, categoriaId: kw, esSuscripcion: kw === 'suscripciones' };
+
   const prov = m.categoriaProveedor ? MAPA_PROVEEDOR[m.categoriaProveedor.toLowerCase()] : undefined;
   if (prov) return { ...base, categoriaId: prov, categoriaFuente: 'proveedor' };
+
+  // La IA que leyó el documento lo marcó como posible suscripción: se queda en revisión hasta verlo dos meses.
+  if (m.esPosibleSuscripcion) return { ...base, categoriaId: 'suscripciones', esSuscripcion: true, desconocido: true };
 
   return { ...base, desconocido: true };
 }
 
-/** Hash estable para deduplicar entre fuentes (Belvo, importación, Gmail). */
-export function hashMovimiento(cuentaId: string, fecha: string, descripcion: string, monto: number, esAbono: boolean): string {
-  const clave = `${cuentaId}|${fecha.slice(0, 10)}|${normalizar(descripcion).replace(/\s/g, '')}|${Math.round(monto * 100)}|${esAbono ? 'A' : 'C'}`;
+/**
+ * Hash estable para deduplicar entre fuentes (Belvo, importación, Gmail).
+ * `repeticion` distingue cargos idénticos reales dentro del mismo estado de cuenta (0 no cambia el hash histórico).
+ */
+export function hashMovimiento(cuentaId: string, fecha: string, descripcion: string, monto: number, esAbono: boolean, repeticion = 0): string {
+  const clave = `${cuentaId}|${fecha.slice(0, 10)}|${normalizar(descripcion).replace(/\s/g, '')}|${Math.round(monto * 100)}|${esAbono ? 'A' : 'C'}${repeticion > 0 ? `|r${repeticion}` : ''}`;
   // FNV-1a 32 bits en hex, suficiente para unicidad por usuario.
   let h = 0x811c9dc5;
   for (let i = 0; i < clave.length; i++) {

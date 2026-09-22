@@ -1,7 +1,7 @@
 // Repositorio: la única puerta de las pantallas y del pipeline a los datos.
 // Dos implementaciones: memoria (modo mock / demo) y Supabase (producción). Misma interfaz.
 
-import type { Activo, Credencial, Cuenta, EventoCalendario, Insight, LineaPresupuesto, Movimiento, Objetivo, Pasivo, Perfil, Periodo, Presupuesto, Recurrente } from '@/lib/domain/tipos';
+import type { Activo, Credencial, Cuenta, EventoCalendario, Importacion, Insight, LineaPresupuesto, Movimiento, Objetivo, Pasivo, Perfil, Periodo, Presupuesto, Recurrente } from '@/lib/domain/tipos';
 
 export type Link = {
   id: string;
@@ -44,7 +44,7 @@ export interface Repo {
   movimientos(userId: string, filtro?: FiltroMovimientos): Promise<Movimiento[]>;
   /** Inserta ignorando duplicados por hash. Devuelve los insertados. */
   insertarMovimientos(userId: string, movs: NuevoMovimiento[]): Promise<Movimiento[]>;
-  actualizarMovimiento(userId: string, id: string, cambios: Partial<Pick<Movimiento, 'categoriaId' | 'categoriaFuente' | 'comercio' | 'esMsi' | 'msiCuota' | 'msiTotal' | 'recurrenteId'>>): Promise<Movimiento | null>;
+  actualizarMovimiento(userId: string, id: string, cambios: Partial<Pick<Movimiento, 'categoriaId' | 'categoriaFuente' | 'comercio' | 'tipo' | 'esMsi' | 'msiCuota' | 'msiTotal' | 'recurrenteId'>>): Promise<Movimiento | null>;
   eliminarMovimiento(userId: string, id: string): Promise<void>;
 
   // Comercios corregidos por el usuario (patron → categoría)
@@ -90,6 +90,15 @@ export interface Repo {
   eliminarCredencial(userId: string, proveedor: Credencial['proveedor']): Promise<void>;
   registrarEvento(userId: string | null, nombre: string, props?: Record<string, unknown>): Promise<void>;
 
-  // Importaciones
+  // Importaciones de estados de cuenta (un registro por archivo; el archivo nunca se guarda)
+  importaciones(userId: string, filtro?: { estados?: Importacion['estado'][] }): Promise<Importacion[]>;
+  importacion(userId: string, id: string): Promise<Importacion | null>;
+  importacionPorHash(userId: string, archivoHash: string): Promise<Importacion | null>;
+  guardarImportacion(userId: string, imp: Omit<Importacion, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<Importacion>;
+  eliminarImportacion(userId: string, id: string): Promise<void>;
+  /** Descripciones que ninguna regla reconoció (y lo que dijo el modelo), para mejorar el catálogo. */
+  registrarDescriptoresSinCategoria(userId: string, lista: { descriptor: string; comercioLlm?: string | null; categoriaLlm?: string | null }[]): Promise<void>;
+
+  // Compatibilidad: bitácora simple de archivos (tabla statements)
   registrarEstadoDeCuenta(userId: string, s: { cuentaId?: string | null; archivo: string; banco?: string | null; estado: 'subido' | 'procesado' | 'error'; transacciones: number; error?: string | null }): Promise<{ id: string }>;
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { desplazar, diasRestantes, mesDe, proximoDiaDePago, quincenaDe, rangoDe, ultimosPeriodos, vecesPorPeriodo } from './quincena';
+import { aISO, hoyMX } from './fechas';
 
 describe('quincena', () => {
   it('Q1 sep = 5–19 sep con días 5 y 20', () => {
@@ -71,5 +72,20 @@ describe('quincena', () => {
     expect(vecesPorPeriodo('mensual', 'mes')).toBe(1);
     expect(vecesPorPeriodo('anual', 'mes')).toBeCloseTo(1 / 12);
     expect(vecesPorPeriodo('quincenal', 'q')).toBe(1);
+  });
+
+  it('día de pago en fin de semana: la quincena sigue el calendario y no pierde días', () => {
+    // 5 sep 2026 es sábado; 20 sep 2026 es domingo.
+    const q1 = quincenaDe(new Date(2026, 8, 5), [5, 20]);
+    const q2 = quincenaDe(new Date(2026, 8, 19), [5, 20]);
+    expect(q1).toMatchObject({ inicio: '2026-09-05', fin: '2026-09-19' });
+    expect(q2.inicio).toBe(q1.inicio);
+    expect(quincenaDe(new Date(2026, 8, 20), [5, 20]).inicio).toBe('2026-09-20');
+  });
+
+  it('hoyMX convierte la hora del servidor (UTC) al día de la Ciudad de México', () => {
+    // 21 sep 2026 04:30 UTC = 20 sep 22:30 en CDMX (UTC-6 sin horario de verano).
+    expect(aISO(hoyMX(new Date('2026-09-21T04:30:00Z')))).toBe('2026-09-20');
+    expect(aISO(hoyMX(new Date('2026-09-21T12:00:00Z')))).toBe('2026-09-21');
   });
 });
