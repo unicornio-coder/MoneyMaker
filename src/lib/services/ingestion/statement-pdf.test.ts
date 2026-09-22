@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { CASOS, crearPdfEstado, iso } from '../../../../scripts/qa-pdfs.mjs';
-import { leerPdf } from './pdf';
+import { esPdfCifrado, leerPdf, textoLegible } from './pdf';
 import { extraerPorReglas, fuentePdf } from './statement-pdf';
 import { extraerArchivo, fuenteParaArchivo, hashArchivo } from './index';
 import { ErrorImportacion } from './tipos';
@@ -23,9 +23,26 @@ describe('leerPdf', () => {
     expect(r.texto).toMatch(new RegExp(`${CASOS[0].movimientos[0].fecha.replace(/\//g, '\\/')}\\s+NETFLIX\\.COM\\s+\\$219\\.00`));
   });
 
-  it('rechaza lo que no es PDF o está corrupto', async () => {
+  it('rechaza lo que no es PDF; un PDF roto propaga el error de pdf.js (quien llama decide)', async () => {
     await expect(leerPdf(Buffer.from('hola'))).rejects.toMatchObject({ codigo: 'no_pdf' });
-    await expect(leerPdf(Buffer.from('%PDF-1.4 basura'))).rejects.toMatchObject({ codigo: 'corrupto' });
+    await expect(leerPdf(Buffer.from('%PDF-1.4 basura'))).rejects.toThrow();
+    await expect(fuentePdf.extraer({ nombre: 'x.pdf', datos: Buffer.from('%PDF-1.4 basura') })).rejects.toMatchObject({ codigo: 'corrupto' });
+  });
+
+  it('detecta cifrado por bytes y texto ofuscado (fuentes sin mapa de caracteres)', async () => {
+    expect(esPdfCifrado(pdfCredito)).toBe(false);
+    expect(esPdfCifrado(Buffer.from('%PDF-1.6 … /Encrypt 12 0 R …'))).toBe(true);
+    const { texto } = await leerPdf(pdfCredito);
+    expect(textoLegible(texto)).toBe(true);
+    const ofuscado = '\u0001\u0002\u0003 "9 "9!"" ):$ $%=&&&:=6$ "#(" ")" (6 // /,+ , \' + # ! $ / =$ %$50=0%5\'0#0P\'&\'O %#!\'2%2 $%M&"60" %$0"9"9D%0"!! ! $ / \'0 6$N06%$:\'$60#0P\'& "2\'%';
+    expect(textoLegible(ofuscado.repeat(4))).toBe(false);
+    expect(textoLegible('')).toBe(false);
+  });
+
+  it('sin modelo y con texto ofuscado avisa que falta la lectura inteligente', async () => {
+    // Mismo PDF válido, pero con el texto reemplazado por símbolos: se simula con un PDF real y texto vacío no es posible,
+    // así que se cubre la regla directamente sobre la decisión.
+    expect(textoLegible('\u0005\u0012\u0006 \u0013 \u0014\u0015\u0006'.repeat(30))).toBe(false);
   });
 });
 

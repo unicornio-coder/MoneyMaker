@@ -7,8 +7,8 @@ import type { MovimientoNormalizado, ResumenEstado, TipoCuentaEstado } from '@/l
 import { extraerEstadoDeCuenta, hayLLM } from '../llm';
 import { detectarBanco, detectarUltimos4, movimientosPorRegex, parsearFecha } from '../importer';
 import { aMovimientos, aResumen } from './esquema';
-import { leerPdf } from './pdf';
-import { ErrorImportacion, type ResultadoExtraccion, type TransactionSource } from './tipos';
+import { esPdf, esPdfCifrado, leerPdf, PDF_MAX_BYTES, textoLegible, type PdfLeido } from './pdf';
+import { ErrorImportacion, esErrorImportacion, type ResultadoExtraccion, type TransactionSource } from './tipos';
 
 const RE_CREDITO = /PAGO M[IÍ]NIMO|FECHA L[IÍ]MITE DE PAGO|L[IÍ]MITE DE CR[EÉ]DITO|TARJETA DE CR[EÉ]DITO|PAGO PARA NO GENERAR INTERESES/i;
 const RE_DEBITO = /CUENTA DE CHEQUES|CUENTA DE N[OÓ]MINA|CUENTA DE D[EÉ]BITO|SALDO PROMEDIO|DEP[OÓ]SITOS|CUENTA DE AHORRO/i;
@@ -61,19 +61,45 @@ export function extraerPorReglas(texto: string, paginas: number | null): { resum
   return { resumen, movimientos };
 }
 
+/**
+ * Abre el PDF con pdf.js. Si el problema es la contraseña, se propaga; cualquier otro fallo de pdf.js devuelve null
+ * (el modelo puede leer el PDF aunque pdf.js no, y así no dependemos de él en producción).
+ */
+async function intentarLeer(datos: Buffer, contraseña: string | null | undefined): Promise<PdfLeido | null> {
+  try {
+    return await leerPdf(datos, contraseña);
+  } catch (e) {
+    if (esErrorImportacion(e)) throw e;
+    console.warn('[pdf] pdf.js no pudo abrir el archivo:', e instanceof Error ? `${e.name}: ${e.message.slice(0, 160)}` : 'error');
+    return null;
+  }
+}
+
 export const fuentePdf: TransactionSource = {
   nombre: 'statement-pdf',
   async extraer({ datos, contraseña }) {
-    const pdf = await leerPdf(datos, contraseña);
+    if (!esPdf(datos)) throw new ErrorImportacion('no_pdf');
+    if (datos.length > PDF_MAX_BYTES) throw new ErrorImportacion('muy_grande');
+    const cifrado = esPdfCifrado(datos);
+    const pdf = await intentarLeer(datos, contraseña);
+    if (cifrado && !pdf) throw new ErrorImportacion(contraseña ? 'contraseña_incorrecta' : 'necesita_contraseña');
+    const legible = !!pdf && textoLegible(pdf.texto);
     const advertencias: string[] = [];
     let resultado: Omit<ResultadoExtraccion, 'advertencias'>;
 
     if (hayLLM()) {
-      // Cifrado: el modelo no puede abrirlo, así que va el texto ya descifrado en memoria.
-      const { extraccion, tokens } = await extraerEstadoDeCuenta(pdf.cifrado ? { texto: pdf.texto } : { pdf: datos });
-      resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: pdf.cifrado ? 'claude-texto' : 'claude-pdf', tokens };
+      // El modelo lee el PDF completo (tablas, logos, fuentes ofuscadas). Solo si venía cifrado va el texto ya descifrado.
+      if (!cifrado) {
+        const { extraccion, tokens } = await extraerEstadoDeCuenta({ pdf: datos });
+        resultado = { resumen: aResumen(extraccion, pdf?.paginas ?? null), movimientos: aMovimientos(extraccion), metodo: 'claude-pdf', tokens };
+      } else {
+        if (!pdf || !legible) throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
+        const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
+        resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
+      }
     } else {
-      if (pdf.texto.length < 40) throw new ErrorImportacion('ilegible');
+      if (!pdf) throw new ErrorImportacion('corrupto');
+      if (!legible) throw new ErrorImportacion('sin_modelo', 'El PDF no trae texto legible; hace falta la lectura con modelo');
       const r = extraerPorReglas(pdf.texto, pdf.paginas);
       resultado = { ...r, metodo: 'reglas', tokens: { entrada: 0, salida: 0 } };
       advertencias.push('Leído con reglas básicas (sin modelo). Revisa fechas y montos.');
@@ -81,7 +107,7 @@ export const fuentePdf: TransactionSource = {
 
     if (!resultado.resumen.esEstadoDeCuenta) throw new ErrorImportacion('no_es_estado');
     if (!resultado.movimientos.length) {
-      if (resultado.resumen.saldoAlCorteCentavos == null && resultado.resumen.periodoFin == null) throw new ErrorImportacion(pdf.texto.length < 40 ? 'ilegible' : 'no_es_estado');
+      if (resultado.resumen.saldoAlCorteCentavos == null && resultado.resumen.periodoFin == null) throw new ErrorImportacion(legible ? 'no_es_estado' : 'ilegible');
       advertencias.push('sin_movimientos');
     }
     if (resultado.movimientos.some((m) => m.montoCentavos === 0 && m.montoOriginalCentavos)) advertencias.push('moneda_sin_equivalente');

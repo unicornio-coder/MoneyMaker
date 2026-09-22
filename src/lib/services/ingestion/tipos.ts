@@ -41,6 +41,7 @@ export type CodigoErrorImportacion =
   | 'sin_conexion'
   | 'limite_api'
   | 'sesion_expirada'
+  | 'sin_modelo'
   | 'no_disponible';
 
 export class ErrorImportacion extends Error {
