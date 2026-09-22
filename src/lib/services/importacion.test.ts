@@ -48,8 +48,9 @@ describe('analizarArchivo', () => {
 
   it('archivo inválido queda en error con código', async () => {
     const { importacion, codigo } = await analizarArchivo(repoMemoria, U, { nombre: 'x.pdf', datos: Buffer.from('%PDF-1.4 nada') });
-    expect(codigo).toBe('corrupto');
-    expect(importacion).toMatchObject({ estado: 'error', error: 'corrupto' });
+    // Sin modelo, un PDF que pdf.js no abre se reporta como "falta la lectura inteligente" (con modelo iría a Claude).
+    expect(codigo).toBe('sin_modelo');
+    expect(importacion).toMatchObject({ estado: 'error', error: 'sin_modelo' });
     expect(await descartarImportacion(repoMemoria, U, importacion.id)).toBe(true);
     expect((await repoMemoria.importacion(U, importacion.id))?.estado).toBe('descartado');
   });

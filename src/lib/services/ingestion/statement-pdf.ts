@@ -98,8 +98,8 @@ export const fuentePdf: TransactionSource = {
         resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
       }
     } else {
-      if (!pdf) throw new ErrorImportacion('corrupto');
-      if (!legible) throw new ErrorImportacion('sin_modelo', 'El PDF no trae texto legible; hace falta la lectura con modelo');
+      // Sin modelo, solo se puede leer un PDF con texto limpio; si pdf.js no pudo abrirlo o el texto está ofuscado, lo que falta es la lectura inteligente.
+      if (!pdf || !legible) throw new ErrorImportacion('sin_modelo', pdf ? 'El PDF no trae texto legible; hace falta la lectura con modelo' : 'pdf.js no pudo abrir el archivo y no hay modelo');
       const r = extraerPorReglas(pdf.texto, pdf.paginas);
       resultado = { ...r, metodo: 'reglas', tokens: { entrada: 0, salida: 0 } };
       advertencias.push('Leído con reglas básicas (sin modelo). Revisa fechas y montos.');

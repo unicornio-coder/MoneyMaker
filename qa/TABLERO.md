@@ -51,10 +51,13 @@ Ninguno recibido todavía. Provisionales creados por Claude Code en `qa/entregab
 Sin tickets. Carpeta `qa/tickets/`. Formato: `qa/tickets/QA-###.md` con estado propuesto / aprobado / listo-para-verificar / cerrado.
 
 ## SOLO JC
-1. `ANTHROPIC_API_KEY` en Vercel (y en `.env.local`): sin ella la lectura de PDF cae a reglas básicas y solo funciona con PDFs de texto limpio. Opcional: `ANTHROPIC_MODEL` (default `claude-opus-5`). Después de ponerla: subir un estado de cuenta real y correr `npm run qa:precision` con tus PDFs + JSON esperado.
-2. Confirmar plan de Vercel: `maxDuration` de `/api/imports` se puso en 300 s (Fluid compute). Si el deploy lo rechaza, bajar a 60 y avisar: un PDF grande puede no alcanzar.
-3. Correr `supabase/migrations/0003_imports.sql` en el SQL Editor del proyecto (statement_imports, unmatched_descriptors). Sin esto, en preview con Supabase, subir un PDF falla con "Algo falló de nuestro lado".
-4. Cuentas qa01–qa10: con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en `.env.local`, correr `npm run qa:seed` (crea/restablece y escribe `qa/cuentas.local.md`) y `npm run qa:reset` para limpiarlas. Se niega a correr si `NEXT_PUBLIC_APP_URL` no es preview/localhost.
+1. **BLOQUEANTE · `ANTHROPIC_API_KEY` en Vercel** (proyecto money-maker → Settings → Environment Variables → Production → Redeploy). Sin ella ningún estado de cuenta real se lee (el de Amex trae texto ofuscado). Claude Code no puede ponerla: el conector de Vercel de esta sesión solo tiene acceso a la cuenta personal, no al equipo `unicornio3` donde vive el proyecto. Alternativa: reconectar el conector de Vercel con el equipo `unicornio3` y Claude Code la configura. Opcional: `ANTHROPIC_MODEL` (default `claude-opus-5`).
+2. Plan de Vercel: Hobby (visto en la API). El deploy con `maxDuration` 300 s pasó, así que Fluid compute está activo. Si un PDF grande tarda más de 5 min, plan B: cola por etapas.
+3. ~~Correr `supabase/migrations/0003_imports.sql`~~ **Hecho** (aplicada el 21 sep 21:15 UTC; verificado con el conector de Supabase: tablas `statement_imports` y `unmatched_descriptors` existen). Los dos intentos de JC del 22 sep quedaron con `error = servidor`: pdf.js fallando dentro de la función, corregido en el PR #3/#4.
+4. Rama de producción en Vercel: sigue siendo `claude/gallant-bohr-re8e7b`; Claude Code publica cada cambio ahí (PR a `main` + PR a esa rama). Recomendación: Settings → Git → Production Branch = `main`.
+5. Cuentas qa01–qa10: con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en `.env.local`, correr `npm run qa:seed` (crea/restablece y escribe `qa/cuentas.local.md`) y `npm run qa:reset` para limpiarlas. Se niega a correr si `NEXT_PUBLIC_APP_URL` no es preview/localhost.
+
+Regla de trabajo acordada con JC (22 sep): **cada cambio se publica en producción de inmediato** (commit → PR a `main` → PR a la rama de producción de Vercel), sin esperar a que se acumulen.
 
 ## Riesgos
 - **Sin `ANTHROPIC_API_KEY` la mayoría de los estados de cuenta reales no se leen.** El primer PDF real de JC (Amex, 4 páginas) trae el texto ofuscado (fuentes sin mapa de caracteres): las reglas no pueden leerlo y la app ahora lo dice claro ("necesita la lectura inteligente… falta ANTHROPIC_API_KEY"). Con la llave, el PDF completo va a Claude y sí se lee. SOLO JC #1 es bloqueante para el objetivo del día.

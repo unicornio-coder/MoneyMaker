@@ -26,7 +26,7 @@ describe('leerPdf', () => {
   it('rechaza lo que no es PDF; un PDF roto propaga el error de pdf.js (quien llama decide)', async () => {
     await expect(leerPdf(Buffer.from('hola'))).rejects.toMatchObject({ codigo: 'no_pdf' });
     await expect(leerPdf(Buffer.from('%PDF-1.4 basura'))).rejects.toThrow();
-    await expect(fuentePdf.extraer({ nombre: 'x.pdf', datos: Buffer.from('%PDF-1.4 basura') })).rejects.toMatchObject({ codigo: 'corrupto' });
+    await expect(fuentePdf.extraer({ nombre: 'x.pdf', datos: Buffer.from('%PDF-1.4 basura') })).rejects.toMatchObject({ codigo: 'sin_modelo' });
   });
 
   it('detecta cifrado por bytes y texto ofuscado (fuentes sin mapa de caracteres)', async () => {
