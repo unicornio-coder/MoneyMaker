@@ -8,6 +8,21 @@ import { pathToFileURL } from 'node:url';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { ErrorImportacion } from './tipos';
 
+// pdf.js 6 usa Promise.withResolvers (Node 22). Si el runtime es más viejo (Node 20), se rellena para no caer con
+// "Promise.withResolvers is not a function". package.json fija engines.node = 22.x; esto es la red de seguridad.
+type ConResolvers = PromiseConstructor & { withResolvers?: <T>() => { promise: Promise<T>; resolve: (v: T | PromiseLike<T>) => void; reject: (e?: unknown) => void } };
+if (typeof (Promise as ConResolvers).withResolvers !== 'function') {
+  (Promise as ConResolvers).withResolvers = function withResolvers<T>() {
+    let resolve!: (v: T | PromiseLike<T>) => void;
+    let reject!: (e?: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+}
+
 export const PDF_MAX_BYTES = 10 * 1024 * 1024;
 
 // Rutas por directorio de trabajo (sin require.resolve/createRequire: webpack los convertiría en un contexto sobre todo el paquete).
