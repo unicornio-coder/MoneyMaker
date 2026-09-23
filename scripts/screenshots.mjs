@@ -53,7 +53,15 @@ async function main() {
       for (const [nombre, ruta] of RUTAS) {
         try {
           await page.goto(`${BASE}${ruta}`, { waitUntil: 'networkidle', timeout: 60_000 });
-          await page.waitForTimeout(800);
+          // Recorre la página para que los bloques que aparecen al hacer scroll queden visibles en la captura completa.
+          await page.evaluate(async () => {
+            for (let y = 0; y < document.body.scrollHeight; y += 500) {
+              window.scrollTo(0, y);
+              await new Promise((r) => setTimeout(r, 50));
+            }
+            window.scrollTo(0, 0);
+          });
+          await page.waitForTimeout(900);
           await page.screenshot({ path: `${carpeta}/${vista.nombre}-${nombre}.png`, fullPage: true, animations: 'disabled' });
           console.log(`ok  ${vista.nombre.padEnd(10)} ${nombre}`);
         } catch (e) {
