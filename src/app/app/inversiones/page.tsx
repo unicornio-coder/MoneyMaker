@@ -1,7 +1,7 @@
 import { contexto } from '@/lib/data/contexto';
 import { getAggregator } from '@/lib/services/aggregator';
 import { posicionesMock, seriesMock } from '@/lib/mock/cuentas';
-import { aISO, sumarMeses } from '@/lib/domain/fechas';
+import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Inversiones } from '@/components/inversiones/Inversiones';
 import type { CuentaVista } from '@/components/inicio/tipos';
 
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function InversionesPage() {
   const { usuario, repo } = await contexto();
-  const hoy = new Date();
+  const hoy = hoyMX();
   const agg = getAggregator();
   const credBitso = await repo.credencial(usuario.id, 'bitso').catch(() => null);
   const posBitso = (credBitso?.datos.posiciones as { ticker: string; nombre: string; dominio: string; cantidad: number; valor: number; variacion: number }[] | undefined) ?? null;

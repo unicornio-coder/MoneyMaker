@@ -67,6 +67,10 @@ const RE_COMISION = /\b(COMISION|INTERES|INTERESES|IVA COMISION|ANUALIDAD|CARGO 
 const RE_RETIRO = /\b(RETIRO|DISPOSICION|CAJERO|ATM|EFECTIVO)\b/;
 const RE_RENDIMIENTO = /\b(RENDIMIENTO|INTERESES GANADOS|GANANCIA|DIVIDENDO|CETES)\b/;
 const RE_APORTACION = /\b(APORTACION|COMPRA DE TITULOS|INVERSION|GBM|BITSO|KUSPIT|CETESDIRECTO)\b/;
+// SPEI con propósito explícito: un abono por renta, honorarios o factura es ingreso (no "transferencia");
+// un cargo por renta es gasto de vivienda. Sin estas palabras, un SPEI sigue siendo transferencia (neutro).
+const RE_INGRESO_SPEI = /\b(RENTA|ARRENDAMIENTO|HONORARIOS|FACTURA|FAC|PAGO CLIENTE|COBRO|AGUINALDO|FINIQUITO|LIQUIDACION|BONO|PRIMA VACACIONAL|VENTA|FREELANCE|CONSULTORIA|SERVICIOS PROFESIONALES|PENSION|BECA|UTILIDADES|PTU)\b/;
+const RE_GASTO_SPEI = /\b(RENTA|ARRENDAMIENTO|DEPARTAMENTO|DEPTO|CASA|MANTENIMIENTO|COLEGIATURA|ESCUELA|PRESTAMO|CREDITO HIPOTECARIO|HIPOTECA)\b/;
 const RE_REEMBOLSO = /\b(REEMBOLSO|DEVOLUCION|BONIFICACION|CASHBACK|REVERSO|CANCELACION DE CARGO)\b/;
 
 // Marcas primero (patrones más largos ganan: 'UBER EATS' sobre 'UBER'); los genéricos solo si ninguna marca coincide.
@@ -141,6 +145,10 @@ export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito'
     }
     if (RE_NOMINA.test(n)) return { ...base, comercio: 'Nómina', categoriaId: 'nomina', tipo: 'ingreso' };
     if (tipoCuenta === 'inversion' && RE_RENDIMIENTO.test(n)) return { ...base, comercio: 'Rendimiento', categoriaId: 'rendimiento', tipo: 'ingreso' };
+    if (RE_INGRESO_SPEI.test(n)) {
+      const c = buscarComercio(n);
+      return { ...base, comercio: c?.nombre ?? (/\b(RENTA|ARRENDAMIENTO)\b/.test(n) ? 'Renta cobrada' : /\b(HONORARIOS|FACTURA|FAC|CONSULTORIA|SERVICIOS PROFESIONALES|FREELANCE)\b/.test(n) ? 'Honorarios' : base.comercio === 'Movimiento' ? 'Ingreso' : base.comercio), comercioDominio: c?.dominio || null, categoriaId: 'ingreso', tipo: 'ingreso' };
+    }
     if (RE_SPEI.test(n)) return { ...base, comercio: base.comercio === 'Movimiento' ? 'Transferencia recibida' : base.comercio, categoriaId: 'transferencia', tipo: 'transferencia' };
     const kw = categoriaPorPalabrasClave(n, 'abono');
     if (kw === 'nomina') return { ...base, comercio: 'Nómina', categoriaId: 'nomina', tipo: 'ingreso' };
@@ -179,6 +187,10 @@ export function categorizar(m: MovimientoCrudo, tipoCuenta: 'credito' | 'debito'
 
   if (msi) return { ...base, categoriaId: 'msi' };
 
+  if (RE_SPEI.test(n) && RE_GASTO_SPEI.test(n)) {
+    const colegio = /\b(COLEGIATURA|ESCUELA)\b/.test(n);
+    return { ...base, comercio: colegio ? 'Colegiatura' : /\b(PRESTAMO|HIPOTECA|CREDITO HIPOTECARIO)\b/.test(n) ? 'Pago de crédito' : 'Renta', categoriaId: colegio ? 'colegiaturas' : /\b(PRESTAMO|HIPOTECA|CREDITO HIPOTECARIO)\b/.test(n) ? 'fijos' : 'hogar', tipo: 'gasto' };
+  }
   if (RE_SPEI.test(n)) return { ...base, comercio: base.comercio === 'Movimiento' ? 'Transferencia enviada' : base.comercio, categoriaId: 'transferencia', tipo: 'transferencia' };
 
   // Palabras clave del catálogo de Producto (categorias.json): más amplias que el diccionario de marcas.

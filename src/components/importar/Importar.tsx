@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, Check, AlertCircle, X, RotateCcw, Lock, Pencil, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { money, fechaCorta } from '@/lib/format';
+import { money, fechaCorta, pluralize } from '@/lib/format';
 import { formatearCentavos } from '@/lib/domain/money';
 import { infoBanco } from '@/lib/domain/comercios';
 import type { Importacion, TipoCuentaEstado } from '@/lib/domain/tipos';
@@ -250,8 +250,8 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         <div className="card px-6 py-8 text-center">
           <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green text-white animate-pop"><Check size={28} strokeWidth={3} /></span>
           <h2 className="font-display text-[20px] font-bold">{TEXTOS.exito.titulo}</h2>
-          <p className="mt-1.5 text-[13px] text-txt-2 dark:text-fg-2">{t(TEXTOS.exito.texto, { movimientos: tot.movimientos, cuentas: tot.cuentas, suscripciones: tot.suscripciones, msi: tot.msi })}</p>
-          {tot.duplicados > 0 && <p className="mt-1 text-[12px] text-txt-2 dark:text-fg-2">{t(TEXTOS.exito.duplicados, { n: tot.duplicados })}</p>}
+          <p className="mt-1.5 text-[13px] text-txt-2 dark:text-fg-2">{t(TEXTOS.exito.texto, { movimientos: pluralize(tot.movimientos, 'movimiento nuevo', 'movimientos nuevos'), cuentas: pluralize(tot.cuentas, 'cuenta'), suscripciones: pluralize(tot.suscripciones, 'suscripción', 'suscripciones'), msi: pluralize(tot.msi, 'compra a meses', 'compras a meses') })}</p>
+          {tot.duplicados > 0 && <p className="mt-1 text-[12px] text-txt-2 dark:text-fg-2">{t(TEXTOS.exito.duplicados, { n: pluralize(tot.duplicados, 'movimiento') })}</p>}
           <div className="mt-5 grid grid-cols-3 gap-2">
             {[['Cuentas', tot.cuentas], ['Movimientos', tot.movimientos], ['Suscripciones', tot.suscripciones]].map(([l, v]) => (
               <div key={String(l)} className="rounded-card bg-bg-page px-2 py-3 dark:bg-surface-2">
@@ -261,7 +261,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
             ))}
           </div>
           {fallidos.length > 0 && (
-            <p className="mt-4 flex items-center gap-2 rounded-input bg-warning-soft px-3.5 py-2.5 text-left text-[12.5px] font-semibold text-fg dark:bg-surface-2"><AlertCircle size={16} className="text-warning" /> {fallidos.length} {fallidos.length === 1 ? 'archivo no se guardó' : 'archivos no se guardaron'}: {fallidos.map((f) => textoError(f.codigo ?? 'servidor')).join(' ')}</p>
+            <p className="mt-4 flex items-center gap-2 rounded-input bg-warning-soft px-3.5 py-2.5 text-left text-[12.5px] font-semibold text-fg dark:bg-surface-2"><AlertCircle size={16} className="text-warning" /> {pluralize(fallidos.length, 'archivo no se guardó', 'archivos no se guardaron')}: {fallidos.map((f) => textoError(f.codigo ?? 'servidor')).join(' ')}</p>
           )}
         </div>
 

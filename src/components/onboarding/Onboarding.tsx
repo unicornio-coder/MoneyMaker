@@ -195,11 +195,19 @@ export function Onboarding({ nombre, perfil, instituciones, agregador, sandbox, 
               <p className="mt-6 text-[13px] text-txt-2">Calculando…</p>
             ) : (
               <div className="mt-6 space-y-3">
-                <div className="rounded-20 bg-ink p-5 text-white">
-                  <div className="text-[12px] font-semibold text-green-light">Puedes invertir esta quincena</div>
-                  <div className="font-display text-[36px] font-bold tracking-[-1.2px]">{money(resumen.excedente)}</div>
-                  <div className="text-[12px] text-white/70">Ingreso {money(resumen.ingresoQuincenal)} − fijos, MSI y tu gasto habitual</div>
-                </div>
+                {resumen.cuentas > 0 && resumen.ingresoQuincenal > 0 ? (
+                  <div className="rounded-20 bg-ink p-5 text-white">
+                    <div className="text-[12px] font-semibold text-green-light">Puedes invertir esta quincena</div>
+                    <div className="font-display text-[36px] font-bold tracking-[-1.2px]">{money(resumen.excedente)}</div>
+                    <div className="text-[12px] text-white/70">Ingreso {money(resumen.ingresoQuincenal)} − fijos, MSI y tu gasto habitual</div>
+                  </div>
+                ) : (
+                  <div className="rounded-20 bg-ink p-5 text-white">
+                    <div className="text-[12px] font-semibold text-green-light">Cuánto puedes invertir</div>
+                    <div className="font-display text-[20px] font-bold leading-snug">Lo calculamos con tu primer estado de cuenta</div>
+                    <div className="mt-1 text-[12px] text-white/70">Ingreso − fijos, meses sin intereses y tu gasto habitual, cada quincena.</div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   {[['Cuentas conectadas', String(resumen.cuentas)], ['Movimientos leídos', String(resumen.movimientos)], ['Suscripciones', `${resumen.suscripciones} · ${money(resumen.suscripcionesMensual)}/mes`], ['Meses sin intereses', `${resumen.msi} · ${money(resumen.msiMensual)}/mes`]].map(([l, v]) => (
                     <div key={l} className="rounded-card bg-surface p-4 shadow-card"><div className="text-[11px] font-semibold text-txt-2 dark:text-fg-2">{l}</div><div className="font-display text-[18px] font-bold">{v}</div></div>

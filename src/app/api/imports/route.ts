@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { registrar } from '@/lib/services/analytics';
 import { contexto } from '@/lib/data/contexto';
 import { analizarArchivo } from '@/lib/services/importacion';
 import { esErrorImportacion } from '@/lib/services/ingestion';
@@ -30,10 +31,12 @@ export async function POST(req: Request) {
   try {
     const r = await analizarArchivo(repo, usuario.id, { nombre: archivo.name, datos: Buffer.from(await archivo.arrayBuffer()), contraseña: typeof contraseña === 'string' && contraseña ? contraseña : null });
     const status = r.codigo === 'ya_subido' ? 409 : r.importacion.estado === 'error' ? 422 : 200;
+    if (status === 422) await registrar(repo, usuario.id, 'import_error', { codigo: r.importacion.error ?? r.codigo ?? 'desconocido', kb: Math.round(archivo.size / 1024) });
     return NextResponse.json(r, { status });
   } catch (e) {
     const codigo = esErrorImportacion(e) ? e.codigo : 'servidor';
     if (!esErrorImportacion(e)) console.error('[api/imports]', e instanceof Error ? e.name : 'error');
+    await registrar(repo, usuario.id, 'import_error', { codigo, kb: Math.round(archivo.size / 1024) });
     return NextResponse.json({ codigo }, { status: codigo === 'muy_grande' ? 413 : codigo === 'no_pdf' ? 400 : 500 });
   }
 }

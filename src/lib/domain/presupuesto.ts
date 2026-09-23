@@ -1,7 +1,7 @@
 // Propuesta automática de presupuesto y cálculo de Presupuesto vs Actual.
 
 import { costoMensual } from './recurrentes';
-import { diasDelRango, diasRestantes, enRango, ultimosPeriodos, vecesPorPeriodo, type Rango } from './quincena';
+import { diasDelRango, diasRestantes, enRango, ultimosPeriodos, vecesPorPeriodo, type Rango, puedesInvertir } from './quincena';
 import type { LineaPresupuesto, Movimiento, Periodo, Recurrente } from './tipos';
 
 export type LineaVsActual = {
@@ -95,8 +95,12 @@ export function presupuestoVsActual(lineas: LineaPresupuesto[] | Omit<LineaPresu
 
 /** "Puedes invertir $X": ingreso del periodo − fijos/MSI/suscripciones prorrateados − gasto variable promedio del periodo. */
 export function excedenteInvertible(ingresoPeriodo: number, lineas: Omit<LineaPresupuesto, 'id'>[]): number {
-  const total = lineas.reduce((s, l) => s + l.limite, 0);
-  return Math.max(0, ingresoPeriodo - total);
+  const suma = (ids: string[]) => lineas.filter((l) => ids.includes(l.categoriaId)).reduce((s, l) => s + l.limite, 0);
+  const fijos = suma(['fijos']);
+  const msi = suma(['msi']);
+  const suscripciones = suma(['suscripciones']);
+  const gastoHabitual = lineas.reduce((s, l) => s + l.limite, 0) - fijos - msi - suscripciones;
+  return puedesInvertir({ ingreso: ingresoPeriodo, fijos, msi, suscripciones, gastoHabitual });
 }
 
 export function gastoPorDia(rango: Rango, gastado: number): number {

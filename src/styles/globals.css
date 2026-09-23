@@ -59,6 +59,7 @@
   }
   :root[data-theme='dark'] .input { background: var(--surface-2); border-color: var(--edge-2); }
   .input:focus { border-color: #16a34a; }
+  :is(a, button, [role='button'], input, select, textarea, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
   .skeleton {
     background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface) 50%, var(--surface-2) 75%);
     background-size: 200% 100%;

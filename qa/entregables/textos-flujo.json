@@ -4,9 +4,18 @@
   "modal": {
     "titulo": "Agregar cuenta",
     "opciones": {
-      "pdf": { "titulo": "Subir estado de cuenta", "texto": "PDF de tu tarjeta o cuenta. Puedes subir varios a la vez." },
-      "banco": { "titulo": "Conectar mi banco automáticamente", "texto": "Próximamente" },
-      "correo": { "titulo": "Reenviar por correo", "texto": "Próximamente" }
+      "pdf": {
+        "titulo": "Subir estado de cuenta",
+        "texto": "PDF de tu tarjeta o cuenta. Puedes subir varios a la vez."
+      },
+      "banco": {
+        "titulo": "Conectar mi banco automáticamente",
+        "texto": "Próximamente"
+      },
+      "correo": {
+        "titulo": "Reenviar por correo",
+        "texto": "Próximamente"
+      }
     }
   },
   "carga": {
@@ -30,7 +39,11 @@
     "quitar": "Quitar"
   },
   "leyendo": {
-    "mensajes": ["Leyendo el documento", "Detectando banco, tarjeta y periodo", "Separando cargos, abonos y meses sin intereses"]
+    "mensajes": [
+      "Leyendo el documento",
+      "Detectando banco, tarjeta y periodo",
+      "Separando cargos, abonos y meses sin intereses"
+    ]
   },
   "contraseña": {
     "titulo": "Este PDF tiene contraseña",
@@ -56,12 +69,16 @@
     "confirmar_todo": "Guardar {n} estados de cuenta",
     "confirmar_uno": "Guardar estado de cuenta",
     "cuenta_destino": "Cuenta",
-    "tipo": { "credito": "Crédito", "debito": "Débito", "inversion": "Inversión" }
+    "tipo": {
+      "credito": "Crédito",
+      "debito": "Débito",
+      "inversion": "Inversión"
+    }
   },
   "exito": {
     "titulo": "Listo",
-    "texto": "{movimientos} movimientos nuevos en {cuentas} cuentas. Detectamos {suscripciones} suscripciones y {msi} compras a meses.",
-    "duplicados": "{n} movimientos ya los teníamos y no se repitieron.",
+    "texto": "{movimientos} en {cuentas}. Detectamos {suscripciones} y {msi}.",
+    "duplicados": "{n} ya los teníamos y no se repitieron.",
     "quincena_titulo": "Detectamos tu nómina los días {dias}",
     "quincena_texto": "¿Usamos esos días como tu quincena? Así tu presupuesto sigue el ritmo real de tu dinero.",
     "quincena_si": "Sí, usar esos días",
@@ -88,11 +105,31 @@
     "moneda_sin_equivalente": "Hay cargos en otra moneda sin equivalente en pesos; los guardamos con el monto original."
   },
   "vacios": {
-    "inicio": { "titulo": "Aún no hay cuentas", "texto": "Sube tu estado de cuenta y en dos minutos ves qué pagas cada mes y cuánto te sobra.", "cta": "Sube tu estado de cuenta" },
-    "gastos": { "titulo": "Sin movimientos todavía", "texto": "Cuando subas un estado de cuenta, aquí verás tu gasto por periodo y categoría.", "cta": "Sube tu estado de cuenta" },
-    "fijos": { "titulo": "Sin gastos fijos detectados", "texto": "Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos.", "cta": "Sube tu estado de cuenta" },
-    "presupuesto": { "titulo": "Tu presupuesto se arma solo", "texto": "Con los movimientos de un estado de cuenta te proponemos un presupuesto por quincena.", "cta": "Sube tu estado de cuenta" },
-    "patrimonio": { "titulo": "Sin cuentas todavía", "texto": "Sube el estado de cuenta de tus tarjetas y verás lo que debes al corte.", "cta": "Sube tu estado de cuenta" }
+    "inicio": {
+      "titulo": "Aún no hay cuentas",
+      "texto": "Sube tu estado de cuenta y en dos minutos ves qué pagas cada mes y cuánto te sobra.",
+      "cta": "Sube tu estado de cuenta"
+    },
+    "gastos": {
+      "titulo": "Sin movimientos todavía",
+      "texto": "Cuando subas un estado de cuenta, aquí verás tu gasto por periodo y categoría.",
+      "cta": "Sube tu estado de cuenta"
+    },
+    "fijos": {
+      "titulo": "Sin gastos fijos detectados",
+      "texto": "Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos.",
+      "cta": "Sube tu estado de cuenta"
+    },
+    "presupuesto": {
+      "titulo": "Tu presupuesto se arma solo",
+      "texto": "Con los movimientos de un estado de cuenta te proponemos un presupuesto por quincena.",
+      "cta": "Sube tu estado de cuenta"
+    },
+    "patrimonio": {
+      "titulo": "Sin cuentas todavía",
+      "texto": "Sube el estado de cuenta de tus tarjetas y verás lo que debes al corte.",
+      "cta": "Sube tu estado de cuenta"
+    }
   },
   "confianza": {
     "no_guardamos_pdf": "El PDF se lee y se descarta. No lo guardamos.",

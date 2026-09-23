@@ -33,7 +33,7 @@ const RUBROS_PAS: { id: Pasivo['tipo']; nombre: string; icon: typeof Home }[] = 
   { id: 'otro', nombre: 'Otros', icon: Package },
 ];
 
-type PnL = { mes: string; ingresos: number; fijos: number; variables: number; ahorro: number; fijosEsperados: number };
+type PnL = { mes: string; actual?: boolean; ingresos: number; fijos: number; variables: number; ahorro: number; fijosEsperados: number };
 
 export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo[]; pasivos: Pasivo[]; cuentas: Cuenta[]; pnl: PnL }) {
   const [vista, setVista] = useState<Vista>('act');
@@ -128,14 +128,14 @@ export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo
       </div>
 
       <section className="card p-5">
-        <div className="mb-3 flex items-baseline justify-between"><h2 className="font-display text-[16px] font-bold">Estado de resultados · P&amp;L</h2><span className="text-[11.5px] text-txt-2 dark:text-fg-2">{pnl.mes}</span></div>
+        <div className="mb-3 flex items-baseline justify-between"><h2 className="font-display text-[16px] font-bold">Estado de resultados · P&amp;L</h2><span className="text-[11.5px] text-txt-2 dark:text-fg-2">{pnl.actual === false ? `Basado en ${pnl.mes.toLowerCase()}` : pnl.mes}</span></div>
         <ul className="divide-y divide-edge text-[13px]">
           {[['Ingresos', pnl.ingresos, 'green'], ['Gastos fijos', -pnl.fijos, ''], ['Gastos variables', -pnl.variables, ''], ['Ahorro / inversión', -pnl.ahorro, 'invest']].map(([l, v, t]) => (
             <li key={String(l)} className="flex h-11 items-center justify-between"><span>{l}</span><span className={cn('font-display font-bold', t === 'green' ? 'text-green' : t === 'invest' ? 'text-invest' : '')}>{Number(v) < 0 ? '-' : ''}{money(Math.abs(Number(v)))}</span></li>
           ))}
           <li className="flex h-12 items-center justify-between font-bold"><span>Flujo neto</span><span className={cn('font-display text-[16px]', flujo >= 0 ? 'text-green' : 'text-negative')}>{flujo < 0 ? '-' : ''}{money(Math.abs(flujo))}</span></li>
         </ul>
-        {pnl.fijosEsperados > pnl.fijos && <p className="mt-2 text-[11.5px] text-txt-2 dark:text-fg-2">Faltan por cobrarse {money(pnl.fijosEsperados - pnl.fijos)} en fijos este mes.</p>}
+        {pnl.actual !== false && pnl.fijosEsperados > pnl.fijos && <p className="mt-2 text-[11.5px] text-txt-2 dark:text-fg-2">Faltan por cobrarse {money(pnl.fijosEsperados - pnl.fijos)} en fijos este mes.</p>}
       </section>
 
       <Panel open={!!rubro} onClose={() => setRubroSel(null)} mode="drawer" title={rubro?.nombre}>

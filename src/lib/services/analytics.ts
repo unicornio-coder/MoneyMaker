@@ -8,6 +8,7 @@ export type EventoProducto =
   | 'onboarding_completo'
   | 'fuente_conectada' // props: { proveedor, institucion }
   | 'importacion' // props: { formato, movimientos }
+  | 'import_error' // props: { codigo, kb } — nunca el nombre del archivo ni su contenido
   | 'wow_visto' // props: { excedente } — el usuario vio "puedes invertir $X"
   | 'suscripcion_cancelada' // props: { recurrenteId }
   | 'cancelar_por_mi' // props: { recurrenteId }

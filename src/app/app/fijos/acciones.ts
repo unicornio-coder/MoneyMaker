@@ -1,5 +1,6 @@
 'use server';
 
+import { hoyMX } from '@/lib/domain/fechas';
 import { revalidatePath } from 'next/cache';
 import { contexto } from '@/lib/data/contexto';
 import type { Frecuencia, TipoRecurrente } from '@/lib/domain/tipos';
@@ -18,7 +19,7 @@ export async function crearRecurrente(datos: { nombre: string; monto: number; di
   if (!datos.nombre.trim() || !(datos.monto > 0) || !(datos.diaCobro >= 1 && datos.diaCobro <= 31)) return { ok: false, error: 'Revisa nombre, monto y día de cobro.' };
   const n = normalizar(datos.nombre);
   const conocido = COMERCIOS.find((c) => n.includes(c.patron));
-  const hoy = new Date();
+  const hoy = hoyMX();
   const restantes = datos.tipo === 'msi' && datos.msiCuotasTotal ? Math.max(0, datos.msiCuotasTotal - (datos.msiCuotasPagadas ?? 0)) : 0;
   const termina = new Date(hoy.getFullYear(), hoy.getMonth() + restantes, datos.diaCobro);
   const r = await repo.guardarRecurrente(usuario.id, {
