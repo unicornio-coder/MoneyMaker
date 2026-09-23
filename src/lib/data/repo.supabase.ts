@@ -47,10 +47,13 @@ const aImportacion = (f: Fila): Importacion => ({
   tokensEntrada: Number(f.tokens_entrada ?? 0),
   tokensSalida: Number(f.tokens_salida ?? 0),
   error: str(f.error),
+  etapa: (f.etapa as Importacion['etapa']) ?? null,
+  progreso: Number(f.progreso ?? 0),
+  duracionMs: f.duracion_ms == null ? null : Number(f.duracion_ms),
   createdAt: String(f.created_at),
   updatedAt: String(f.updated_at),
 });
-const deImportacion = (userId: string, i: Omit<Importacion, 'id' | 'createdAt' | 'updatedAt'>) => ({ user_id: userId, account_id: i.cuentaId ?? null, archivo: i.archivo, archivo_hash: i.archivoHash, tamano_bytes: i.tamanoBytes, estado: i.estado, metodo: i.metodo, resumen: i.resumen, movimientos: i.movimientos, advertencias: i.advertencias, cuadre: i.cuadre, insertados: i.insertados, duplicados: i.duplicados, tokens_entrada: i.tokensEntrada, tokens_salida: i.tokensSalida, error: i.error ?? null, updated_at: new Date().toISOString() });
+const deImportacion = (userId: string, i: Omit<Importacion, 'id' | 'createdAt' | 'updatedAt'>) => ({ user_id: userId, account_id: i.cuentaId ?? null, archivo: i.archivo, archivo_hash: i.archivoHash, tamano_bytes: i.tamanoBytes, estado: i.estado, metodo: i.metodo, resumen: i.resumen, movimientos: i.movimientos, advertencias: i.advertencias, cuadre: i.cuadre, insertados: i.insertados, duplicados: i.duplicados, tokens_entrada: i.tokensEntrada, tokens_salida: i.tokensSalida, error: i.error ?? null, etapa: i.etapa ?? null, progreso: i.progreso ?? 0, duracion_ms: i.duracionMs ?? null, updated_at: new Date().toISOString() });
 
 export function repoSupabaseCon(cli: () => Cli): Repo {
   return {

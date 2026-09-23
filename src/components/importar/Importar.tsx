@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Upload, FileText, Check, AlertCircle, X, RotateCcw, Lock, Pencil, ChevronRight } from 'lucide-react';
+import { Upload, FileText, Check, AlertCircle, X, RotateCcw, Lock, Pencil, ChevronRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money, fechaCorta, pluralize } from '@/lib/format';
 import { formatearCentavos } from '@/lib/domain/money';
 import { infoBanco } from '@/lib/domain/comercios';
-import type { Importacion, TipoCuentaEstado } from '@/lib/domain/tipos';
+import type { Importacion, MovimientoNormalizado, TipoCuentaEstado } from '@/lib/domain/tipos';
 import { TEXTOS, t, textoError } from '@/lib/textos';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -17,7 +17,43 @@ import { aplicarDiasDePago } from '@/app/app/acciones';
 
 type CuentaOpcion = { id: string; nombre: string; banco: string; tipo: string; ultimos4: string | null };
 type EstadoArchivo = 'en_cola' | 'subiendo' | 'leyendo' | 'contraseña' | 'revisar' | 'error';
-type Item = { key: string; nombre: string; tamano: number; file: File | null; estado: EstadoArchivo; progreso: number; codigo: string | null; importacion: Importacion | null; intentos: number };
+type Item = { key: string; nombre: string; tamano: number; file: File | null; estado: EstadoArchivo; progreso: number; codigo: string | null; importacion: Importacion | null; intentos: number; etapa?: Importacion['etapa']; inicio?: number | null };
+
+const ETAPAS: Record<string, string> = { subido: 'Recibido', leyendo: 'Leyendo el documento', extrayendo: 'Detectando banco, tarjeta, periodo y movimientos', cuadrando: 'Cuadrando totales', listo: 'Listo' };
+const INTERVALO_CONSULTA = 1500;
+const MAX_ESPERA_MS = 300_000;
+
+/** Segundos que suele tardar la lectura según el tamaño (≈ 70 KB por página; el modelo tarda ~2.5 s por página). */
+function estimarSegundos(bytes: number): number {
+  const paginas = Math.max(1, Math.round(bytes / 70_000));
+  return Math.min(90, 6 + Math.round(paginas * 2.5));
+}
+
+/** Consulta la importación hasta que deje de estar `procesando`. Avisa cada cambio de etapa. */
+async function esperar(id: string, onEtapa: (imp: Importacion) => void): Promise<{ status: number; json: { importacion?: Importacion; codigo?: string } | null }> {
+  const inicio = Date.now();
+  let ultimaEtapa: string | null = null;
+  while (Date.now() - inicio < MAX_ESPERA_MS) {
+    await new Promise((r) => setTimeout(r, INTERVALO_CONSULTA));
+    let res: Response;
+    try {
+      res = await fetch(`/api/imports/${id}`, { cache: 'no-store' });
+    } catch {
+      continue;
+    }
+    if (res.status === 401) return { status: 401, json: null };
+    if (res.status === 404) return { status: 404, json: { codigo: 'servidor' } };
+    const json = (await res.json().catch(() => null)) as { importacion?: Importacion } | null;
+    const imp = json?.importacion;
+    if (!imp) continue;
+    if (imp.estado !== 'procesando') return { status: imp.error === 'ya_subido' ? 409 : imp.estado === 'error' ? 422 : 200, json: { importacion: imp, codigo: imp.error ?? undefined } };
+    if (imp.etapa !== ultimaEtapa) {
+      ultimaEtapa = imp.etapa ?? null;
+      onEtapa(imp);
+    }
+  }
+  return { status: 504, json: { codigo: 'servidor' } };
+}
 type Ajuste = { institucion: string; tipoCuenta: TipoCuentaEstado; ultimos4: string };
 type Resultado = {
   resultados: { id: string; ok: boolean; cuentaId?: string; insertados: number; duplicados: number; codigo?: string }[];
@@ -69,6 +105,9 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
   const [items, setItems] = useState<Item[]>(() => pendientes.map(itemDeImportacion));
   const [ajustes, setAjustes] = useState<Record<string, Ajuste>>(() => Object.fromEntries(pendientes.map((p) => [`p${p.id}`, ajusteDe(p, bancoSugerido)])));
   const [editando, setEditando] = useState<string | null>(null);
+  const [editandoMovs, setEditandoMovs] = useState<string | null>(null);
+  const [ediciones, setEdiciones] = useState<Record<string, MovimientoNormalizado[]>>({});
+  const [guardandoMovs, setGuardandoMovs] = useState<string | null>(null);
   const [contraseñas, setContraseñas] = useState<Record<string, string>>({});
   const [arrastrando, setArrastrando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -96,7 +135,13 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
       enCurso.current.add(item.key);
       actualizar(item.key, { estado: 'subiendo', progreso: 0, codigo: null });
       try {
-        const { status, json } = await subir(item.file, contraseña, (pct) => actualizar(item.key, { progreso: pct }), () => actualizar(item.key, { estado: 'leyendo' }));
+        actualizar(item.key, { inicio: Date.now(), etapa: null });
+        let { status, json } = await subir(item.file, contraseña, (pct) => actualizar(item.key, { progreso: pct }), () => actualizar(item.key, { estado: 'leyendo' }));
+        if (status === 202 && json?.importacion?.estado === 'procesando') {
+          // La API respondió de inmediato; la lectura sigue en el servidor y aquí se consulta hasta que termine.
+          actualizar(item.key, { estado: 'leyendo', importacion: json.importacion, etapa: json.importacion.etapa ?? 'subido' });
+          ({ status, json } = await esperar(json.importacion.id, (imp) => actualizar(item.key, { etapa: imp.etapa ?? null })));
+        }
         if (!json) {
           actualizar(item.key, { estado: 'error', codigo: status === 401 || status === 200 ? 'sesion_expirada' : status === 413 ? 'muy_grande' : 'servidor' });
           return;
@@ -195,10 +240,34 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
     return { cuenta, hermano: !cuenta && !!primero && primero.key !== key };
   };
 
+  const movimientosDe = (it: Item): MovimientoNormalizado[] => ediciones[it.key] ?? it.importacion?.movimientos ?? [];
+  const editarMov = (it: Item, i: number, cambios: Partial<MovimientoNormalizado>) => setEdiciones((e) => ({ ...e, [it.key]: movimientosDe(it).map((m, k) => (k === i ? { ...m, ...cambios } : m)) }));
+  const quitarMov = (it: Item, i: number) => setEdiciones((e) => ({ ...e, [it.key]: movimientosDe(it).filter((_, k) => k !== i) }));
+
+  /** Manda al servidor los cambios de la tabla de revisión. Devuelve false si no se pudo. */
+  const guardarMovs = async (it: Item): Promise<boolean> => {
+    const movs = ediciones[it.key];
+    if (!movs || !it.importacion) return true;
+    setGuardandoMovs(it.key);
+    try {
+      const res = await fetch(`/api/imports/${it.importacion.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ movimientos: movs }) });
+      const json = (await res.json().catch(() => null)) as { importacion?: Importacion } | null;
+      if (!res.ok || !json?.importacion) return false;
+      actualizar(it.key, { importacion: json.importacion });
+      setEdiciones((e) => { const { [it.key]: _omitido, ...resto } = e; return resto; });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setGuardandoMovs(null);
+    }
+  };
+
   const confirmar = async () => {
     setConfirmando('proceso');
     setErrorConfirmar(null);
     try {
+      for (const it of revisables) if (ediciones[it.key] && !(await guardarMovs(it))) throw new Error('servidor');
       const body = { items: revisables.map((i) => ({ id: i.importacion!.id, institucion: ajustes[i.key]?.institucion || null, tipoCuenta: ajustes[i.key]?.tipoCuenta || null, ultimos4: /^\d{4}$/.test(ajustes[i.key]?.ultimos4 ?? '') ? ajustes[i.key].ultimos4 : null })) };
       const res = await fetch('/api/imports/confirmar', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
       const json = (await res.json().catch(() => null)) as Resultado | null;
@@ -332,7 +401,8 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                       <div className="text-[11.5px] text-txt-2 dark:text-fg-2">
                         {it.estado === 'en_cola' && tx.en_cola}
                         {it.estado === 'subiendo' && `${tx.subiendo} · ${it.progreso} %`}
-                        {it.estado === 'leyendo' && `${tx.leyendo}: ${mensajesLeyendo[(tick + idx) % mensajesLeyendo.length]}…`}
+                        {it.estado === 'leyendo' && (it.etapa ? `${ETAPAS[it.etapa] ?? tx.leyendo}…` : `${tx.leyendo}: ${mensajesLeyendo[(tick + idx) % mensajesLeyendo.length]}…`)}
+                        {it.estado === 'leyendo' && it.inicio && (() => { const eta = estimarSegundos(it.tamano); const seg = Math.round((Date.now() - it.inicio) / 1000); return <span className="ml-1 text-txt-3">{seg > eta ? '· casi listo' : `· suele tardar ~${eta} s`}</span>; })()}
                         {it.estado === 'contraseña' && tx.contraseña}
                         {it.estado === 'revisar' && imp && `${tx.revisar} · ${info?.nombre ?? 'Banco'}${imp.resumen.ultimos4 ? ` ···· ${imp.resumen.ultimos4}` : ''} · ${t(TEXTOS.revision.movimientos, { n: imp.movimientos.length })}`}
                         {it.estado === 'error' && (it.codigo === 'contraseña_agotada' ? TEXTOS.contraseña.agotada : textoError(it.codigo ?? 'servidor'))}
@@ -340,7 +410,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                       </div>
                       {(it.estado === 'subiendo' || it.estado === 'leyendo') && (
                         <div className="mt-1.5 h-1 overflow-hidden rounded-pill bg-line dark:bg-surface-2">
-                          <div className={cn('h-full rounded-pill bg-green transition-[width] duration-500', it.estado === 'leyendo' && 'animate-pulse')} style={{ width: `${it.estado === 'leyendo' ? 100 : it.progreso}%` }} />
+                          <div className={cn('h-full rounded-pill bg-green transition-[width] duration-700')} style={{ width: `${it.estado === 'leyendo' ? Math.max(35, it.importacion?.progreso ?? { subido: 10, leyendo: 30, extrayendo: 60, cuadrando: 90, listo: 100 }[it.etapa ?? 'subido'] ?? 35) : it.progreso}%` }} />
                         </div>
                       )}
                     </div>
@@ -423,18 +493,40 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                       <Input label="Últimos 4 dígitos" inputMode="numeric" value={a.ultimos4} onChange={(e) => setAjustes((s) => ({ ...s, [it.key]: { ...a, ultimos4: e.target.value.replace(/\D/g, '').slice(0, 4) } }))} placeholder="1234" />
                     </div>
                   )}
-                  {imp.movimientos.length > 0 && (
-                    <details className="mt-3">
-                      <summary className="flex cursor-pointer list-none items-center gap-1 text-[12px] font-bold text-green"><ChevronRight size={14} /> Ver movimientos</summary>
-                      <ul className="mt-2 max-h-[240px] divide-y divide-edge overflow-y-auto rounded-card border border-edge">
-                        {imp.movimientos.map((m, i) => (
-                          <li key={i} className="flex items-center gap-3 px-3 py-2 text-[12.5px]">
-                            <span className="w-12 flex-none text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)}</span>
-                            <span className="min-w-0 flex-1 truncate">{m.descripcion}{m.msi ? ` · ${m.msi.cuota}/${m.msi.total} MSI` : ''}</span>
-                            <span className={cn('font-display font-bold', m.esAbono ? 'text-green' : '')}>{m.esAbono ? '+' : ''}{formatearCentavos(m.montoCentavos)}</span>
+                  {movimientosDe(it).length > 0 && (
+                    <details className="mt-3" open={editandoMovs === it.key}>
+                      <summary className="flex cursor-pointer list-none items-center gap-1 text-[12px] font-bold text-green"><ChevronRight size={14} /> Ver movimientos ({movimientosDe(it).length})</summary>
+                      <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px] text-txt-2 dark:text-fg-2">
+                        <span>{editandoMovs === it.key ? 'Corrige lo que haga falta. Los cambios se guardan al confirmar.' : 'Si algo no coincide con tu estado de cuenta, corrígelo aquí.'}</span>
+                        <button type="button" onClick={() => setEditandoMovs(editandoMovs === it.key ? null : it.key)} className="flex-none font-bold text-green">{editandoMovs === it.key ? 'Terminar' : 'Editar'}</button>
+                      </div>
+                      <ul className="mt-2 max-h-[320px] divide-y divide-edge overflow-y-auto rounded-card border border-edge" data-testid="tabla-movimientos">
+                        {movimientosDe(it).map((m, i) => (
+                          <li key={i} className="flex items-center gap-2 px-3 py-2 text-[12.5px]">
+                            {editandoMovs === it.key ? (
+                              <>
+                                <input type="date" value={m.fecha} onChange={(e) => editarMov(it, i, { fecha: e.target.value })} aria-label="Fecha" className="input h-8 w-[130px] flex-none px-2 py-0 text-[12px]" />
+                                <input value={m.descripcion} onChange={(e) => editarMov(it, i, { descripcion: e.target.value })} aria-label="Descripción" className="input h-8 min-w-0 flex-1 px-2 py-0 text-[12px]" />
+                                <button type="button" onClick={() => editarMov(it, i, { esAbono: !m.esAbono })} aria-label={m.esAbono ? 'Abono, cambiar a cargo' : 'Cargo, cambiar a abono'} className={cn('h-8 flex-none rounded-pill px-2.5 text-[11px] font-bold', m.esAbono ? 'bg-green-50 text-green dark:bg-surface-2' : 'bg-bg-chip text-txt-2 dark:bg-surface-2')}>{m.esAbono ? 'Abono' : 'Cargo'}</button>
+                                <input type="number" inputMode="decimal" min={0} step="0.01" value={(m.montoCentavos / 100).toFixed(2)} onChange={(e) => editarMov(it, i, { montoCentavos: Math.max(0, Math.round(Number(e.target.value || 0) * 100)) })} aria-label="Monto" className="input h-8 w-[104px] flex-none px-2 py-0 text-right font-display text-[12px] font-bold" />
+                                <button type="button" onClick={() => quitarMov(it, i)} aria-label="Quitar movimiento" className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-txt-3 hover:bg-bg-muted dark:hover:bg-surface-2"><Trash2 size={14} /></button>
+                              </>
+                            ) : (
+                              <>
+                                <span className="w-12 flex-none text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)}</span>
+                                <span className="min-w-0 flex-1 truncate">{m.descripcion}{m.msi ? ` · ${m.msi.cuota}/${m.msi.total} MSI` : ''}</span>
+                                <span className={cn('font-display font-bold', m.esAbono ? 'text-green' : '')}>{m.esAbono ? '+' : ''}{formatearCentavos(m.montoCentavos)}</span>
+                              </>
+                            )}
                           </li>
                         ))}
                       </ul>
+                      {ediciones[it.key] && (
+                        <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px]">
+                          <span className="text-txt-2 dark:text-fg-2">{ediciones[it.key].length} movimientos · cambios sin guardar</span>
+                          <button type="button" disabled={guardandoMovs === it.key} onClick={() => void guardarMovs(it)} className="font-bold text-green disabled:opacity-60">{guardandoMovs === it.key ? 'Guardando…' : 'Guardar cambios'}</button>
+                        </div>
+                      )}
                     </details>
                   )}
                 </li>

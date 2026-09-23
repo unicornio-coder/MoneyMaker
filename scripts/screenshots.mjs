@@ -35,7 +35,7 @@ async function sembrar() {
   const api = await pwRequest.newContext({ baseURL: BASE });
   await api.post('/api/qa/reset');
   for (const c of CASOS) {
-    const r = await api.post('/api/imports', { multipart: { archivo: { name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado(c) } } });
+    const r = await api.post('/api/imports', { multipart: { modo: 'sync', archivo: { name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado(c) } } });
     const { importacion } = await r.json();
     await api.post('/api/imports/confirmar', { data: { items: [{ id: importacion.id }] } });
   }

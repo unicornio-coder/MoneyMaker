@@ -9,6 +9,8 @@ export type EntradaExtraccion = {
   nombre: string;
   datos: Buffer;
   contraseña?: string | null;
+  /** Avisa en qué etapa va la lectura (para mostrar progreso). */
+  onEtapa?: (etapa: 'leyendo' | 'extrayendo' | 'cuadrando') => void;
 };
 
 export type ResultadoExtraccion = {

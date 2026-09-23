@@ -5,7 +5,7 @@ import type { Repo } from '@/lib/data/repo';
 import { infoBanco } from '@/lib/domain/comercios';
 import { evaluarCuadre, indexarRepetidos } from '@/lib/domain/dedupe';
 import { aPesos } from '@/lib/domain/money';
-import type { Cuenta, Importacion, MovimientoCrudo, ResumenEstado, TipoCuentaEstado } from '@/lib/domain/tipos';
+import type { Cuenta, Importacion, MovimientoCrudo, MovimientoNormalizado, ResumenEstado, TipoCuentaEstado } from '@/lib/domain/tipos';
 import { registrar } from './analytics';
 import { ingerirMovimientos, propuestaQuincena, recalcular, type PropuestaQuincena } from './ingest';
 import { ErrorImportacion, esErrorImportacion, extraerArchivo, hashArchivo } from './ingestion';
@@ -15,16 +15,35 @@ const RESUMEN_VACIO: ResumenEstado = { institucion: null, producto: null, tipoCu
 
 export type ResultadoAnalisis = { importacion: Importacion; codigo?: string };
 
+const PROGRESO: Record<NonNullable<Importacion['etapa']>, number> = { subido: 10, leyendo: 30, extrayendo: 60, cuadrando: 90, listo: 100 };
+
+/** Datos extraídos reutilizables de una importación previa del mismo archivo (caché por hash): sin volver a leer ni pagar el modelo. */
+function extraccionEnCache(previa: Importacion | null): Importacion | null {
+  if (!previa) return null;
+  if (!['revisar', 'descartado', 'error'].includes(previa.estado)) return null;
+  if (!previa.resumen?.esEstadoDeCuenta || !previa.movimientos?.length || !previa.metodo) return null;
+  return previa;
+}
+
 /**
- * Lee un archivo y deja la importación en `revisar` (o `necesita_contraseña` / `error`).
- * El mismo archivo (hash) ya confirmado devuelve `ya_subido`; si estaba en revisión, devuelve la existente.
+ * Paso 1 (rápido, < 1 s): registra la importación en `procesando`. Si el mismo archivo ya se leyó antes, reutiliza
+ * la extracción y la deja directamente en `revisar` (sin modelo). Confirmado → `ya_subido`.
  */
-export async function analizarArchivo(repo: Repo, userId: string, archivo: { nombre: string; datos: Buffer; contraseña?: string | null }): Promise<ResultadoAnalisis> {
+export async function iniciarAnalisis(repo: Repo, userId: string, archivo: { nombre: string; datos: Buffer; contraseña?: string | null }): Promise<ResultadoAnalisis & { procesar: boolean }> {
   if (archivo.datos.length > PDF_MAX_BYTES) throw new ErrorImportacion('muy_grande');
   const archivoHash = hashArchivo(archivo.datos);
   const previa = await repo.importacionPorHash(userId, archivoHash);
-  if (previa?.estado === 'confirmado') return { importacion: previa, codigo: 'ya_subido' };
-  if (previa?.estado === 'revisar' && !archivo.contraseña) return { importacion: previa };
+  if (previa?.estado === 'confirmado') return { importacion: previa, codigo: 'ya_subido', procesar: false };
+  if (previa?.estado === 'revisar' && !archivo.contraseña) return { importacion: previa, procesar: false };
+  if (previa?.estado === 'procesando' && !archivo.contraseña && Date.now() - new Date(previa.updatedAt).getTime() < 5 * 60_000) return { importacion: previa, procesar: false };
+
+  const cache = archivo.contraseña ? null : extraccionEnCache(previa);
+  if (cache) {
+    const repetido = await mismoPeriodoConfirmado(repo, userId, cache.resumen, cache.id);
+    const imp = await repo.guardarImportacion(userId, { ...cache, id: cache.id, archivo: archivo.nombre.slice(0, 200), estado: repetido ? 'error' : 'revisar', error: repetido ? 'ya_subido' : null, etapa: 'listo', progreso: 100, tokensEntrada: 0, tokensSalida: 0, duracionMs: 0 });
+    await registrar(repo, userId, 'import_lista', { metodo: cache.metodo, ms: 0, movimientos: cache.movimientos.length, cache: true });
+    return { importacion: imp, codigo: repetido ? 'ya_subido' : undefined, procesar: false };
+  }
 
   const base: Omit<Importacion, 'id' | 'createdAt' | 'updatedAt'> = {
     archivo: archivo.nombre.slice(0, 200),
@@ -42,27 +61,76 @@ export async function analizarArchivo(repo: Repo, userId: string, archivo: { nom
     tokensEntrada: 0,
     tokensSalida: 0,
     error: null,
+    etapa: 'subido',
+    progreso: PROGRESO.subido,
+    duracionMs: null,
   };
-  let imp = await repo.guardarImportacion(userId, { ...base, id: previa?.id });
+  const imp = await repo.guardarImportacion(userId, { ...base, id: previa?.id });
+  await registrar(repo, userId, 'import_iniciada', { kb: Math.round(archivo.datos.length / 1024) });
+  return { importacion: imp, procesar: true };
+}
+
+/**
+ * Paso 2 (lento): lee el archivo y deja la importación en `revisar`, `necesita_contraseña` o `error`,
+ * actualizando `etapa`/`progreso` en el camino. El buffer se descarta al terminar.
+ */
+export async function procesarAnalisis(repo: Repo, userId: string, id: string, archivo: { nombre: string; datos: Buffer; contraseña?: string | null }): Promise<ResultadoAnalisis> {
+  const inicio = Date.now();
+  let imp = await repo.importacion(userId, id);
+  if (!imp) throw new ErrorImportacion('servidor', 'Importación no encontrada');
+  const base = { ...imp, id: imp.id };
+  const etapa = async (e: NonNullable<Importacion['etapa']>) => {
+    imp = await repo.guardarImportacion(userId, { ...base, estado: 'procesando', etapa: e, progreso: PROGRESO[e] });
+  };
 
   try {
-    const r = await extraerArchivo({ nombre: archivo.nombre, datos: archivo.datos, contraseña: archivo.contraseña });
+    const r = await extraerArchivo({ nombre: archivo.nombre, datos: archivo.datos, contraseña: archivo.contraseña, onEtapa: (e) => void etapa(e).catch(() => undefined) });
     const cuadre = evaluarCuadre(r.movimientos, r.resumen).cuadre;
+    const duracionMs = Date.now() - inicio;
     // Mismo estado (banco, tarjeta, tipo y periodo) ya confirmado aunque los bytes cambien (otra descarga): no se repite.
     const repetido = await mismoPeriodoConfirmado(repo, userId, r.resumen, imp.id);
     if (repetido) {
-      imp = await repo.guardarImportacion(userId, { ...base, id: imp.id, estado: 'error', error: 'ya_subido', resumen: r.resumen, metodo: r.metodo, tokensEntrada: r.tokens.entrada, tokensSalida: r.tokens.salida });
+      imp = await repo.guardarImportacion(userId, { ...base, estado: 'error', error: 'ya_subido', resumen: r.resumen, movimientos: r.movimientos, metodo: r.metodo, tokensEntrada: r.tokens.entrada, tokensSalida: r.tokens.salida, etapa: 'listo', progreso: 100, duracionMs });
       return { importacion: imp, codigo: 'ya_subido' };
     }
-    imp = await repo.guardarImportacion(userId, { ...base, id: imp.id, estado: 'revisar', metodo: r.metodo, resumen: r.resumen, movimientos: r.movimientos, advertencias: r.advertencias, cuadre, tokensEntrada: r.tokens.entrada, tokensSalida: r.tokens.salida });
+    imp = await repo.guardarImportacion(userId, { ...base, estado: 'revisar', metodo: r.metodo, resumen: r.resumen, movimientos: r.movimientos, advertencias: r.advertencias, cuadre, tokensEntrada: r.tokens.entrada, tokensSalida: r.tokens.salida, error: null, etapa: 'listo', progreso: 100, duracionMs });
+    await registrar(repo, userId, 'import_lista', { metodo: r.metodo, ms: duracionMs, movimientos: r.movimientos.length, cache: false });
     return { importacion: imp };
   } catch (e) {
     const codigo = esErrorImportacion(e) ? e.codigo : 'servidor';
     const estado: Importacion['estado'] = codigo === 'necesita_contraseña' || codigo === 'contraseña_incorrecta' ? 'necesita_contraseña' : 'error';
     if (!esErrorImportacion(e)) console.error('[importacion] analizar', e instanceof Error ? e.name : 'error');
-    imp = await repo.guardarImportacion(userId, { ...base, id: imp.id, estado, error: codigo });
+    imp = await repo.guardarImportacion(userId, { ...base, estado, error: codigo, etapa: 'listo', progreso: 100, duracionMs: Date.now() - inicio });
+    await registrar(repo, userId, 'import_error', { codigo, kb: Math.round(archivo.datos.length / 1024) });
     return { importacion: imp, codigo };
   }
+}
+
+/** Analiza de una vez (iniciar + procesar). Lo usan las pruebas y el modo síncrono de la API. */
+export async function analizarArchivo(repo: Repo, userId: string, archivo: { nombre: string; datos: Buffer; contraseña?: string | null }): Promise<ResultadoAnalisis> {
+  const r = await iniciarAnalisis(repo, userId, archivo);
+  if (!r.procesar) return { importacion: r.importacion, codigo: r.codigo };
+  return procesarAnalisis(repo, userId, r.importacion.id, archivo);
+}
+
+const RE_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Cambios del usuario en la tabla de revisión (antes de confirmar): fecha, descripción, monto, cargo/abono; quitar filas. */
+export async function actualizarMovimientosImportacion(repo: Repo, userId: string, id: string, movimientos: unknown): Promise<Importacion | null> {
+  const imp = await repo.importacion(userId, id);
+  if (!imp || imp.estado !== 'revisar') return null;
+  if (!Array.isArray(movimientos) || movimientos.length > 2000) return null;
+  const limpios: MovimientoNormalizado[] = [];
+  for (const m of movimientos as Record<string, unknown>[]) {
+    if (!m || typeof m !== 'object') return null;
+    const fecha = typeof m.fecha === 'string' && RE_FECHA.test(m.fecha) ? m.fecha : null;
+    const descripcion = typeof m.descripcion === 'string' ? m.descripcion.trim().slice(0, 200) : '';
+    const montoCentavos = typeof m.montoCentavos === 'number' && Number.isInteger(m.montoCentavos) && m.montoCentavos >= 0 ? m.montoCentavos : null;
+    if (!fecha || !descripcion || montoCentavos == null) return null;
+    limpios.push({ fecha, descripcion, montoCentavos, esAbono: !!m.esAbono, moneda: typeof m.moneda === 'string' ? m.moneda : 'MXN', esPosibleSuscripcion: !!m.esPosibleSuscripcion, msi: m.msi && typeof m.msi === 'object' ? (m.msi as MovimientoNormalizado['msi']) : null, tarjetaUltimos4: typeof m.tarjetaUltimos4 === 'string' ? m.tarjetaUltimos4 : null });
+  }
+  const cuadre = evaluarCuadre(limpios, imp.resumen).cuadre;
+  return repo.guardarImportacion(userId, { ...imp, id: imp.id, movimientos: limpios, cuadre, advertencias: imp.advertencias.filter((a) => a !== 'sin_cuadre').concat(cuadre === 'sin_cuadre' ? ['sin_cuadre'] : []) });
 }
 
 async function mismoPeriodoConfirmado(repo: Repo, userId: string, resumen: ResumenEstado, propioId: string): Promise<boolean> {
@@ -172,6 +240,6 @@ export async function confirmarImportaciones(repo: Repo, userId: string, items: 
 export async function descartarImportacion(repo: Repo, userId: string, id: string): Promise<boolean> {
   const imp = await repo.importacion(userId, id);
   if (!imp || imp.estado === 'confirmado') return false;
-  await repo.guardarImportacion(userId, { ...imp, id: imp.id, estado: 'descartado', movimientos: [] });
+  await repo.guardarImportacion(userId, { ...imp, id: imp.id, estado: 'descartado' });
   return true;
 }

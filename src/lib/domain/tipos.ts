@@ -187,6 +187,8 @@ export type ResumenEstado = {
 };
 
 export type EstadoImportacion = 'subido' | 'procesando' | 'necesita_contraseña' | 'revisar' | 'confirmado' | 'descartado' | 'error';
+/** En qué va el procesamiento mientras `estado === 'procesando'`. */
+export type EtapaImportacion = 'subido' | 'leyendo' | 'extrayendo' | 'cuadrando' | 'listo';
 export type Cuadre = 'ok' | 'sin_cuadre' | 'sin_resumen';
 export type MetodoExtraccion = 'claude-pdf' | 'claude-texto' | 'reglas' | 'tabla';
 
@@ -207,6 +209,11 @@ export type Importacion = {
   tokensEntrada: number;
   tokensSalida: number;
   error?: string | null;
+  etapa?: EtapaImportacion | null;
+  /** 0–100 según la etapa. */
+  progreso?: number;
+  /** Milisegundos que tardó la lectura (para estimar las siguientes). */
+  duracionMs?: number | null;
   createdAt: string;
   updatedAt: string;
 };

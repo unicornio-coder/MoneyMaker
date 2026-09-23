@@ -27,7 +27,7 @@ src/lib/data/           Interfaz Repo + implementaciones memoria (mock) y supaba
 src/lib/format.ts       formatMXN, formatFecha (fechas civiles), pluralize, saludo
 src/lib/textos.ts       Copy centralizado (es-MX) + códigos de error
 src/styles/tokens.css   Tokens semánticos y modo oscuro; paleta fija en tailwind.config.ts
-supabase/migrations/    0001_init, 0002_fase2 (events, waitlist), 0003_imports (statement_imports)
+supabase/migrations/    0001_init, 0002_fase2 (events, waitlist), 0003_imports (statement_imports), 0004_imports_async (etapa, progreso)
 scripts/                qa-pdfs (PDFs de prueba deterministas), qa-seed (usuarios qa01–qa10), screenshots (capturas 390/1440)
 e2e/                    Playwright: importar.spec, capturas.spec
 qa/                     TABLERO.md (estado), entregables (catálogos JSON, PDFs provisionales), precision.test.ts, talachas
@@ -40,6 +40,13 @@ docs/handoff/           Diseño: README, FLUJOS, design-tokens.json, capturas, p
 2. `services/ingest.ts` categoriza (`domain/categorizar`), deduplica (`domain/dedupe`) y guarda en `transactions` vía `Repo`.
 3. `recalcular` detecta recurrentes (suscripciones y MSI), nómina y días de pago; arma presupuesto sugerido e insights.
 4. Las pantallas leen exclusivamente del `Repo` (nunca de un proveedor) y calculan por quincena con `domain/quincena`.
+
+## Importación asíncrona
+
+1. `POST /api/imports` registra la importación (`procesando`, etapa `subido`) y responde en menos de un segundo (202). Si el mismo archivo (hash) ya se leyó antes, reutiliza la extracción y responde `revisar` sin llamar al modelo.
+2. La lectura sigue en segundo plano (`waitUntil` en Vercel) y actualiza `etapa`/`progreso`: leyendo → extrayendo → cuadrando → listo. Con texto legible va texto al modelo; si no, el PDF completo.
+3. La UI consulta `GET /api/imports/[id]` cada 1.5 s, muestra la etapa y una estimación por tamaño. Si el usuario navega, un aviso en el shell sigue el progreso.
+4. En revisión la tabla de movimientos es editable (`PATCH /api/imports/[id]`) antes de confirmar. Eventos: `import_iniciada`, `import_lista`, `import_error` (nunca el nombre ni el contenido del archivo).
 
 ## Reglas duras
 

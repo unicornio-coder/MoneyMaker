@@ -77,9 +77,10 @@ async function intentarLeer(datos: Buffer, contraseña: string | null | undefine
 
 export const fuentePdf: TransactionSource = {
   nombre: 'statement-pdf',
-  async extraer({ datos, contraseña }) {
+  async extraer({ datos, contraseña, onEtapa }) {
     if (!esPdf(datos)) throw new ErrorImportacion('no_pdf');
     if (datos.length > PDF_MAX_BYTES) throw new ErrorImportacion('muy_grande');
+    onEtapa?.('leyendo');
     const cifrado = esPdfCifrado(datos);
     const pdf = await intentarLeer(datos, contraseña);
     if (cifrado && !pdf) throw new ErrorImportacion(contraseña ? 'contraseña_incorrecta' : 'necesita_contraseña');
@@ -88,14 +89,17 @@ export const fuentePdf: TransactionSource = {
     let resultado: Omit<ResultadoExtraccion, 'advertencias'>;
 
     if (hayLLM()) {
-      // El modelo lee el PDF completo (tablas, logos, fuentes ofuscadas). Solo si venía cifrado va el texto ya descifrado.
-      if (!cifrado) {
+      onEtapa?.('extrayendo');
+      // Texto primero: si pdf.js sacó texto legible, va el texto (más rápido y barato). Si no (fuentes ofuscadas,
+      // escaneos), va el PDF completo como documento. Un PDF cifrado sin texto legible no se puede leer.
+      if (pdf && legible) {
+        const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
+        resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
+      } else if (!cifrado) {
         const { extraccion, tokens } = await extraerEstadoDeCuenta({ pdf: datos });
         resultado = { resumen: aResumen(extraccion, pdf?.paginas ?? null), movimientos: aMovimientos(extraccion), metodo: 'claude-pdf', tokens };
       } else {
-        if (!pdf || !legible) throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
-        const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
-        resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
+        throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
       }
     } else {
       // Sin modelo, solo se puede leer un PDF con texto limpio; si pdf.js no pudo abrirlo o el texto está ofuscado, lo que falta es la lectura inteligente.
@@ -105,6 +109,7 @@ export const fuentePdf: TransactionSource = {
       advertencias.push('Leído con reglas básicas (sin modelo). Revisa fechas y montos.');
     }
 
+    onEtapa?.('cuadrando');
     if (!resultado.resumen.esEstadoDeCuenta) throw new ErrorImportacion('no_es_estado');
     if (!resultado.movimientos.length) {
       if (resultado.resumen.saldoAlCorteCentavos == null && resultado.resumen.periodoFin == null) throw new ErrorImportacion(legible ? 'no_es_estado' : 'ilegible');
