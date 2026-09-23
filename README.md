@@ -39,7 +39,7 @@ Sin llaves de Belvo, "Vincular banco" usa el agregador simulado. Con o sin Belvo
 
 ## Deploy en Vercel
 
-Importa el repo en Vercel, agrega las mismas variables de entorno y despliega. `NEXT_PUBLIC_APP_URL` debe ser la URL pública (la usa el widget de Belvo y los callbacks de auth). En Supabase agrega `https://<dominio>/auth/callback` a las Redirect URLs.
+Importa el repo en Vercel, agrega las mismas variables de entorno y despliega. Un PR a `main` con el CI en verde publica: el workflow `produccion.yml` replica `main` a la rama de producción configurada en Vercel (hoy `claude/gallant-bohr-re8e7b`; lo ideal es cambiarla a `main` en Settings → Git y borrar ese workflow). `NEXT_PUBLIC_APP_URL` debe ser la URL pública (la usa el widget de Belvo y los callbacks de auth). En Supabase agrega `https://<dominio>/auth/callback` a las Redirect URLs.
 
 ## Estructura
 

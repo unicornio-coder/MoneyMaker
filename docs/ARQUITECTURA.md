@@ -62,7 +62,7 @@ Sin llaves de Supabase la app corre con `repo.memoria.ts` y datos demo (`MOCK_SI
 
 ## Despliegue
 
-Vercel (`money-maker`). La rama de producción configurada es `claude/gallant-bohr-re8e7b`; `main` es la rama de integración. Cada cambio pasa por PR a `main` y luego a la rama de producción. Variables en `.env.example`.
+Vercel (`money-maker`). `main` es la rama de integración: un PR a `main` con el CI en verde es todo el proceso. La rama que Vercel tiene configurada como producción sigue siendo `claude/gallant-bohr-re8e7b`, así que el workflow `.github/workflows/produccion.yml` replica `main` a esa rama en cada merge. Cuando en Vercel se cambie la Production Branch a `main`, ese workflow se borra. Variables en `.env.example`.
 
 ## Comandos
 
