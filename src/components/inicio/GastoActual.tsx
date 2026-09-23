@@ -25,6 +25,7 @@ export function GastoActual({ movimientos, diasPago, hoy }: { movimientos: Movim
   });
   const idx = Math.min(sel, serie.length - 1);
   const punto = serie[idx];
+  const esPasado = idx < serie.length - 1 && serie[serie.length - 1].gasto === 0 && serie[serie.length - 1].ingreso === 0;
   const anterior = serie[idx - 1];
   const varPct = anterior ? variacion(punto.gasto, anterior.gasto) : null;
   const max = Math.max(1, ...serie.map((p) => Math.max(p.ingreso, p.gasto + Math.max(0, p.ingreso - p.gasto))));
@@ -33,7 +34,7 @@ export function GastoActual({ movimientos, diasPago, hoy }: { movimientos: Movim
     <section className="card px-[18.7px] py-[17px]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[12.9px] font-semibold text-txt-2 dark:text-fg-2">Gasto actual</div>
+          <div className="text-[12.9px] font-semibold text-txt-2 dark:text-fg-2">{esPasado ? `Gasto · ${punto.rango.corta}` : 'Gasto actual'}</div>
           <Money value={punto.gasto} animate className="mt-0.5 block text-[27.5px] font-bold leading-none tracking-[-1.1px]" tone="ink" />
         </div>
         <div className="flex flex-col items-end gap-2">

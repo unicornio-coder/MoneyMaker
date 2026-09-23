@@ -19,8 +19,8 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
         clave: `sus-nueva:${r.id}`,
         tipo: 'suscripcion_nueva',
         titulo: `Suscripción nueva: ${r.nombre}`,
-        texto: `Detectamos un cargo de ${fmt(r.monto)} de ${r.nombre}. Si no la reconoces o no la quieres, cancélala antes del siguiente cobro.`,
-        monto: costoMensual(r) * 12,
+        texto: `Detectamos un cargo de ${fmt(r.monto)} de ${r.nombre} (${fmt(costoMensual(r) * 12)} al año). Si no la reconoces o no la quieres, cancélala antes del siguiente cobro.`,
+        monto: costoMensual(r),
         ctaLabel: 'Ver suscripción',
         ctaHref: `/app/fijos?r=${r.id}`,
         referencia: { recurrenteId: r.id },
@@ -31,13 +31,13 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
   // 2. Suscripciones que llevan ≥ 3 meses: cuánto suman al año
   const viejas = recurrentes.filter((x) => x.activo && x.tipo === 'suscripcion' && x.veces >= 3);
   if (viejas.length >= 2) {
-    const anual = viejas.reduce((s, r) => s + costoMensual(r) * 12, 0);
+    const mensual = viejas.reduce((s, r) => s + costoMensual(r), 0);
     out.push({
       clave: 'sus-total',
       tipo: 'suscripciones_total',
-      titulo: `${viejas.length} suscripciones suman ${fmt(anual)} al año`,
-      texto: `Llevas al menos 3 meses pagando ${viejas.map((r) => r.nombre).slice(0, 4).join(', ')}${viejas.length > 4 ? ' y más' : ''}. Revisa cuáles sigues usando.`,
-      monto: anual,
+      titulo: `${viejas.length} suscripciones suman ${fmt(mensual)} al mes`,
+      texto: `Son ${fmt(mensual * 12)} al año. Llevas al menos 3 meses pagando ${viejas.map((r) => r.nombre).slice(0, 4).join(', ')}${viejas.length > 4 ? ' y más' : ''}. Revisa cuáles sigues usando.`,
+      monto: mensual,
       ctaLabel: 'Revisar suscripciones',
       ctaHref: '/app/fijos',
       referencia: { ids: viejas.map((r) => r.id) },
@@ -68,7 +68,7 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
     out.push({
       clave: 'msi-total',
       tipo: 'msi_total',
-      titulo: `${msi.length} compras a meses: ${fmt(mensual)} al mes`,
+      titulo: `${msi.length === 1 ? '1 compra a meses' : `${msi.length} compras a meses`}: ${fmt(mensual)} al mes`,
       texto: `Antes de una compra nueva a meses, recuerda que ya tienes comprometidos ${fmt(mensual)} mensuales hasta ${fechaLarga(msi.map((r) => r.msiTermina!).sort().pop()!)}.`,
       monto: mensual,
       ctaLabel: 'Ver detalle',
@@ -125,7 +125,7 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
     out.push({
       clave: `prox:${aISO(hoy)}`,
       tipo: 'proximos_cobros',
-      titulo: `${proximos.length} cobros esta semana: ${fmt(total)}`,
+      titulo: `${proximos.length === 1 ? '1 cobro esta semana' : `${proximos.length} cobros esta semana`}: ${fmt(total)}`,
       texto: proximos
         .sort((a, b) => a.f.getTime() - b.f.getTime())
         .slice(0, 4)

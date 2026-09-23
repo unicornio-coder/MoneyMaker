@@ -1,6 +1,6 @@
 // Series por periodo para las gráficas (Inicio: pastillas; Gastos: barras).
 
-import { enRango, ultimosPeriodos, type Rango } from './quincena';
+import { enRango, rangoDe, ultimosPeriodos, type Rango } from './quincena';
 import type { Movimiento, Periodo } from './tipos';
 
 export type PuntoSerie = { rango: Rango; ingreso: number; gasto: number };
@@ -44,4 +44,19 @@ export function gastoPorCategoria(movs: Movimiento[], rango: Rango, cuentaId?: s
     acc.set(m.categoriaId, a);
   }
   return [...acc.entries()].map(([categoriaId, v]) => ({ categoriaId, ...v })).sort((a, b) => b.monto - a.monto);
+}
+
+export type RangoConDatos = { rango: Rango; actual: boolean };
+
+/**
+ * El periodo que se muestra por defecto: el actual si tiene movimientos; si no (los estados de cuenta terminan
+ * antes de hoy), el último de los `n` anteriores que sí los tenga. `actual: false` → la UI dice "Basado en <periodo>".
+ */
+export function ultimoRangoConDatos(movs: Movimiento[], periodo: Periodo, hoy = new Date(), diasPago: number[] = [5, 20], n = 13): RangoConDatos {
+  const actual = rangoDe(periodo, hoy, diasPago);
+  const hayDatos = (r: Rango) => movs.some((m) => enRango(m.fecha, r) && (esGasto(m) || esIngreso(m)));
+  if (hayDatos(actual) || !movs.length) return { rango: actual, actual: true };
+  const previos = ultimosPeriodos(periodo, n, hoy, diasPago).reverse();
+  const ultimo = previos.find(hayDatos);
+  return ultimo ? { rango: ultimo, actual: false } : { rango: actual, actual: true };
 }

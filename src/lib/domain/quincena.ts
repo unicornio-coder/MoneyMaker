@@ -163,3 +163,13 @@ export function vecesPorPeriodo(frecuencia: 'semanal' | 'quincenal' | 'mensual' 
   if (periodo === 'q') return porMes / 2;
   return porMes * 12;
 }
+
+/**
+ * "Puedes invertir $X": la única fórmula del producto. Ingreso del periodo menos fijos, meses sin intereses,
+ * suscripciones y el gasto variable habitual del mismo periodo. Nunca negativo. Todo en la misma unidad (pesos o centavos).
+ */
+export function puedesInvertir(args: { ingreso: number; fijos?: number; msi?: number; suscripciones?: number; gastoHabitual?: number }): number {
+  const { ingreso, fijos = 0, msi = 0, suscripciones = 0, gastoHabitual = 0 } = args;
+  if (!(ingreso > 0)) return 0;
+  return Math.max(0, Math.round(ingreso - fijos - msi - suscripciones - gastoHabitual));
+}

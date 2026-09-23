@@ -1,5 +1,5 @@
 import { contexto } from '@/lib/data/contexto';
-import { aISO, sumarMeses } from '@/lib/domain/fechas';
+import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Fijos } from '@/components/fijos/Fijos';
 
 export const metadata = { title: 'Gastos fijos · MoneyMaker' };
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function FijosPage({ searchParams }: { searchParams: { r?: string; sec?: string; vista?: string; pago?: string } }) {
   const { usuario, repo, perfil } = await contexto();
-  const hoy = new Date();
+  const hoy = hoyMX();
   const [recurrentes, eventos, cuentas] = await Promise.all([
     repo.recurrentes(usuario.id),
     repo.eventos(usuario.id, aISO(sumarMeses(hoy, -1)), aISO(sumarMeses(hoy, 2))),

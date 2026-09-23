@@ -1,5 +1,6 @@
 'use server';
 
+import { hoyMX } from '@/lib/domain/fechas';
 import { revalidatePath } from 'next/cache';
 import { contexto } from '@/lib/data/contexto';
 import type { Periodo } from '@/lib/domain/tipos';
@@ -30,7 +31,7 @@ export async function agregarLinea(periodo: Periodo, inicio: string, categoriaId
 /** Vuelve a proponer el presupuesto del periodo con los datos actuales (sobrescribe los montos). */
 export async function reproponer(periodo: Periodo, inicio: string): Promise<R> {
   const { usuario, repo, diasPago, perfil } = await contexto();
-  const hoy = new Date();
+  const hoy = hoyMX();
   const rango = rangoDe(periodo, hoy, diasPago);
   if (rango.inicio !== inicio) return { ok: false, error: 'Solo se puede re-proponer el periodo actual.' };
   const [movs, recs] = await Promise.all([repo.movimientos(usuario.id), repo.recurrentes(usuario.id)]);

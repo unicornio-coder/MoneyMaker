@@ -1,7 +1,7 @@
 import { contexto } from '@/lib/data/contexto';
 import { getAggregator } from '@/lib/services/aggregator';
 import { posicionesMock, seriesMock } from '@/lib/mock/cuentas';
-import { aISO, sumarMeses } from '@/lib/domain/fechas';
+import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Inicio } from '@/components/inicio/Inicio';
 import type { CuentaVista, DatosInicio } from '@/components/inicio/tipos';
 
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function InicioPage({ searchParams }: { searchParams: { cuenta?: string } }) {
   const { usuario, repo, diasPago } = await contexto();
-  const hoy = new Date();
+  const hoy = hoyMX();
   const desde = aISO(sumarMeses(hoy, -7));
   const agg = getAggregator();
   const credBitso = await repo.credencial(usuario.id, 'bitso').catch(() => null);

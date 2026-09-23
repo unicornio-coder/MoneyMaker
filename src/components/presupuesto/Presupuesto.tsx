@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUp, Plus, RefreshCw, Wallet } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { deISO } from '@/lib/domain/fechas';
-import { rangoDe } from '@/lib/domain/quincena';
+import { quincenaDe, mesDe, anioDe, rangoDe, type Rango } from '@/lib/domain/quincena';
 import { presupuestoVsActual } from '@/lib/domain/presupuesto';
 import type { Movimiento, Periodo, Presupuesto as PresupuestoT } from '@/lib/domain/tipos';
 import { useUI } from '@/lib/store/ui';
@@ -19,16 +19,22 @@ import { reproponer } from '@/app/app/presupuesto/acciones';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 
-type Props = { presupuestos: Record<Periodo, PresupuestoT | null>; movimientos: Movimiento[]; diasPago: number[]; hoy: string };
+type Props = { presupuestos: Record<Periodo, PresupuestoT | null>; rangos: Record<Periodo, { inicio: string; fin: string; actual: boolean }>; movimientos: Movimiento[]; diasPago: number[]; hoy: string };
 
-export function Presupuesto({ presupuestos, movimientos, diasPago, hoy }: Props) {
+function rangoPersonalizadoConEtiqueta(periodo: Periodo, inicio: string, fin: string, diasPago: number[]): Rango {
+  const d = deISO(inicio);
+  return periodo === 'q' ? quincenaDe(d, diasPago) : periodo === 'mes' ? mesDe(d) : anioDe(d);
+}
+
+export function Presupuesto({ presupuestos, rangos, movimientos, diasPago, hoy }: Props) {
   const periodo = useUI((s) => s.periodo);
   const setPeriodo = useUI((s) => s.setPeriodo);
   const [nuevo, setNuevo] = useState(false);
   const [pendiente, start] = useTransition();
   const router = useRouter();
   const h = deISO(hoy);
-  const rango = useMemo(() => rangoDe(periodo, h, diasPago), [periodo, h, diasPago]);
+  const r = rangos[periodo];
+  const rango = useMemo(() => (r.actual ? rangoDe(periodo, h, diasPago) : rangoPersonalizadoConEtiqueta(periodo, r.inicio, r.fin, diasPago)), [periodo, h, diasPago, r]);
   const p = presupuestos[periodo];
   const resumen = useMemo(() => (p ? presupuestoVsActual(p.lineas, movimientos, rango, p.ingreso, h) : null), [p, movimientos, rango, h]);
 
@@ -41,7 +47,10 @@ export function Presupuesto({ presupuestos, movimientos, diasPago, hoy }: Props)
   return (
     <div className="mx-auto max-w-[760px] space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-[22px] font-bold tracking-[-0.5px]">{rango.etiqueta[0].toUpperCase() + rango.etiqueta.slice(1)}</h2>
+        <div>
+          <h2 className="font-display text-[22px] font-bold tracking-[-0.5px]">{rango.etiqueta[0].toUpperCase() + rango.etiqueta.slice(1)}</h2>
+          {!r.actual && <span className="mt-1 inline-block rounded-pill bg-bg-page px-2.5 py-0.5 text-[11px] font-semibold text-txt-2 dark:bg-surface-2 dark:text-fg-2">Basado en {rango.etiqueta}: es tu último periodo con movimientos</span>}
+        </div>
         <div className="flex items-center gap-2">
           <ChipGroup value={periodo} onChange={setPeriodo} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }, { value: 'anio', label: 'Año' }]} size="sm" className="md:hidden" />
           <button type="button" onClick={() => setNuevo(true)} className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[12px]"><Plus size={15} /> Nuevo presupuesto</button>

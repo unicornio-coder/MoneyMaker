@@ -91,3 +91,23 @@ describe('categorizar', () => {
     expect(hashMovimiento('c1', '2026-09-10', 'OXXO SUC 4521', 189, false)).not.toBe(a);
   });
 });
+
+describe('SPEI con propósito', () => {
+  it('un SPEI recibido por renta u honorarios es ingreso, no transferencia', () => {
+    expect(categorizar(abono('SPEI RECIBIDO RENTA DEPTO POLANCO SEP 0012345', 18000))).toMatchObject({ tipo: 'ingreso', categoriaId: 'ingreso', comercio: 'Renta cobrada' });
+    expect(categorizar(abono('TRANSFERENCIA SPEI FACTURA A-102 CONSULTORIA', 25000))).toMatchObject({ tipo: 'ingreso', categoriaId: 'ingreso', comercio: 'Honorarios' });
+    expect(categorizar(abono('SPEI RECIBIDO HONORARIOS', 25000))).toMatchObject({ tipo: 'ingreso', categoriaId: 'nomina' });
+    expect(categorizar(abono('SPEI RECIBIDO AGUINALDO', 30000))).toMatchObject({ tipo: 'ingreso', categoriaId: 'ingreso' });
+  });
+  it('un SPEI recibido sin propósito sigue siendo transferencia (neutro)', () => {
+    expect(categorizar(abono('SPEI RECIBIDO JUAN PEREZ 0099', 500))).toMatchObject({ tipo: 'transferencia', categoriaId: 'transferencia' });
+  });
+  it('en tarjeta de crédito un SPEI con "renta" sigue siendo pago de tarjeta', () => {
+    expect(categorizar(abono('SPEI RECIBIDO RENTA', 5000), 'credito')).toMatchObject({ tipo: 'pago_tarjeta' });
+  });
+  it('un SPEI enviado por renta es gasto de vivienda; por colegiatura, colegiaturas; sin propósito, transferencia', () => {
+    expect(categorizar(cargo('SPEI ENVIADO RENTA SEPTIEMBRE ARRENDADORA SA', 12000))).toMatchObject({ tipo: 'gasto', categoriaId: 'hogar', comercio: 'Renta' });
+    expect(categorizar(cargo('TRANSFERENCIA COLEGIATURA COLEGIO WESTHILL', 8000))).toMatchObject({ tipo: 'gasto', categoriaId: 'colegiaturas' });
+    expect(categorizar(cargo('SPEI ENVIADO MARIA LOPEZ 1234', 700))).toMatchObject({ tipo: 'transferencia' });
+  });
+});
