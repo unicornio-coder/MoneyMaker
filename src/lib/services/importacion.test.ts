@@ -108,3 +108,41 @@ describe('confirmarImportaciones (3 PDFs a la vez)', () => {
     expect((await repoMemoria.cuentas(U)).length).toBe(1);
   });
 });
+
+describe('importación asíncrona: etapas, caché por hash y edición', () => {
+  it('iniciarAnalisis responde de inmediato en procesando y procesarAnalisis termina en revisar con duración', async () => {
+    const { iniciarAnalisis, procesarAnalisis } = await import('./importacion');
+    const r = await iniciarAnalisis(repoMemoria, U, { nombre: 'a.pdf', datos: pdfs[0] });
+    expect(r.procesar).toBe(true);
+    expect(r.importacion).toMatchObject({ estado: 'procesando', etapa: 'subido', progreso: 10 });
+    const fin = await procesarAnalisis(repoMemoria, U, r.importacion.id, { nombre: 'a.pdf', datos: pdfs[0] });
+    expect(fin.importacion).toMatchObject({ estado: 'revisar', etapa: 'listo', progreso: 100 });
+    expect(fin.importacion.duracionMs).toBeGreaterThanOrEqual(0);
+    expect(fin.importacion.movimientos).toHaveLength(11);
+  });
+
+  it('el mismo archivo descartado y vuelto a subir se reutiliza sin volver a leerlo (caché por hash)', async () => {
+    const { iniciarAnalisis } = await import('./importacion');
+    const a = await analizarArchivo(repoMemoria, U, { nombre: 'a.pdf', datos: pdfs[0] });
+    await descartarImportacion(repoMemoria, U, a.importacion.id);
+    const b = await iniciarAnalisis(repoMemoria, U, { nombre: 'otra-copia.pdf', datos: pdfs[0] });
+    expect(b.procesar).toBe(false);
+    expect(b.importacion.id).toBe(a.importacion.id);
+    expect(b.importacion).toMatchObject({ estado: 'revisar', archivo: 'otra-copia.pdf', duracionMs: 0, metodo: 'reglas' });
+    expect(b.importacion.movimientos).toHaveLength(11);
+  });
+
+  it('la tabla de revisión se puede corregir antes de confirmar y lo guardado respeta los cambios', async () => {
+    const { actualizarMovimientosImportacion } = await import('./importacion');
+    const a = await analizarArchivo(repoMemoria, U, { nombre: 'a.pdf', datos: pdfs[0] });
+    const movs = a.importacion.movimientos.slice(1).map((m, i) => (i === 0 ? { ...m, descripcion: 'NETFLIX CORREGIDO', montoCentavos: 25000 } : m));
+    const editada = await actualizarMovimientosImportacion(repoMemoria, U, a.importacion.id, movs);
+    expect(editada?.movimientos).toHaveLength(10);
+    expect(editada?.movimientos[0]).toMatchObject({ descripcion: 'NETFLIX CORREGIDO', montoCentavos: 25000 });
+    // Entradas inválidas se rechazan completas.
+    expect(await actualizarMovimientosImportacion(repoMemoria, U, a.importacion.id, [{ fecha: 'ayer', descripcion: 'x', montoCentavos: 1 }])).toBeNull();
+    const r = await confirmarImportaciones(repoMemoria, U, [{ id: a.importacion.id }]);
+    expect(r.totales.movimientos).toBe(10);
+    expect((await repoMemoria.movimientos(U)).some((m) => m.descripcionRaw === 'NETFLIX CORREGIDO')).toBe(true);
+  });
+});

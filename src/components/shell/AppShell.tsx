@@ -3,15 +3,17 @@ import { Topbar } from './Topbar';
 import { TabBar } from './TabBar';
 import { MobileHeader } from './MobileHeader';
 import { SyncAlAbrir } from './SyncAlAbrir';
+import { BannerImportacion } from './BannerImportacion';
 
 type Props = {
   children: React.ReactNode;
   usuario: { nombre: string; iniciales: string };
   hayFuentes?: boolean;
+  importaciones?: { procesando: number; revisar: number };
 };
 
 /** Un solo árbol para web y móvil: la sidebar/topbar aparecen desde md, la tab bar por debajo. */
-export function AppShell({ children, usuario, hayFuentes = false }: Props) {
+export function AppShell({ children, usuario, hayFuentes = false, importaciones = { procesando: 0, revisar: 0 } }: Props) {
   return (
     <div className="flex min-h-dvh">
       <Sidebar />
@@ -26,6 +28,7 @@ export function AppShell({ children, usuario, hayFuentes = false }: Props) {
       </div>
       <TabBar />
       <SyncAlAbrir hayFuentes={hayFuentes} />
+      <BannerImportacion inicial={importaciones} />
     </div>
   );
 }

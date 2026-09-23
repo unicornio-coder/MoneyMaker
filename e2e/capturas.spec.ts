@@ -17,7 +17,7 @@ async function captura(page: Page, nombre: string) {
 test('capturas de login, registro e Inicio con cuentas', async ({ page, request }) => {
   await request.post('/api/qa/reset');
   for (const c of CASOS) {
-    const r = await request.post('/api/imports', { multipart: { archivo: { name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado(c) } } });
+    const r = await request.post('/api/imports', { multipart: { modo: 'sync', archivo: { name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado(c) } } });
     const { importacion } = (await r.json()) as { importacion: { id: string } };
     await request.post('/api/imports/confirmar', { data: { items: [{ id: importacion.id }] } });
   }
