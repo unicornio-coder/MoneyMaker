@@ -8,7 +8,7 @@ import { money, fechaCorta } from '@/lib/format';
 import { COMERCIOS } from '@/lib/domain/comercios';
 import { normalizar } from '@/lib/domain/categorizar';
 import { costoMensual, proximoCobro, totalPagado } from '@/lib/domain/recurrentes';
-import { aISO } from '@/lib/domain/fechas';
+import { aISO, deISO } from '@/lib/domain/fechas';
 import type { Recurrente } from '@/lib/domain/tipos';
 import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
@@ -32,11 +32,11 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
   const mensual = esMsi ? r.monto : costoMensual(r);
   const pctIngreso = ingresoMensual > 0 ? (mensual / ingresoMensual) * 100 : null;
   const proximo = proximoCobro(r);
-  const meses = r.primerCargo ? Math.max(1, Math.round((Date.now() - new Date(r.primerCargo).getTime()) / (30.4 * 86_400_000)) + 1) : r.veces;
+  const meses = r.primerCargo ? Math.max(1, Math.round((Date.now() - deISO(r.primerCargo).getTime()) / (30.4 * 86_400_000)) + 1) : r.veces;
 
   const recordar = () =>
     start(async () => {
-      const f = new Date(proximo);
+      const f = new Date(proximo.getTime());
       f.setDate(f.getDate() - 1);
       const res = await crearEvento({ fecha: aISO(f), nombre: `Recordatorio: ${r.nombre} ${money(r.monto)}`, monto: r.monto, tipo: 'recordatorio', recurrenteId: r.id });
       setMensaje(res.ok ? `Te recordamos el ${fechaCorta(aISO(f))}, un día antes del cobro.` : res.error);
