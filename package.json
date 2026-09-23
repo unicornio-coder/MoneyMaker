@@ -14,7 +14,8 @@
     "qa:seed": "node scripts/qa-seed.mjs",
     "qa:reset": "node scripts/qa-seed.mjs reset",
     "qa:precision": "vitest run --config vitest.precision.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "capturas": "node scripts/screenshots.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

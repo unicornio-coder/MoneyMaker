@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import { tabActual } from '@/lib/nav';
 import { useUI, type Periodo } from '@/lib/store/ui';
 import { ChipGroup } from '@/components/ui/Chip';
+import { useSaludo } from './Saludo';
 
 const PERIODOS: { value: Periodo; label: string }[] = [
   { value: 'q', label: 'Quincena' },
@@ -16,7 +17,7 @@ const PERIODOS: { value: Periodo; label: string }[] = [
 
 const CON_PERIODO = new Set(['/app', '/app/gastos', '/app/fijos', '/app/presupuesto']);
 
-export function Topbar({ iniciales, saludo }: { iniciales: string; saludo?: string }) {
+export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: string }) {
   const pathname = usePathname();
   const tab = tabActual(pathname);
   const periodo = useUI((s) => s.periodo);
@@ -25,7 +26,8 @@ export function Topbar({ iniciales, saludo }: { iniciales: string; saludo?: stri
   const toggleTema = useUI((s) => s.toggleTema);
   const ocultar = useUI((s) => s.ocultarSaldos);
   const toggleOcultar = useUI((s) => s.toggleOcultarSaldos);
-  const titulo = tab.href === '/app' && saludo ? saludo : tab.titulo;
+  const saludo = useSaludo(nombre ?? '');
+  const titulo = tab.href === '/app' && nombre ? saludo : tab.titulo;
 
   const IconBtn = ({ children, onClick, href, label }: { children: React.ReactNode; onClick?: () => void; href?: string; label: string }) => {
     const cls = 'flex h-9 w-9 items-center justify-center rounded-full text-fg transition-colors hover:bg-bg-page dark:hover:bg-surface-2';

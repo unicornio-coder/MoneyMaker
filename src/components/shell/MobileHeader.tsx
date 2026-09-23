@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell } from 'lucide-react';
 import { tabActual } from '@/lib/nav';
+import { useSaludo } from './Saludo';
 
-export function MobileHeader({ iniciales, saludo }: { iniciales: string; saludo?: string }) {
+export function MobileHeader({ iniciales, nombre }: { iniciales: string; nombre?: string }) {
   const pathname = usePathname();
   const tab = tabActual(pathname);
-  const titulo = tab.href === '/app' && saludo ? saludo : tab.titulo;
+  const saludo = useSaludo(nombre ?? '');
+  const titulo = tab.href === '/app' && nombre ? saludo : tab.titulo;
   return (
     <header className="flex items-center gap-2 px-3.5 pb-1 pt-[max(12px,env(safe-area-inset-top))] md:hidden">
       <h1 className="min-w-0 flex-1 truncate font-display text-[17px] font-bold tracking-[-0.3px]">{titulo}</h1>
