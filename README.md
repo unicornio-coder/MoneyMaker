@@ -13,7 +13,7 @@ npm run dev
 
 Abre <http://localhost:3000/app>. Sin variables de entorno la app corre en **modo demo**: usuario "JC" con seis cuentas simuladas (Nu, Amex, Coppel, BBVA, Bitso, GBM+) que pasan por el mismo pipeline que un usuario real (conectar → ingesta → categorizar → recurrentes → insights). Los datos viven en memoria y se reinician al reiniciar el servidor.
 
-Otros comandos: `npm run build` · `npm run typecheck` · `npm run lint` · `npm test`.
+Otros comandos: `npm run build` · `npm run typecheck` · `npm run lint` · `npm test` · `npm run capturas` (todas las pantallas a 390 y 1440 px) · `npm run logos` (baja logos a `public/logos`, requiere internet). CI en GitHub Actions corre lint, tipos, pruebas, build y E2E en cada PR.
 
 Para probar el flujo "primer estado de cuenta" con el usuario demo vacío: `MOCK_SIN_DEMO=true npm run dev` y sube los PDFs de `qa/entregables/estados/` (se regeneran con `npm run qa:pdfs`).
 
@@ -24,7 +24,7 @@ QA: `npm run test:e2e` (Playwright, móvil y escritorio) · `npm run qa:precisio
 1. Crea un proyecto en [Supabase](https://supabase.com) y corre `supabase/migrations/0001_init.sql` en el SQL editor (o `supabase db push` con el CLI). Activa Google en Authentication → Providers si quieres login con Google.
 2. Copia `.env.example` a `.env.local` y llena `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y pon `NEXT_PUBLIC_USE_MOCK=false`.
 3. Belvo: crea una cuenta en [developers.belvo.com](https://developers.belvo.com), toma las llaves de **sandbox** y ponlas en `BELVO_SECRET_ID` / `BELVO_SECRET_PASSWORD` con `BELVO_ENV=sandbox`. En el dashboard registra el webhook `https://<tu-dominio>/api/belvo/webhook` con el secreto de `BELVO_WEBHOOK_SECRET`. Para producción hay que firmar con Belvo y cambiar `BELVO_ENV=production`.
-4. `ANTHROPIC_API_KEY` habilita la categorización de comercios desconocidos y la lectura de estados de cuenta en PDF (el PDF va al modelo como documento; si venía con contraseña, va el texto ya descifrado en memoria). Sin llave, todo sigue funcionando con reglas y diccionario, pero solo con PDFs de texto limpio. Corre también `supabase/migrations/0003_imports.sql`.
+4. `ANTHROPIC_API_KEY` habilita la categorización de comercios desconocidos y la lectura de estados de cuenta en PDF (el PDF va al modelo como documento; si venía con contraseña, va el texto ya descifrado en memoria). Sin llave, todo sigue funcionando con reglas y diccionario, pero solo con PDFs de texto limpio. Corre también `supabase/migrations/0003_imports.sql` y `0004_imports_async.sql`.
 
 Sin llaves de Belvo, "Vincular banco" usa el agregador simulado. Con o sin Belvo, **Importar** acepta CSV, Excel y PDF de cualquier banco.
 
@@ -55,4 +55,4 @@ docs/handoff       diseño, tokens, flujos y capturas de referencia
 
 Cómo fluye un dato: cualquier fuente (Belvo, importación, Gmail, manual) produce `MovimientoCrudo[]` → `services/ingest.ts` categoriza (correcciones del usuario → reglas → diccionario MX → catálogo de `qa/entregables` → categoría del proveedor → LLM), deduplica por hash y guarda → `domain/nomina.ts` reconoce el sueldo y propone días de quincena → `domain/recurrentes.ts` detecta suscripciones, servicios y MSI → `domain/insights.ts` genera avisos. Las pantallas solo leen del repositorio.
 
-Estados de cuenta por archivo: `services/ingestion/` define `TransactionSource` (hoy `statement-pdf` y `statement-table`; `email` y `belvo` próximamente) y `services/importacion.ts` lleva el ciclo analizar → revisar → confirmar sobre la tabla `statement_imports` (`/api/imports`). El archivo nunca se guarda; la contraseña del PDF tampoco.
+Estados de cuenta por archivo: `services/ingestion/` define `TransactionSource` (hoy `statement-pdf` y `statement-table`; `email` y `belvo` próximamente) y `services/importacion.ts` lleva el ciclo iniciar → procesar (en segundo plano, con etapas) → revisar (tabla editable) → confirmar sobre la tabla `statement_imports` (`/api/imports`, ver `docs/ARQUITECTURA.md`). El archivo nunca se guarda; la contraseña del PDF tampoco. `/api/health` reporta versión, build y qué integraciones están configuradas.
