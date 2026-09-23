@@ -29,6 +29,7 @@ const RUTAS = [
   ['importar', '/app/importar'],
   ['planes', '/app/planes'],
   ['ajustes', '/app/ajustes'],
+  ['marcas', '/app/dev/brands'],
 ];
 
 async function sembrar() {
