@@ -17,6 +17,9 @@ import { actualizarPerfil, eliminarFuente, borrarCuenta } from '@/app/app/ajuste
 import { guardarLlavesBitso, sincronizarConector, desconectarConector } from '@/app/app/ajustes/conectores';
 import { Mail, Bitcoin, RefreshCw } from 'lucide-react';
 
+const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.1.0';
+const BUILD = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
+
 type Sec = 'perfil' | 'seguridad' | 'notificaciones' | 'fuentes' | 'familia' | 'exportar' | null;
 
 const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon: typeof User }[] = [
@@ -94,7 +97,16 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
           </form>
         </li>
       </ul>
-      <p className="text-center text-[11px] text-txt-3">MoneyMaker v0.1 · {modoMock ? 'modo demo' : 'cuenta real'} · <button type="button" onClick={() => router.push('/app/planes')} className="underline">Planes</button></p>
+      <footer className="space-y-1.5 text-center text-[11px] text-txt-3">
+        <p className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+          <Link href="/legal/privacidad" className="hover:text-fg">Aviso de privacidad</Link>
+          <Link href="/legal/terminos" className="hover:text-fg">Términos</Link>
+          <a href="mailto:hola@moneymaker.mx" className="hover:text-fg">hola@moneymaker.mx</a>
+          <button type="button" onClick={() => router.push('/app/planes')} className="hover:text-fg">Planes</button>
+        </p>
+        <p>MoneyMaker v{VERSION}{BUILD ? ` · ${BUILD}` : ''} · {modoMock ? 'modo demo' : 'cuenta real'}</p>
+        <p>No somos una institución financiera. No movemos dinero ni damos asesoría de inversión.</p>
+      </footer>
     </div>
   );
 }

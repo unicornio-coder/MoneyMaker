@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
+import { createRequire } from 'node:module';
+const { version } = createRequire(import.meta.url)('./package.json');
+
 const nextConfig = {
   reactStrictMode: true,
+  env: { NEXT_PUBLIC_APP_VERSION: version },
   images: {
     remotePatterns: [{ protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons' }],
   },
