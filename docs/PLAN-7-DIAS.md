@@ -1,5 +1,7 @@
 # Plan de 7 días: app al 100 %, funcionando y publicada, sin depender de nadie
 
+> **Sustituido por `docs/ROADMAP.md`** (JC, 24 sep): primero que la app funcione igual que Rocket Money con datos reales (Belvo encendido); los insights con IA van al final. Este archivo queda como referencia.
+
 Objetivo de JC: en una semana la app completa, usable de punta a punta, en producción, y que después opere
 sola (sin humanos en el circuito: ni para publicar, ni para cancelar, ni para dar soporte de primer nivel).
 
