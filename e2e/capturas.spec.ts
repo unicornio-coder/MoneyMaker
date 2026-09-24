@@ -23,16 +23,14 @@ test('capturas de login, registro e Inicio con cuentas', async ({ page, request 
   }
 
   await page.goto('/login');
-  await expect(page.getByRole('heading', { name: 'Inicia sesión' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Entrar' })).toBeVisible();
   await captura(page, 'login');
 
   await page.goto('/registro');
-  await expect(page.getByRole('heading', { name: 'Crea tu cuenta' })).toBeVisible();
-  await captura(page, 'registro');
+  await expect(page.getByRole('heading', { name: 'Crear cuenta' })).toBeVisible();
   await page.getByLabel('Correo').fill('jc@billup.mx');
-  await page.getByRole('button', { name: 'Continuar' }).click();
   await page.getByRole('textbox', { name: 'Contraseña' }).fill('Quincena2026!');
-  await captura(page, 'registro-contrasena');
+  await captura(page, 'registro');
 
   await page.goto('/app');
   await expect(page.getByRole('heading', { name: 'Cuentas' })).toBeVisible();
