@@ -20,6 +20,8 @@ export type ComercioCatalogo = {
   requiere_llamada: boolean;
   dominio_logo: string;
   notas: string;
+  /** La trampa que va a intentar el servicio al cancelar, y cómo librarla. */
+  truco?: string;
 };
 export type BancoCatalogo = {
   id: string;
@@ -45,6 +47,10 @@ export const COMERCIOS_DESDE_CATALOGO: ComercioConocido[] = COMERCIOS_CATALOGO.f
     suscripcion: c.categoria === 'suscripciones',
     servicio: c.categoria === 'servicios',
     cancelarUrl: c.url_cancelacion ?? undefined,
+    pasosCancelacion: c.pasos_cancelacion?.length ? c.pasos_cancelacion : undefined,
+    truco: c.truco,
+    requiereLlamada: c.requiere_llamada,
+    dificultad: c.dificultad,
   })),
 );
 
