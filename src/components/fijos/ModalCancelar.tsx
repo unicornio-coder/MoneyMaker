@@ -7,7 +7,7 @@ import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { COMERCIOS, type ComercioConocido } from '@/lib/domain/comercios';
 import { COMERCIOS_DESDE_CATALOGO } from '@/lib/domain/catalogo';
-import { normalizar } from '@/lib/domain/categorizar';
+import { normalizar } from '@/lib/domain/texto';
 import { costoMensual } from '@/lib/domain/recurrentes';
 import type { Recurrente } from '@/lib/domain/tipos';
 import { Panel } from '@/components/ui/Panel';

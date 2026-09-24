@@ -6,7 +6,7 @@ import { Bell, ExternalLink, Check, LifeBuoy, Trash2, FileDown } from 'lucide-re
 import { cn } from '@/lib/cn';
 import { money, fechaCorta } from '@/lib/format';
 import { COMERCIOS } from '@/lib/domain/comercios';
-import { normalizar } from '@/lib/domain/categorizar';
+import { normalizar } from '@/lib/domain/texto';
 import { costoMensual, proximoCobro, totalPagado } from '@/lib/domain/recurrentes';
 import { aISO, deISO } from '@/lib/domain/fechas';
 import type { Recurrente } from '@/lib/domain/tipos';
