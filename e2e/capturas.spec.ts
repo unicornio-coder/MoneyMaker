@@ -29,7 +29,7 @@ test('capturas de login, registro e Inicio con cuentas', async ({ page, request 
   await page.goto('/registro');
   await expect(page.getByRole('heading', { name: 'Crear cuenta' })).toBeVisible();
   await page.getByLabel('Correo').fill('jc@billup.mx');
-  await page.getByLabel('Contraseña').fill('Quincena2026!');
+  await page.getByRole('textbox', { name: 'Contraseña' }).fill('Quincena2026!');
   await captura(page, 'registro');
 
   await page.goto('/app');
