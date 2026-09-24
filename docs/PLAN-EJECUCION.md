@@ -27,7 +27,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Código por WhatsApp | Requiere WhatsApp Business API (Meta) y un proveedor (Twilio); se hace después de tener usuarios reales | pendiente (decisión de JC) |
 | Onboarding | 4 pasos, nombre real, panel de marca | hecho (#26) |
 | Importar con animación de conexión (Rocket Money) | `EscenaConexion` con banco al centro y movimientos en vivo | hecho (#28) |
-| App menos "IA": un solo CTA en Inicio, menos chips | hecho en Inicio (#28); siguiente: Gastos y Fijos con el mismo criterio | en curso |
+| App menos "IA": un solo CTA por bloque, menos chips | Inicio (#28); Gastos y Fijos (#36): sin chips de periodo duplicados en la barra, efectivo plegado, una cifra con una línea de contexto, sin dona ni variaciones por tarjeta, Fijos con un solo bloque arriba | hecho |
 | Logos reales en producción | bot `logos.yml` | corre al fusionar #30 |
 
 ## 2. Conectar todos los movimientos

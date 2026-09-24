@@ -16,7 +16,8 @@ const PERIODOS: { value: Periodo; label: string }[] = [
   { value: 'anio', label: 'Año' },
 ];
 
-const CON_PERIODO = new Set(['/app', '/app/gastos', '/app/fijos', '/app/presupuesto']);
+// Solo las pantallas que leen el periodo global; Gastos y Fijos tienen su propio selector.
+const CON_PERIODO = new Set(['/app', '/app/presupuesto']);
 
 export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: string }) {
   const pathname = usePathname();

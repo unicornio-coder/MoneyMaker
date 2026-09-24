@@ -89,8 +89,7 @@ export function Calendario({ recurrentes, eventos, cuentas, hoy, onAbrir, pagoCu
             );
           })}
         </div>
-        <div className="mt-3 flex justify-between text-[11px] text-txt-2 dark:text-fg-2">
-          <span>Toca un día para ver sus cargos</span>
+        <div className="mt-3 flex justify-end text-[11px]">
           <button type="button" onClick={() => setInicioSemana(sumarDias(h, -((h.getDay() + 6) % 7)))} className="font-semibold text-green">Hoy</button>
         </div>
       </div>

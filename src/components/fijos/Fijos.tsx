@@ -33,7 +33,7 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
   const activos = useMemo(() => recurrentes.filter((r) => r.activo), [recurrentes]);
   const totales = useMemo(() => {
     const suma = (f: (r: Recurrente) => boolean) => activos.filter(f).reduce((s, r) => s + (r.tipo === 'msi' ? r.monto : costoMensual(r)), 0);
-    return { total: suma(() => true), suscripciones: suma((r) => r.tipo === 'suscripcion'), servicios: suma((r) => r.tipo === 'servicio' || r.tipo === 'colegiatura' || r.tipo === 'otro'), msi: suma((r) => r.tipo === 'msi') };
+    return { total: suma(() => true), suscripciones: suma((r) => r.tipo === 'suscripcion') };
   }, [activos]);
   const seleccionado = recurrentes.find((r) => r.id === sel) ?? null;
 
@@ -48,27 +48,19 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        {[['Total mensual', totales.total, true], ['Suscripciones', totales.suscripciones, false], ['Servicios', totales.servicios, false], ['Meses sin intereses', totales.msi, false]].map(([l, v, dark]) => (
-          <div key={String(l)} className={cn('rounded-card px-3.5 py-3', dark ? 'bg-ink text-white' : 'card')}>
-            <div className={cn('text-[11px] font-semibold', dark ? 'text-green-light' : 'text-txt-2 dark:text-fg-2')}>{l}</div>
-            <div className="font-display text-[20px] font-bold tracking-[-0.5px]">{money(Number(v))}</div>
+      <div className="relative overflow-hidden rounded-card-lg bg-ink p-5 text-white shadow-dark">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <div className="text-[12px] font-semibold text-green-light">Cargos fijos al mes</div>
+            <div className="mt-1 font-display text-[34px] font-bold leading-none tracking-[-1px]">{money(totales.total)}</div>
+            {totales.suscripciones > 0 && <p className="mt-2 text-[12.5px] text-white/70">{money(totales.suscripciones)} son suscripciones.</p>}
           </div>
-        ))}
-      </div>
-
-      {totales.suscripciones > 0 && (
-        <div className="relative overflow-hidden rounded-card-lg bg-ink p-5 text-white shadow-dark">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <h3 className="font-display text-[17px] font-bold tracking-[-0.3px]">¿Quieres cancelar una suscripción?</h3>
-              <p className="mt-1 text-[12.5px] text-white/70">Pagas {money(totales.suscripciones)} al mes en suscripciones. Te decimos cómo cancelar cada una, o lo hacemos por ti.</p>
-            </div>
+          {totales.suscripciones > 0 && (
             <button type="button" onClick={() => setCancelar(true)} className="inline-flex h-11 flex-none items-center justify-center gap-2 rounded-pill bg-white px-5 text-[13px] font-bold text-ink transition-transform hover:bg-green-50 active:scale-[.98]"><Scissors size={15} /> Cancelar una suscripción</button>
-          </div>
-          <span className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-green/25" />
+          )}
         </div>
-      )}
+        <span className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-green/25" />
+      </div>
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-1 rounded-pill bg-bg-muted p-1 dark:bg-surface-2">
