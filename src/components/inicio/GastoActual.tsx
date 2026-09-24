@@ -38,7 +38,7 @@ export function GastoActual({ movimientos, diasPago, hoy }: { movimientos: Movim
           <Money value={punto.gasto} animate className="mt-0.5 block text-[27.5px] font-bold leading-none tracking-[-1.1px]" tone="ink" />
         </div>
         <div className="flex flex-col items-end gap-2">
-          <ChipGroup value={periodo} onChange={(v) => setPeriodoGlobal(v)} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }]} size="sm" />
+          <ChipGroup label="Periodo" value={periodo} onChange={(v) => setPeriodoGlobal(v)} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }]} size="sm" />
           {varPct != null && (
             <span className={cn('inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-semibold', varPct <= 0 ? 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light' : 'bg-negative-50 text-negative dark:bg-surface-2')}>
               {varPct <= 0 ? <ArrowDownRight size={13} /> : <ArrowUpRight size={13} />}

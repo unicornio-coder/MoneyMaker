@@ -39,7 +39,12 @@ object Config {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_TOKEN, token.trim()).apply()
     }
 
+    /** URL del servidor: la de producción salvo que se haya guardado otra (por ahora solo desde código). */
     fun url(ctx: Context): String = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_URL, null) ?: BuildConfig.APP_URL
+
+    fun guardarUrl(ctx: Context, url: String) {
+        ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_URL, url.trim().trimEnd('/')).apply()
+    }
 
     fun tokenValido(token: String?): Boolean = token != null && Regex("^mmd_[a-f0-9]{48}$").matches(token)
 }

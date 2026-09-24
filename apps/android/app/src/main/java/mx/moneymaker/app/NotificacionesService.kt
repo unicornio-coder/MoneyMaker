@@ -12,12 +12,19 @@ import java.time.Instant
  */
 class NotificacionesService : NotificationListenerService() {
 
+    /** Claves ya enviadas (una notificación que se actualiza dispara onNotificationPosted otra vez). */
+    private val enviadas = object : LinkedHashMap<String, Long>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>?) = size > 200
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val paquete = sbn.packageName ?: return
         if (paquete !in Config.PAQUETES) return
         if (!Config.tokenValido(Config.token(this))) return
-        // Solo notificaciones nuevas (no las que Android reposta al reconectar el servicio) y no las de grupo.
         if (sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
+        // Misma notificación actualizada (misma clave y misma hora): ya se mandó.
+        val clave = "${sbn.key}|${sbn.postTime}"
+        synchronized(enviadas) { if (enviadas.containsKey(clave)) return else enviadas[clave] = sbn.postTime }
 
         val extras = sbn.notification.extras
         val titulo = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""

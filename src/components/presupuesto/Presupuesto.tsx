@@ -52,7 +52,7 @@ export function Presupuesto({ presupuestos, rangos, movimientos, diasPago, hoy }
           {!r.actual && <span className="mt-1 inline-block rounded-pill bg-bg-page px-2.5 py-0.5 text-[11px] font-semibold text-txt-2 dark:bg-surface-2 dark:text-fg-2">Basado en {rango.etiqueta}: es tu último periodo con movimientos</span>}
         </div>
         <div className="flex items-center gap-2">
-          <ChipGroup value={periodo} onChange={setPeriodo} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }, { value: 'anio', label: 'Año' }]} size="sm" className="md:hidden" />
+          <ChipGroup label="Periodo" value={periodo} onChange={setPeriodo} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }, { value: 'anio', label: 'Año' }]} size="sm" className="md:hidden" />
           <button type="button" onClick={() => setNuevo(true)} className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[12px]"><Plus size={15} /> Nuevo presupuesto</button>
         </div>
       </div>

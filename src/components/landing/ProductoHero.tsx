@@ -50,7 +50,7 @@ export function ProductoHero({ className }: { className?: string }) {
                   <div key={q.etiqueta} className="flex flex-col items-center gap-1.5">
                     <div className="relative h-[92px] w-5 overflow-hidden rounded-pill bg-bg-muted">
                       <div className={cn('absolute bottom-0 w-full origin-bottom rounded-pill transition-transform duration-[900ms] ease-out', q.activa ? 'bg-green-light' : 'bg-green-100')} style={{ height: `${q.ingreso}%`, transform: listo ? 'scaleY(1)' : 'scaleY(0)', transitionDelay: `${300 + i * 120}ms` }} />
-                      <div className={cn('absolute bottom-0 w-full origin-bottom rounded-pill transition-transform duration-[900ms] ease-out', q.activa ? 'bg-ink' : 'bg-txt-3/60')} style={{ height: `${q.gasto}%`, transform: listo ? 'scaleY(1)' : 'scaleY(0)', transitionDelay: `${450 + i * 120}ms` }} />
+                      <div className={cn('absolute bottom-0 w-full origin-bottom rounded-pill transition-transform duration-[900ms] ease-out', q.activa ? 'bg-ink' : 'bg-line-dashed')} style={{ height: `${q.gasto}%`, transform: listo ? 'scaleY(1)' : 'scaleY(0)', transitionDelay: `${450 + i * 120}ms` }} />
                     </div>
                     <span className={cn('text-[9.5px] font-semibold', q.activa ? 'rounded-pill bg-ink px-1.5 py-0.5 text-white' : 'text-txt-3')}>{q.etiqueta}</span>
                   </div>

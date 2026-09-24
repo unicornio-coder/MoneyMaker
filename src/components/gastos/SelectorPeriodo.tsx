@@ -15,7 +15,7 @@ export function SelectorPeriodo({ modo, onModo, rango, onRango }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <ChipGroup value={modo} onChange={(m) => { onModo(m); setAbierto(m === 'rango'); }} options={[{ value: 'semana', label: 'Semana' }, { value: 'mes', label: 'Mes' }, { value: 'rango', label: 'Personalizado' }]} size="sm" />
+        <ChipGroup label="Periodo" value={modo} onChange={(m) => { onModo(m); setAbierto(m === 'rango'); }} options={[{ value: 'semana', label: 'Semana' }, { value: 'mes', label: 'Mes' }, { value: 'rango', label: 'Personalizado' }]} size="sm" />
         <div className="flex items-center gap-1">
           <button type="button" aria-label="Anterior" onClick={() => onRango(desplazar(rango, -1))} className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-surface shadow-card hover:bg-bg-hover dark:hover:bg-surface-2"><ChevronLeft size={18} /></button>
           <button type="button" onClick={() => modo === 'rango' && setAbierto((v) => !v)} className={cn('flex h-[34px] items-center gap-1.5 rounded-pill px-3 text-[12.5px] font-bold', modo === 'rango' ? 'bg-surface shadow-card' : '')}>

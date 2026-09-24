@@ -79,14 +79,14 @@ export function Insights({ insights }: { insights: Insight[] }) {
               </button>
               {open && (
                 <div className="animate-fade px-4 pb-4">
-                  <p className={cn('text-[13px] leading-relaxed', claro ? 'text-txt-2 dark:text-fg-2' : 'opacity-90')}>{i.texto}</p>
+                  <p className={cn('text-[13px] leading-relaxed', sobreVerdeClaro ? 'text-ink/80' : claro ? 'text-txt-2 dark:text-fg-2' : 'text-white')}>{i.texto}</p>
                   <div className="mt-3 flex items-center gap-2">
                     {i.ctaHref && (
-                      <Link href={i.ctaHref} className={cn('flex h-10 items-center gap-1 rounded-pill px-4 text-[12.5px] font-bold', claro ? 'bg-ink text-white dark:bg-white dark:text-ink' : 'bg-white text-ink')}>
+                      <Link href={i.ctaHref} className={cn('flex h-10 items-center gap-1 rounded-pill px-4 text-[12.5px] font-bold', sobreVerdeClaro ? 'bg-ink text-white' : claro ? 'bg-ink text-white dark:bg-white dark:text-ink' : 'bg-white text-ink')}>
                         {i.ctaLabel ?? 'Ver'} <ChevronRight size={15} />
                       </Link>
                     )}
-                    <button type="button" onClick={() => descartar(i)} className={cn('ml-auto flex h-10 items-center gap-1 rounded-pill px-3 text-[12px] font-semibold', claro ? 'text-txt-2 hover:bg-bg-muted' : 'text-white/80 hover:bg-white/10')}>
+                    <button type="button" onClick={() => descartar(i)} className={cn('ml-auto flex h-10 items-center gap-1 rounded-pill px-3 text-[12px] font-semibold', sobreVerdeClaro ? 'text-ink hover:bg-ink/10' : claro ? 'text-txt-2 hover:bg-bg-muted' : 'text-white hover:bg-white/10')}>
                       <X size={14} /> Descartar
                     </button>
                   </div>

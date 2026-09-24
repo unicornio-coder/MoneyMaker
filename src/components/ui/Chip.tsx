@@ -10,18 +10,14 @@ type Props = {
   tone?: 'lime' | 'ink' | 'blue';
   size?: 'sm' | 'md';
   className?: string;
-  /** Dentro de un ChipGroup el chip es una pestaña (role=tab + aria-selected). */
-  tab?: boolean;
 };
 
-export function Chip({ active, onClick, children, tone = 'ink', size = 'md', className, tab }: Props) {
+export function Chip({ active, onClick, children, tone = 'ink', size = 'md', className }: Props) {
   return (
     <button
       type="button"
       onClick={onClick}
-      role={tab ? 'tab' : undefined}
-      aria-selected={tab ? active : undefined}
-      aria-pressed={tab ? undefined : active}
+      aria-pressed={active}
       className={cn(
         'whitespace-nowrap rounded-pill border font-semibold transition-all duration-[180ms] ease-out',
         size === 'md' ? 'px-3.5 py-1.5 text-[12.5px]' : 'px-3 py-1 text-[11px]',
@@ -44,13 +40,16 @@ type GroupProps<T extends string> = {
   tone?: Props['tone'];
   size?: Props['size'];
   className?: string;
+  /** Nombre accesible del grupo (p. ej. "Periodo"). */
+  label?: string;
 };
 
-export function ChipGroup<T extends string>({ value, onChange, options, tone, size, className }: GroupProps<T>) {
+/** Grupo de botones excluyentes (aria-pressed). No son pestañas: no controlan paneles, cambian un filtro. */
+export function ChipGroup<T extends string>({ value, onChange, options, tone, size, className, label = 'Opciones' }: GroupProps<T>) {
   return (
-    <div className={cn('flex gap-1.5', className)} role="tablist">
+    <div className={cn('flex gap-1.5', className)} role="group" aria-label={label}>
       {options.map((o) => (
-        <Chip key={o.value} tab active={o.value === value} onClick={() => onChange(o.value)} tone={tone} size={size}>
+        <Chip key={o.value} active={o.value === value} onClick={() => onChange(o.value)} tone={tone} size={size}>
           {o.label}
         </Chip>
       ))}
