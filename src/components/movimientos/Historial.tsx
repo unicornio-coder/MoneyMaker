@@ -38,7 +38,7 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
       if (filtro === '2dias' && m.fecha !== hoy && m.fecha !== ayer) return false;
       if (filtro === 'ingresos' && m.tipo !== 'ingreso') return false;
       if (filtro === 'pagos' && m.tipo !== 'pago_tarjeta') return false;
-      if (q && !`${m.comercio} ${m.descripcionRaw} ${categoria(m.categoriaId).nombre}`.toLowerCase().includes(q)) return false;
+      if (q && !`${m.comercio} ${m.descripcionRaw} ${m.detalle ?? ''} ${categoria(m.categoriaId).nombre}`.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [movimientos, filtro, busqueda, hoy]);
@@ -86,7 +86,7 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
                     <Avatar domain={m.comercioDominio} nombre={m.comercio} size={46} />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[14px] font-bold">{m.comercio}</div>
-                      <div className="truncate text-[11.5px] text-txt-2 dark:text-fg-2">{categoria(m.categoriaId).nombre} · {nombreCuenta.get(m.cuentaId) ?? 'Cuenta'}</div>
+                      <div className="truncate text-[11.5px] text-txt-2 dark:text-fg-2">{m.detalle ? <><span className="text-fg dark:text-white">{m.detalle}</span> · </> : `${categoria(m.categoriaId).nombre} · `}{nombreCuenta.get(m.cuentaId) ?? 'Cuenta'}</div>
                     </div>
                     <div className="text-right">
                       <Money value={m.monto} tone={m.tipo === 'ingreso' ? 'green' : 'inherit'} signed={m.tipo === 'ingreso'} className="block text-[15px] font-bold" />

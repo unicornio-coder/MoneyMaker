@@ -54,6 +54,16 @@ export function DetalleMovimiento({ movimiento, cuentas, onClose }: Props) {
           </div>
           <Money value={m.monto} tone={m.tipo === 'ingreso' ? 'green' : 'inherit'} signed={m.tipo === 'ingreso'} className="text-[20px] font-bold" />
         </div>
+        {m.detalle && (
+          <div className="rounded-card-lg bg-ink p-4 text-white">
+            <div className="text-[10.5px] font-bold uppercase tracking-[0.8px] text-green-light">Lo que compraste</div>
+            <div className="mt-1 font-display text-[16px] font-bold leading-snug">{m.detalle}</div>
+            {Array.isArray(m.recibo?.articulos) && (m.recibo!.articulos as string[]).length > 1 && (
+              <ul className="mt-2 space-y-0.5 text-[12px] text-white/75">{(m.recibo!.articulos as string[]).slice(0, 6).map((a) => <li key={a}>· {a}</li>)}</ul>
+            )}
+            <div className="mt-2 text-[11px] text-white/55">Del recibo que llegó a tu correo. El correo no se guarda.</div>
+          </div>
+        )}
         <div className="rounded-input bg-bg-page px-3 py-2 text-[11.5px] text-txt-2 dark:bg-surface-2 dark:text-fg-2">
           <span className="font-semibold text-fg">Como lo mandó el banco:</span> {m.descripcionRaw}
           {m.esMsi && m.msiCuota && <span className="ml-1 font-semibold text-invest">· cuota {m.msiCuota} de {m.msiTotal}</span>}

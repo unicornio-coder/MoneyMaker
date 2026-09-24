@@ -44,7 +44,7 @@ export interface Repo {
   movimientos(userId: string, filtro?: FiltroMovimientos): Promise<Movimiento[]>;
   /** Inserta ignorando duplicados por hash. Devuelve los insertados. */
   insertarMovimientos(userId: string, movs: NuevoMovimiento[]): Promise<Movimiento[]>;
-  actualizarMovimiento(userId: string, id: string, cambios: Partial<Pick<Movimiento, 'categoriaId' | 'categoriaFuente' | 'comercio' | 'tipo' | 'esMsi' | 'msiCuota' | 'msiTotal' | 'recurrenteId'>>): Promise<Movimiento | null>;
+  actualizarMovimiento(userId: string, id: string, cambios: Partial<Pick<Movimiento, 'categoriaId' | 'categoriaFuente' | 'comercio' | 'tipo' | 'esMsi' | 'msiCuota' | 'msiTotal' | 'recurrenteId' | 'detalle' | 'recibo'>>): Promise<Movimiento | null>;
   eliminarMovimiento(userId: string, id: string): Promise<void>;
 
   // Comercios corregidos por el usuario (patron → categoría)

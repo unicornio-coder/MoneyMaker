@@ -51,6 +51,10 @@ export type Movimiento = {
   recurrenteId?: string | null;
   fuente: FuenteDato;
   hash: string;
+  /** Lo que el recibo dice y el banco no: "Secadora Remington · 1 de 6 MSI", "Roma Norte → Polanco · 22 min". */
+  detalle?: string | null;
+  /** Resumen del recibo casado (artículos, origen/destino, pedido). Nunca el correo completo. */
+  recibo?: Record<string, unknown> | null;
 };
 
 export type Recurrente = {
