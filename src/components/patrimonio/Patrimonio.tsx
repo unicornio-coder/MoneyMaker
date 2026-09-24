@@ -128,7 +128,7 @@ export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo
       </div>
 
       <section className="card p-5">
-        <div className="mb-3 flex items-baseline justify-between"><h2 className="font-display text-[16px] font-bold">Estado de resultados · P&amp;L</h2><span className="text-[11.5px] text-txt-2 dark:text-fg-2">{pnl.actual === false ? `Basado en ${pnl.mes.toLowerCase()}` : pnl.mes}</span></div>
+        <div className="mb-3 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between"><h2 className="font-display text-[16px] font-bold">Estado de resultados · P&amp;L</h2><span className="text-[11.5px] text-txt-2 dark:text-fg-2">{pnl.actual === false ? `Basado en ${pnl.mes.toLowerCase()}` : pnl.mes}</span></div>
         <ul className="divide-y divide-edge text-[13px]">
           {[['Ingresos', pnl.ingresos, 'green'], ['Gastos fijos', -pnl.fijos, ''], ['Gastos variables', -pnl.variables, ''], ['Ahorro / inversión', -pnl.ahorro, 'invest']].map(([l, v, t]) => (
             <li key={String(l)} className="flex h-11 items-center justify-between"><span>{l}</span><span className={cn('font-display font-bold', t === 'green' ? 'text-green' : t === 'invest' ? 'text-invest' : '')}>{Number(v) < 0 ? '-' : ''}{money(Math.abs(Number(v)))}</span></li>
