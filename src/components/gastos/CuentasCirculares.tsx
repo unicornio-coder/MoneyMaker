@@ -26,7 +26,7 @@ export function CuentasCirculares({ cuentas, movimientos, seleccion, onSeleccion
     <section>
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-display text-[16px] font-bold">Cuentas</h2>
-        {seleccion && <button type="button" onClick={() => onSeleccion(null)} className="text-[12px] font-semibold text-green">Ver todas</button>}
+        {seleccion && <button type="button" onClick={() => onSeleccion(null)} className="text-[12px] font-semibold text-green-dark dark:text-green-light">Ver todas</button>}
       </div>
       <div className="-mx-3.5 flex gap-2 overflow-x-auto px-3.5 pb-1 md:mx-0 md:px-0">
         <Link href="/app/importar" className="flex w-[76px] flex-none flex-col items-center gap-1.5">

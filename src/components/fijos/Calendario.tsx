@@ -90,7 +90,7 @@ export function Calendario({ recurrentes, eventos, cuentas, hoy, onAbrir, pagoCu
           })}
         </div>
         <div className="mt-3 flex justify-end text-[11px]">
-          <button type="button" onClick={() => setInicioSemana(sumarDias(h, -((h.getDay() + 6) % 7)))} className="font-semibold text-green">Hoy</button>
+          <button type="button" onClick={() => setInicioSemana(sumarDias(h, -((h.getDay() + 6) % 7)))} className="font-semibold text-green-dark dark:text-green-light">Hoy</button>
         </div>
       </div>
 

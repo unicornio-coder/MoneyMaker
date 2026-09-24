@@ -75,7 +75,7 @@ export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo
       <div className="mx-auto max-w-[720px] space-y-4">
         <EmptyState icon={Landmark} titulo={TEXTOS.vacios.patrimonio.titulo} texto={TEXTOS.vacios.patrimonio.texto} cta={{ label: TEXTOS.vacios.patrimonio.cta, href: '/app/importar' }} />
         <div className="text-center">
-          <button type="button" onClick={() => setAgregar('act')} className="text-[12.5px] font-bold text-green">O captura un activo o una deuda a mano</button>
+          <button type="button" onClick={() => setAgregar('act')} className="text-[12.5px] font-bold text-green-dark dark:text-green-light">O captura un activo o una deuda a mano</button>
         </div>
         <ModalAgregar tipo={agregar} onClose={() => setAgregar(null)} />
       </div>
@@ -115,7 +115,7 @@ export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo
           const p = total ? (r.monto / total) * 100 : 0;
           return (
             <button key={r.id} type="button" onClick={() => setRubroSel(r.id)} className="card flex w-full items-center gap-3 px-4 py-3.5 text-left transition-shadow hover:shadow-hover">
-              <span className={cn('flex h-10 w-10 flex-none items-center justify-center rounded-full', vista === 'act' ? 'bg-green-50 text-green dark:bg-surface-2' : 'bg-negative-50 text-negative dark:bg-surface-2')}><Icon size={18} /></span>
+              <span className={cn('flex h-10 w-10 flex-none items-center justify-center rounded-full', vista === 'act' ? 'bg-green-50 text-green-dark dark:text-green-light dark:bg-surface-2' : 'bg-negative-50 text-negative dark:bg-surface-2')}><Icon size={18} /></span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline justify-between"><span className="text-[13.5px] font-bold">{r.nombre}</span><span className="font-display text-[15px] font-bold">{money(r.monto)}</span></span>
                 <span className="mt-1.5 block h-1.5 rounded-pill bg-line dark:bg-surface-2"><span className={cn('block h-1.5 rounded-pill transition-[width] duration-[550ms] ease-bounce', vista === 'act' ? 'bg-green' : 'bg-negative')} style={{ width: `${p}%` }} /></span>
@@ -131,9 +131,9 @@ export function Patrimonio({ activos, pasivos, cuentas, pnl }: { activos: Activo
         <div className="mb-3 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between"><h2 className="font-display text-[16px] font-bold">Estado de resultados · P&amp;L</h2><span className="text-[11.5px] text-txt-2 dark:text-fg-2">{pnl.actual === false ? `Basado en ${pnl.mes.toLowerCase()}` : pnl.mes}</span></div>
         <ul className="divide-y divide-edge text-[13px]">
           {[['Ingresos', pnl.ingresos, 'green'], ['Gastos fijos', -pnl.fijos, ''], ['Gastos variables', -pnl.variables, ''], ['Ahorro / inversión', -pnl.ahorro, 'invest']].map(([l, v, t]) => (
-            <li key={String(l)} className="flex h-11 items-center justify-between"><span>{l}</span><span className={cn('font-display font-bold', t === 'green' ? 'text-green' : t === 'invest' ? 'text-invest' : '')}>{Number(v) < 0 ? '-' : ''}{money(Math.abs(Number(v)))}</span></li>
+            <li key={String(l)} className="flex h-11 items-center justify-between"><span>{l}</span><span className={cn('font-display font-bold', t === 'green' ? 'text-green-dark dark:text-green-light' : '')}>{Number(v) < 0 ? '-' : ''}{money(Math.abs(Number(v)))}</span></li>
           ))}
-          <li className="flex h-12 items-center justify-between font-bold"><span>Flujo neto</span><span className={cn('font-display text-[16px]', flujo >= 0 ? 'text-green' : 'text-negative')}>{flujo < 0 ? '-' : ''}{money(Math.abs(flujo))}</span></li>
+          <li className="flex h-12 items-center justify-between font-bold"><span>Flujo neto</span><span className={cn('font-display text-[16px]', flujo >= 0 ? 'text-green-dark dark:text-green-light' : 'text-negative')}>{flujo < 0 ? '-' : ''}{money(Math.abs(flujo))}</span></li>
         </ul>
         {pnl.actual !== false && pnl.fijosEsperados > pnl.fijos && <p className="mt-2 text-[11.5px] text-txt-2 dark:text-fg-2">Faltan por cobrarse {money(pnl.fijosEsperados - pnl.fijos)} en fijos este mes.</p>}
       </section>

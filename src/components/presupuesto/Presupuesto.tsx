@@ -63,7 +63,7 @@ export function Presupuesto({ presupuestos, rangos, movimientos, diasPago, hoy }
           <div className="mt-2 font-display text-[22px] font-bold">
             {money(resumen.gastado)} <span className="text-txt-3">/ {money(resumen.limiteTotal)}</span>
           </div>
-          <div className={cn('text-[12px] font-bold', resumen.libres >= 0 ? 'text-green' : 'text-negative')}>{resumen.libres >= 0 ? `${money(resumen.libres)} libres` : `${money(-resumen.libres)} por encima`}</div>
+          <div className={cn('text-[12px] font-bold', resumen.libres >= 0 ? 'text-green-dark dark:text-green-light' : 'text-negative')}>{resumen.libres >= 0 ? `${money(resumen.libres)} libres` : `${money(-resumen.libres)} por encima`}</div>
           {resumen.diasRestantes > 0 && <div className="mt-1 text-[12px] text-txt-2 dark:text-fg-2">Te quedan {money(resumen.porDia)}/día durante {resumen.diasRestantes} días</div>}
           <button type="button" disabled={pendiente} onClick={() => start(async () => { await reproponer(periodo, p.inicio); router.refresh(); })} className="mt-4 flex items-center gap-1.5 text-[11.5px] font-semibold text-txt-2 hover:text-green dark:text-fg-2">
             <RefreshCw size={13} className={cn(pendiente && 'animate-spin')} /> Volver a proponer con mis datos

@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { abonarObjetivo, completarObjetivo, eliminarObjetivo, guardarObjetivo } from '@/app/app/objetivos/acciones';
 
 const GRUPOS: { id: Objetivo['grupo']; label: string; icon: typeof PiggyBank; bg: string }[] = [
-  { id: 'ahorro', label: 'Ahorro', icon: PiggyBank, bg: 'bg-green-50 text-green' },
+  { id: 'ahorro', label: 'Ahorro', icon: PiggyBank, bg: 'bg-green-50 text-green-dark dark:text-green-light' },
   { id: 'deuda', label: 'Deuda', icon: CreditCard, bg: 'bg-negative-50 text-negative' },
   { id: 'inversion', label: 'Inversión', icon: TrendingUp, bg: 'bg-invest-soft text-invest' },
 ];

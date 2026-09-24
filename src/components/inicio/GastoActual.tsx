@@ -40,7 +40,7 @@ export function GastoActual({ movimientos, diasPago, hoy }: { movimientos: Movim
         <div className="flex flex-col items-end gap-2">
           <ChipGroup value={periodo} onChange={(v) => setPeriodoGlobal(v)} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }]} size="sm" />
           {varPct != null && (
-            <span className={cn('inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-semibold', varPct <= 0 ? 'bg-green-50 text-green dark:bg-surface-2 dark:text-green-light' : 'bg-negative-50 text-negative dark:bg-surface-2')}>
+            <span className={cn('inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[11px] font-semibold', varPct <= 0 ? 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light' : 'bg-negative-50 text-negative dark:bg-surface-2')}>
               {varPct <= 0 ? <ArrowDownRight size={13} /> : <ArrowUpRight size={13} />}
               {Math.abs(varPct).toFixed(0)} % vs {periodo === 'q' ? 'quincena' : 'mes'} anterior
             </span>
@@ -60,7 +60,7 @@ export function GastoActual({ movimientos, diasPago, hoy }: { movimientos: Movim
               <div className="flex h-8 flex-col items-center justify-end text-[10.5px] font-bold leading-tight">
                 {activo && (
                   <>
-                    <span className="animate-rise text-green" style={{ animationDelay: '0ms' }}>{money(p.ingreso)}</span>
+                    <span className="animate-rise text-green-dark dark:text-green-light" style={{ animationDelay: '0ms' }}>{money(p.ingreso)}</span>
                     <span className="animate-rise text-fg" style={{ animationDelay: '60ms' }}>{money(p.gasto)}</span>
                   </>
                 )}

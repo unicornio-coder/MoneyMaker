@@ -31,7 +31,7 @@ export default function PrivacidadPage() {
         <p>Ciframos los datos en tránsito y en reposo, aislamos la información de cada usuario en la base de datos y ciframos las credenciales de conectores con llaves que no viven en la base. Conservamos tus datos mientras tengas cuenta activa y hasta 30 días después de borrarla para respaldos.</p>
         <h2 className="mt-6 font-display text-[18px] font-bold">7. Cambios</h2>
         <p>Publicaremos cualquier cambio en esta página y te avisaremos por correo cuando sea relevante.</p>
-        <p className="mt-8"><Link href="/legal/terminos" className="font-semibold text-green">Términos y condiciones</Link></p>
+        <p className="mt-8"><Link href="/legal/terminos" className="font-semibold text-green-dark dark:text-green-light">Términos y condiciones</Link></p>
       </main>
     </div>
   );

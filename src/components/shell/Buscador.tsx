@@ -114,7 +114,7 @@ export function Buscador({ open, onClose }: { open: boolean; onClose: () => void
                     <span className="block truncate text-[13.5px] font-semibold">{m.comercio}</span>
                     <span className="block truncate text-[11.5px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {m.cuenta}</span>
                   </span>
-                  <span className={cn('font-display text-[13.5px] font-bold', m.tipo === 'ingreso' && 'text-green')}>{m.tipo === 'ingreso' ? '+' : ''}{money(m.monto)}</span>
+                  <span className={cn('font-display text-[13.5px] font-bold', m.tipo === 'ingreso' && 'text-green-dark dark:text-green-light')}>{m.tipo === 'ingreso' ? '+' : ''}{money(m.monto)}</span>
                 </button>
               </li>
             );

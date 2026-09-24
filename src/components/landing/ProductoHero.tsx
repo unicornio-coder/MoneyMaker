@@ -43,7 +43,7 @@ export function ProductoHero({ className }: { className?: string }) {
 
             <div className="mt-4 rounded-card-lg bg-surface p-4 shadow-card">
               <div className="text-[11px] font-semibold text-txt-2">Puedes invertir esta quincena</div>
-              <div className="mt-0.5 font-display text-[34px] font-bold leading-none tracking-[-1.4px] text-green">{listo ? <CountUp value={3150} format={(n) => `$${n.toLocaleString('es-MX')}`} duration={1400} /> : '$0'}</div>
+              <div className="mt-0.5 font-display text-[34px] font-bold leading-none tracking-[-1.4px] text-green-dark dark:text-green-light">{listo ? <CountUp value={3150} format={(n) => `$${n.toLocaleString('es-MX')}`} duration={1400} /> : '$0'}</div>
               <div className="mt-1 text-[11px] text-txt-2">Ingreso $14,500 − fijos, MSI y gasto habitual</div>
               <div className="mt-4 grid grid-cols-4 items-end gap-2">
                 {QUINCENAS.map((q, i) => (
@@ -72,7 +72,7 @@ export function ProductoHero({ className }: { className?: string }) {
                 <div key={m.nombre} className="flex items-center gap-2.5 px-2 py-2 transition-all duration-500" style={{ opacity: listo ? 1 : 0, transform: listo ? 'translateX(0)' : 'translateX(12px)', transitionDelay: `${1000 + i * 110}ms` }}>
                   <BrandLogo domain={m.dominio} nombre={m.nombre} size={30} />
                   <span className="min-w-0 flex-1"><span className="block truncate text-[12px] font-bold">{m.nombre}</span><span className="block text-[10px] text-txt-2">{m.cat}</span></span>
-                  <span className={cn('font-display text-[12px] font-bold', m.abono && 'text-green')}>{m.monto}</span>
+                  <span className={cn('font-display text-[12px] font-bold', m.abono && 'text-green-dark dark:text-green-light')}>{m.monto}</span>
                 </div>
               ))}
             </div>

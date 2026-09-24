@@ -27,7 +27,7 @@ export function Sidebar() {
         title={tab.label}
         className={cn(
           'flex h-10 items-center gap-2.5 rounded-[11px] px-3 text-[12.5px] font-semibold transition-colors duration-[160ms]',
-          activo ? 'bg-green-50 text-green dark:bg-surface-2 dark:text-green-light' : 'text-txt-2 hover:bg-bg-page dark:text-fg-2 dark:hover:bg-surface-2',
+          activo ? 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light' : 'text-txt-2 hover:bg-bg-page dark:text-fg-2 dark:hover:bg-surface-2',
           !expandida && 'justify-center px-0',
         )}
       >
@@ -39,6 +39,7 @@ export function Sidebar() {
 
   return (
     <aside
+      aria-label="Menú principal"
       className={cn(
         'sticky top-0 hidden h-dvh flex-none flex-col border-r border-edge bg-surface transition-[width] duration-[250ms] ease-out md:flex',
         expandida ? 'w-[208px]' : 'w-[66px]',

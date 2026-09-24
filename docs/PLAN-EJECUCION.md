@@ -7,7 +7,7 @@ Cada tarea dice qué se hace, cómo, quién lo ejecuta (yo desde Claude Code, un
 | Paso | Quién | Estado |
 |---|---|---|
 | Cambio en rama, PR a `main` con la etiqueta `publicar` | yo | hecho |
-| CI: lint, tipos, pruebas, build, 12 E2E (importación, capturas, onboarding, cancelación) | bot `ci.yml` | hecho |
+| CI: lint, tipos, pruebas, build, 16 E2E (importación, capturas, onboarding, cancelación, accesibilidad con axe en claro y oscuro) | bot `ci.yml` | hecho |
 | Fusión automática a `main` cuando todo está en verde | bot `ci.yml` → job `publicar` | hecho |
 | Deploy | Vercel desde `main` | hecho (Cowork confirmó la rama) |
 | Guardia: cada hora revisa `/api/health` y las pantallas públicas; abre y cierra un issue | bot `salud.yml` | hecho |
@@ -30,6 +30,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | App menos "IA": un solo CTA por bloque, menos chips | Inicio (#28); Gastos y Fijos (#36): sin chips de periodo duplicados en la barra, efectivo plegado, una cifra con una línea de contexto, sin dona ni variaciones por tarjeta, Fijos con un solo bloque arriba | hecho |
 | Logos reales en producción | bot `logos.yml` | hecho (109 logos en `public/logos`) |
 | Rendimiento | Los catálogos (40 KB de JSON) ya no viajan a todas las pantallas: `domain/texto.ts` (normalizar, detalleBasico) y `domain/catalogo.bancos.ts` separados; solo Fijos carga el catálogo de comercios. Logos con `Cache-Control` de un día + una semana stale. Los logos locales pesan ≤ 6 KB y ≤ 128 px, así que `next/image` no aporta | hecho (#39) |
+| Accesibilidad (WCAG 2.1 AA) | axe en 14 pantallas × 2 anchos × 2 temas: de ~250 nodos con fallas a 4 (el azul de gasto sobre fondo oscuro, paleta fija). ChipGroup con pestañas reales, landmarks en landing y auth, verde oscuro para texto pequeño, grises de texto que cambian con el tema. E2E `accesibilidad.spec.ts` lo vigila | hecho (#41) |
 | Modo oscuro pantalla por pantalla | 13 pantallas × 2 anchos en `docs/capturas/oscuro/`. Todo legible; se corrigió la tabla de Presupuesto en móvil (nombres cortados) y el encabezado del P&L | hecho (#40) |
 
 ## 2. Conectar todos los movimientos
