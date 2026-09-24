@@ -15,7 +15,7 @@ Cada tarea dice qué se hace, cómo, quién lo ejecuta (yo desde Claude Code, un
 | Enlaces de cancelación: prueba cada `url_cancelacion` cada semana y reporta rotos | bot `enlaces.yml` | hecho |
 | Dependencias: PR semanal agrupado | Dependabot | hecho |
 
-Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google, Brandfetch). Eso queda en la lista de JC al final.
+Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google, Brandfetch) y la **rama por defecto del repo en GitHub**, que sigue siendo `claude/gallant-bohr-re8e7b`. Los bots con horario (`salud`, `enlaces`, `logos` los lunes) y el botón "Run workflow" solo funcionan desde la rama por defecto: hay que cambiarla a `main` en GitHub → Settings → General → Default branch. Mientras, `logos` corre al fusionar cambios en sus archivos.
 
 ## 1. Landing, inicio de sesión y app (diseño)
 
@@ -64,6 +64,8 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Enlaces vivos | bot `enlaces.yml` semanal | hecho |
 
 ## Lo que solo JC puede hacer
+
+0. GitHub → Settings → General → Default branch → `main` (un clic). Sin esto no corren los bots con horario.
 
 1. Google Cloud: cliente OAuth con `gmail.readonly` y poner `GOOGLE_CLIENT_ID/SECRET` en Vercel (para alertas y recibos por correo).
 2. Brandfetch (opcional, mejores logos): client id gratuito en `BRANDFETCH_CLIENT_ID` como secreto del repo en GitHub.
