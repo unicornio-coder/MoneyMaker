@@ -13,6 +13,11 @@ export type ComercioConocido = {
   servicio?: boolean;
   /** Enlace directo de cancelación (cancelación guiada). */
   cancelarUrl?: string;
+  pasosCancelacion?: string[];
+  /** La trampa que va a intentar el servicio al cancelar, y cómo librarla. */
+  truco?: string;
+  requiereLlamada?: boolean;
+  dificultad?: string;
   /** Patrón genérico (RESTAURANT, CAFE, SEGURO…): solo aplica si ninguna marca coincide. */
   generico?: boolean;
 };

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConectandoBanco } from '@/components/cuentas/ConectandoBanco';
+import { EscenaConexion, MOVIMIENTOS_DEMO, type MovimientoDemo } from '@/components/landing/EscenaConexion';
 import { aplicarDiasDePago } from '@/app/app/acciones';
 
 type CuentaOpcion = { id: string; nombre: string; banco: string; tipo: string; ultimos4: string | null };
@@ -295,6 +296,12 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
   const mensajesLeyendo = TEXTOS.leyendo.mensajes;
   const tx = TEXTOS.multiple;
 
+  // Escena "en vivo": mientras se lee, muestra el banco detectado (por el nombre del archivo) y, en cuanto hay
+  // movimientos reales de cualquier archivo ya leído, los usa en lugar de la demo.
+  const leyendo = items.find((i) => i.estado === 'leyendo' || i.estado === 'subiendo');
+  const bancoLeyendo = leyendo ? infoBanco(leyendo.importacion?.resumen.institucion || bancoSugerido || leyendo.nombre.replace(/[_\-.]/g, ' ')) : null;
+  const enVivo: MovimientoDemo[] = revisables.flatMap((i) => i.importacion!.movimientos.slice(0, 12).map((m) => ({ nombre: m.descripcion.slice(0, 26), dominio: null, monto: `${m.esAbono ? '+' : ''}${formatearCentavos(m.montoCentavos)}`, detalle: fechaCorta(m.fecha), abono: m.esAbono })));
+
   if (confirmando) {
     return (
       <ConectandoBanco
@@ -379,6 +386,16 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
       </div>
 
       {aviso && <p className="flex items-center gap-2 rounded-input bg-warning-soft px-3.5 py-2.5 text-[12.5px] font-semibold text-fg dark:bg-surface-2"><AlertCircle size={16} className="text-warning" /> {aviso}</p>}
+
+      {leyendo && (
+        <section className="rounded-card-xl bg-ink p-5 text-white animate-rise md:p-7" data-testid="escena-conexion">
+          <div className="mb-4 text-center">
+            <div className="font-display text-[18px] font-bold tracking-[-0.3px]">Conectando {bancoLeyendo?.dominio ? bancoLeyendo.nombre : 'tu banco'}</div>
+            <div className="text-[12.5px] text-white/60">{leyendo.etapa ? `${ETAPAS[leyendo.etapa] ?? tx.leyendo}…` : `${tx.subiendo}…`}</div>
+          </div>
+          <EscenaConexion banco={bancoLeyendo?.dominio ? { nombre: bancoLeyendo.nombre, dominio: bancoLeyendo.dominio } : null} movimientos={enVivo.length ? enVivo : MOVIMIENTOS_DEMO} ritmo={700} activa />
+        </section>
+      )}
 
       {items.length > 0 && (
         <section className="space-y-2">

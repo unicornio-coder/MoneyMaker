@@ -29,9 +29,6 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
           <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={{ label: vacio.cta, href: '/app/importar' }} />
         )}
         <Cuentas cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
-        <div className="md:hidden">
-          <SubeExcel />
-        </div>
         {hayCuentas && <Historial movimientos={datos.movimientos} cuentas={datos.cuentas} hoy={datos.hoy} />}
       </div>
       <aside className="hidden min-w-0 space-y-5 md:block">

@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Money } from '@/components/ui/Money';
 import { Avatar } from '@/components/ui/Avatar';
@@ -28,16 +28,9 @@ export function Plastico({ cuenta, className, size = 'md' }: { cuenta: CuentaVis
 export function Cuentas({ cuentas, onAbrir, onAgregar }: { cuentas: CuentaVista[]; onAbrir: (id: string) => void; onAgregar: () => void }) {
   return (
     <section className="space-y-3.5">
-      <h2 className="font-display text-[18px] font-bold">Cuentas</h2>
-
-      <div className="flex h-16 items-center gap-3 rounded-16 border border-edge bg-surface px-3">
-        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-bg-muted dark:bg-surface-2">
-          <CreditCard size={18} />
-        </span>
-        <span className="min-w-0 flex-1 text-[13px] font-semibold">Agregar cuenta</span>
-        <button type="button" onClick={onAgregar} className="btn-primary h-8 px-4 text-[11px]">
-          Agregar
-        </button>
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-[18px] font-bold">Cuentas</h2>
+        <button type="button" onClick={onAgregar} className="btn-primary h-8 px-4 text-[11px]">Agregar</button>
       </div>
 
       <div className="snap-x-carousel -mx-3.5 px-3.5 md:mx-0 md:px-0">

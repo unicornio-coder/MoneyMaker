@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ExternalLink, ListChecks, ChevronRight, Check, ShieldCheck, ChevronLeft } from 'lucide-react';
+import { Search, ExternalLink, ListChecks, ChevronRight, Check, ShieldCheck, ChevronLeft, AlertTriangle, Phone } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { COMERCIOS, type ComercioConocido } from '@/lib/domain/comercios';
@@ -25,7 +25,6 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
   const [q, setQ] = useState('');
   const [paso, setPaso] = useState<Paso>(inicial ? 'detalle' : 'elegir');
   const [sel, setSel] = useState<Servicio | null>(inicial ? aServicio(inicial) : null);
-  const [verPasos, setVerPasos] = useState(false);
   const [form, setForm] = useState({ nombre: '', correo: '', ultimos4: '', notas: '', autorizo: false });
   const [error, setError] = useState<string | null>(null);
   const [modoListo, setModoListo] = useState<'porMi' | 'cancelada'>('porMi');
@@ -48,9 +47,9 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
 
   const cerrar = () => {
     onClose();
-    setTimeout(() => { setPaso(inicial ? 'detalle' : 'elegir'); setSel(inicial ? aServicio(inicial) : null); setQ(''); setError(null); setVerPasos(false); }, 200);
+    setTimeout(() => { setPaso(inicial ? 'detalle' : 'elegir'); setSel(inicial ? aServicio(inicial) : null); setQ(''); setError(null); }, 200);
   };
-  const elegir = (sv: Servicio) => { setSel(sv); setPaso('detalle'); setVerPasos(false); setError(null); };
+  const elegir = (sv: Servicio) => { setSel(sv); setPaso('detalle'); setError(null); };
 
   const yaCancele = () => {
     if (!r) return;
@@ -129,20 +128,24 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
               <span className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/10" />
             </div>
           )}
-          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.6px] text-txt-3"><span className="h-px flex-1 bg-edge" />{r ? 'o cancélala tú' : 'Cómo cancelarla'}<span className="h-px flex-1 bg-edge" /></div>
-          <ul className="overflow-hidden rounded-card border border-edge">
-            {conocido?.cancelarUrl && (
-              <li><a href={conocido.cancelarUrl} target="_blank" rel="noreferrer" className="flex h-[52px] items-center gap-3 px-4 text-[13.5px] font-semibold hover:bg-bg-hover dark:hover:bg-surface-2"><ExternalLink size={16} className="text-green" /> Ir a la página de cancelación <span className="ml-auto truncate text-[12px] font-normal text-txt-2">{conocido.cancelarUrl.replace(/^https?:\/\/(www\.)?/, '').slice(0, 28)}</span><ChevronRight size={16} className="text-txt-3" /></a></li>
-            )}
-            <li className="border-t border-edge first:border-t-0">
-              <button type="button" onClick={() => setVerPasos((v) => !v)} className="flex h-[52px] w-full items-center gap-3 px-4 text-left text-[13.5px] font-semibold hover:bg-bg-hover dark:hover:bg-surface-2"><ListChecks size={16} className="text-green" /> Instrucciones paso a paso <ChevronRight size={16} className={cn('ml-auto text-txt-3 transition-transform', verPasos && 'rotate-90')} /></button>
-              {verPasos && (
-                <ol className="space-y-2 px-4 pb-4 pt-1 animate-rise">
-                  {PASOS_GENERICOS.map((p, i) => <li key={i} className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green dark:bg-surface-2">{i + 1}</span>{p}</li>)}
-                </ol>
-              )}
-            </li>
-          </ul>
+          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.6px] text-txt-3"><span className="h-px flex-1 bg-edge" />{r ? 'o cancélala tú en un minuto' : 'Cómo cancelarla'}<span className="h-px flex-1 bg-edge" /></div>
+          {conocido?.cancelarUrl && (
+            <a href={conocido.cancelarUrl} target="_blank" rel="noreferrer" className="btn-primary flex h-12 w-full items-center justify-center gap-2 text-[14px]">
+              {conocido.requiereLlamada ? <Phone size={17} /> : <ExternalLink size={17} />} {conocido.requiereLlamada ? 'Ver cómo cancelar por teléfono' : 'Ir directo a cancelar'}
+            </a>
+          )}
+          {conocido?.truco && (
+            <div className="flex gap-3 rounded-card bg-warning-soft p-3.5 text-[12.5px] leading-relaxed dark:bg-surface-2">
+              <AlertTriangle size={18} className="mt-0.5 flex-none text-warning" />
+              <div><div className="font-bold">Lo que te van a poner enfrente</div><div className="mt-0.5 text-txt-2 dark:text-fg-2">{conocido.truco}</div></div>
+            </div>
+          )}
+          <ol className="space-y-2 rounded-card border border-edge p-4">
+            {(conocido?.pasosCancelacion ?? PASOS_GENERICOS).map((p, i) => (
+              <li key={i} className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green dark:bg-surface-2">{i + 1}</span>{p}</li>
+            ))}
+            <li className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green dark:bg-surface-2"><ListChecks size={11} /></span>Vuelve aquí y toca &ldquo;Ya la cancelé&rdquo;: si el cargo regresa, te avisamos con el comprobante.</li>
+          </ol>
           {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
           {r && <Button variant="outline" size="lg" full disabled={pendiente} onClick={yaCancele}><Check size={18} /> Ya la cancelé</Button>}
         </div>
