@@ -23,3 +23,22 @@ describe('vigilancia después de cancelar', () => {
     expect(out.some((x) => x.tipo === 'cargo_tras_cancelar')).toBe(false);
   });
 });
+
+describe('precio que sube y presupuesto', () => {
+  const hoy = new Date(2026, 8, 20);
+  const rango = quincenaDe(hoy, [5, 20]);
+  it('avisa cuando el último cargo de una suscripción sube 5 % o más', () => {
+    const r = { ...rec('r1', 'Netflix', null), activo: true };
+    const out = generarInsights({ movs: [mov('a', 'Netflix', 219, '2026-07-18', 'r1'), mov('b', 'Netflix', 249, '2026-08-18', 'r1')], recurrentes: [r], rango, ingresoPeriodo: 14500, excedente: 0, hoy });
+    const i = out.find((x) => x.tipo === 'precio_subio');
+    expect(i?.titulo).toBe('Netflix subió de $219 a $249');
+    expect(i?.monto).toBe(30);
+    const sin = generarInsights({ movs: [mov('a', 'Netflix', 249, '2026-07-18', 'r1'), mov('b', 'Netflix', 249, '2026-08-18', 'r1')], recurrentes: [r], rango, ingresoPeriodo: 14500, excedente: 0, hoy });
+    expect(sin.some((x) => x.tipo === 'precio_subio')).toBe(false);
+  });
+  it('avisa al 80 % y al rebasar una categoría del presupuesto', () => {
+    const out = generarInsights({ movs: [], recurrentes: [], rango, ingresoPeriodo: 14500, excedente: 0, hoy, presupuesto: { diasRestantes: 6, lineas: [{ categoriaId: 'comida', limite: 1000, actual: 850 }, { categoriaId: 'super', limite: 1450, actual: 1600 }, { categoriaId: 'otros', limite: 500, actual: 100 }] } });
+    const tipos = out.filter((x) => x.tipo.startsWith('presupuesto')).map((x) => `${x.tipo}:${x.titulo}`);
+    expect(tipos).toEqual(['presupuesto_80:Comida va al 85 %', 'presupuesto_100:Super: te pasaste $150']);
+  });
+});

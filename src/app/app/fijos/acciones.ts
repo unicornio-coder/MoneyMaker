@@ -84,3 +84,14 @@ export async function eliminarEvento(id: string): Promise<R> {
   revalidar();
   return { ok: true };
 }
+
+/** "No es recurrente": se desactiva y el detector no lo vuelve a crear (queda marcado como ignorado). */
+export async function marcarNoRecurrente(recurrenteId: string): Promise<R> {
+  const { usuario, repo } = await contexto();
+  const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
+  if (!r) return { ok: false, error: 'No encontramos el cargo.' };
+  await repo.guardarRecurrente(usuario.id, { ...r, activo: false, ignorado: true });
+  for (const m of (await repo.movimientos(usuario.id)).filter((x) => x.recurrenteId === r.id)) await repo.actualizarMovimiento(usuario.id, m.id, { recurrenteId: null });
+  revalidar();
+  return { ok: true };
+}

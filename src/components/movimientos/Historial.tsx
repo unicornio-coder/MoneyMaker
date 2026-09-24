@@ -36,7 +36,11 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
       if (filtro === 'hoy' && m.fecha !== hoy) return false;
       if (filtro === 'ingresos' && m.tipo !== 'ingreso') return false;
       if (filtro === 'pagos' && m.tipo !== 'pago_tarjeta') return false;
-      if (q && !`${m.comercio} ${m.descripcionRaw} ${m.detalle ?? ''} ${categoria(m.categoriaId).nombre}`.toLowerCase().includes(q)) return false;
+      if (q) {
+        const texto = `${m.comercio} ${m.descripcionRaw} ${m.detalle ?? ''} ${m.nota ?? ''} ${categoria(m.categoriaId).nombre}`.toLowerCase().includes(q);
+        const monto = /^\$?[\d.,]+$/.test(q) && String(Math.round(m.monto)).includes(q.replace(/[$,]/g, '').split('.')[0]);
+        if (!texto && !monto) return false;
+      }
       return true;
     });
   }, [movimientos, filtro, busqueda, hoy]);

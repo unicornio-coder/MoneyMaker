@@ -17,7 +17,7 @@ const FILTROS: { value: Filtro; label: string; tipos: string[] }[] = [
   { value: 'suscripciones', label: 'Suscripciones', tipos: ['suscripcion_nueva', 'suscripciones_total'] },
   { value: 'msi', label: 'Meses sin intereses', tipos: ['msi_termina', 'msi_total'] },
   { value: 'ahorro', label: 'Ahorro', tipos: ['puedes_invertir'] },
-  { value: 'cargos', label: 'Cargos', tipos: ['cargo_duplicado', 'cargo_tras_cancelar', 'comisiones', 'proximos_cobros'] },
+  { value: 'cargos', label: 'Cargos', tipos: ['cargo_duplicado', 'cargo_tras_cancelar', 'comisiones', 'proximos_cobros', 'precio_subio', 'presupuesto_80', 'presupuesto_100'] },
 ];
 
 // Familia de color por tipo: verde = oportunidad, tinta = información, azul = atención (nunca rojo).
@@ -27,6 +27,9 @@ const TONO: Record<string, string> = {
   suscripciones_total: 'bg-ink text-white',
   msi_termina: 'bg-green-light text-ink',
   msi_total: 'bg-ink text-white',
+  precio_subio: 'bg-negative text-white',
+  presupuesto_80: 'bg-surface text-fg border border-edge',
+  presupuesto_100: 'bg-negative text-white',
   cargo_duplicado: 'bg-negative text-white',
   cargo_tras_cancelar: 'bg-negative text-white',
   comisiones: 'bg-negative text-white',

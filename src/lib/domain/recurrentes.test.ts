@@ -151,3 +151,20 @@ describe('detectarRecurrentes', () => {
     expect(proximoCobro({ diaCobro: 20, frecuencia: 'mensual', ultimoCargo: '2026-08-20' }, HOY).getDate()).toBe(20);
   });
 });
+
+describe('cobrosProximos', () => {
+  it('lista los cobros de los próximos 7 días ordenados y suma el total; ignora cancelados', async () => {
+    const { cobrosProximos } = await import('./recurrentes');
+    const base = { comercioDominio: null, frecuencia: 'mensual' as const, primerCargo: '2026-01-18', ultimoCargo: '2026-08-18', veces: 8, activo: true, canceladoAt: null, origen: 'detectado' as const };
+    const recs = [
+      { ...base, id: 'a', nombre: 'Netflix', tipo: 'suscripcion' as const, monto: 249, diaCobro: 18 },
+      { ...base, id: 'b', nombre: 'CFE', tipo: 'servicio' as const, monto: 640, diaCobro: 13 },
+      { ...base, id: 'c', nombre: 'Spotify', tipo: 'suscripcion' as const, monto: 129, diaCobro: 25 },
+      { ...base, id: 'd', nombre: 'Gym', tipo: 'suscripcion' as const, monto: 499, diaCobro: 15, activo: false, canceladoAt: '2026-09-01' },
+    ];
+    const r = cobrosProximos(recs, new Date(2026, 8, 12));
+    expect(r.lista.map((c) => `${c.recurrente.nombre} ${c.fecha}`)).toEqual(['CFE 2026-09-13', 'Netflix 2026-09-18']);
+    expect(r.total).toBe(889);
+    expect(cobrosProximos(recs, new Date(2026, 8, 26)).lista.map((c) => c.recurrente.nombre)).toEqual([]);
+  });
+});

@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const [movs, cuentas] = await Promise.all([repo.movimientos(usuario.id), repo.cuentas(usuario.id)]);
   const nombre = new Map(cuentas.map((c) => [c.id, c.nombre]));
   const movimientos = movs
-    .filter((m) => normalizar(m.comercio).includes(q) || normalizar(m.descripcionRaw).includes(q) || normalizar(m.detalle ?? '').includes(q))
+    .filter((m) => normalizar(m.comercio).includes(q) || normalizar(m.descripcionRaw).includes(q) || normalizar(m.detalle ?? '').includes(q) || normalizar(m.nota ?? '').includes(q) || (/^[\d.,]+$/.test(q) && String(Math.round(m.monto)).includes(q.replace(/[.,]/g, ''))))
     .sort((a, b) => b.fecha.localeCompare(a.fecha))
     .slice(0, 8)
     .map((m) => ({ id: m.id, fecha: m.fecha, comercio: m.comercio, comercioDominio: m.comercioDominio, monto: m.monto, tipo: m.tipo, cuentaId: m.cuentaId, cuenta: nombre.get(m.cuentaId) ?? '' }));

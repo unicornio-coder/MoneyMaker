@@ -6,7 +6,7 @@ import { categorizar, hashMovimiento, normalizar } from '@/lib/domain/categoriza
 import { detectarRecurrentes } from '@/lib/domain/recurrentes';
 import { generarInsights } from '@/lib/domain/insights';
 import { detectarDiasPago, detectarNomina, estimarIngresoQuincenal } from '@/lib/domain/nomina';
-import { excedenteInvertible, proponerPresupuesto } from '@/lib/domain/presupuesto';
+import { excedenteInvertible, proponerPresupuesto, presupuestoVsActual } from '@/lib/domain/presupuesto';
 import { quincenaDe } from '@/lib/domain/quincena';
 import type { Cuenta, FuenteDato, MovimientoCrudo } from '@/lib/domain/tipos';
 import type { NuevoMovimiento, Repo } from '@/lib/data/repo';
@@ -94,7 +94,9 @@ export async function recalcular(repo: Repo, userId: string): Promise<{ recurren
   const ingresoPeriodo = perfil?.ingresoQuincenal ?? estimarIngresoQuincenal(movsConRec, hoy);
   const lineas = proponerPresupuesto(movsConRec, recurrentes, 'q', hoy, diasPago);
   const excedente = excedenteInvertible(ingresoPeriodo, lineas);
-  const candidatos = generarInsights({ movs: movsConRec, recurrentes, rango, ingresoPeriodo, excedente, hoy });
+  const guardado = await repo.presupuesto(userId, 'q', rango.inicio).catch(() => null);
+  const vs = presupuestoVsActual(guardado?.lineas ?? lineas, movsConRec, rango, ingresoPeriodo, hoy);
+  const candidatos = generarInsights({ movs: movsConRec, recurrentes, rango, ingresoPeriodo, excedente, hoy, presupuesto: { lineas: vs.lineas, diasRestantes: vs.diasRestantes } });
   const nuevos = await repo.guardarInsights(userId, candidatos);
   return { recurrentes: recurrentes.filter((r) => r.activo).length, insights: nuevos.length };
 }

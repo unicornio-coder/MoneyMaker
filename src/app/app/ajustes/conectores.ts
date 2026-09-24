@@ -7,6 +7,7 @@ import { desconectarGmail, sincronizarGmail } from '@/lib/services/gmail';
 import { desconectarOutlook, sincronizarOutlook } from '@/lib/services/outlook';
 import { registrar } from '@/lib/services/analytics';
 import { aliasCorreo, crearTokenDispositivo, dominioCorreoEntrante } from '@/lib/services/entrada';
+import { sincronizarLink } from '@/lib/services/conectar';
 
 const rev = () => ['/app', '/app/ajustes', '/app/inversiones', '/app/gastos'].forEach((p) => revalidatePath(p));
 
@@ -50,4 +51,14 @@ export async function obtenerCorreoReenvio() {
   const alias = await aliasCorreo(repo, usuario.id);
   rev();
   return { ok: true as const, direccion: `${alias}@${dominioCorreoEntrante()}`, activo: !!process.env.CORREO_ENTRANTE_SECRET };
+}
+
+/** "Actualizar ahora" de una conexión bancaria (Belvo o demo): baja los últimos 3 meses y recalcula. */
+export async function actualizarFuente(linkId: string) {
+  const { usuario, repo } = await contexto();
+  const link = (await repo.links(usuario.id)).find((l) => l.id === linkId);
+  if (!link || !link.externalId || (link.proveedor !== 'belvo' && link.proveedor !== 'manual')) return { ok: false as const, error: 'Esta conexión no se actualiza sola: sube el estado de cuenta más reciente.' };
+  const r = await sincronizarLink(repo, usuario.id, link.id, link.externalId, link.proveedor === 'belvo' ? 'belvo' : 'manual', 3);
+  rev();
+  return r.ok ? { ok: true as const, insertados: r.insertados } : { ok: false as const, error: r.error ?? 'No se pudo actualizar. Si el banco pide un código, vuelve a conectar.' };
 }

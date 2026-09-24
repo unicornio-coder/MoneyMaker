@@ -160,7 +160,7 @@ export const repoMemoria: Repo = {
       const existente = e.recurrentes.find((r) => clave(r) === clave(d));
       let r: Recurrente;
       if (existente) {
-        if (existente.origen === 'manual' || existente.canceladoAt) {
+        if (existente.origen === 'manual' || existente.canceladoAt || existente.ignorado) {
           r = existente;
         } else {
           Object.assign(existente, datos, { id: existente.id });
@@ -175,7 +175,7 @@ export const repoMemoria: Repo = {
     }
     // Detectados que ya no aparecen: se desactivan (no se borran) salvo manuales.
     const vistos = new Set(salida.map((r) => r.id));
-    for (const r of e.recurrentes) if (!vistos.has(r.id) && r.origen === 'detectado' && !r.canceladoAt) r.activo = false;
+    for (const r of e.recurrentes) if (!vistos.has(r.id) && r.origen === 'detectado' && !r.canceladoAt && !r.ignorado) r.activo = false;
     return e.recurrentes;
   },
   async guardarRecurrente(userId, r) {

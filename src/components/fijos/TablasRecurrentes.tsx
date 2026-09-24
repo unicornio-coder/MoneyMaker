@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { money } from '@/lib/format';
-import { costoMensual } from '@/lib/domain/recurrentes';
+import { costoMensual, proximoCobro } from '@/lib/domain/recurrentes';
+import { fechaCorta } from '@/lib/format';
 import type { Recurrente } from '@/lib/domain/tipos';
 import { Avatar } from '@/components/ui/Avatar';
 
@@ -41,7 +42,7 @@ export function TablasRecurrentes({ recurrentes, onAbrir, seccionInicial }: { re
                       <div className="truncate text-[13px] font-bold">{r.nombre}</div>
                       <div className="text-[11px] text-white/60">
                         {r.tipo === 'msi' && r.msiCuotasTotal ? `Cuota ${r.msiCuotasPagadas ?? 0} de ${r.msiCuotasTotal} · ` : ''}
-                        {r.diaCobro ? `día ${r.diaCobro}` : r.frecuencia}
+                        {`próximo ${fechaCorta(proximoCobro(r))}`}
                         {r.veces === 1 && r.tipo === 'suscripcion' ? ' · nueva' : ''}
                       </div>
                     </div>

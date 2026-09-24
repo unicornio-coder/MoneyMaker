@@ -50,3 +50,24 @@ describe('entrada por notificación y correo reenviado', () => {
     expect(notificacionACorreo({ paquete: 'com.whatsapp', titulo: 'Hola', texto: 'x' })).toBeNull();
   });
 });
+
+describe('no es recurrente', () => {
+  it('queda ignorado, inactivo y el detector no lo revive', async () => {
+    const { detectarRecurrentes } = await import('@/lib/domain/recurrentes');
+    const u = 'user-ignorado';
+    reiniciarMemoria();
+    await repoMemoria.guardarPerfil(u, { email: 'x@billup.mx' });
+    const link = await repoMemoria.guardarLink(u, { proveedor: 'manual', externalId: null, institucion: 'Manual', institucionDominio: null, estado: 'ok', ultimoSync: null });
+    const cuenta = await repoMemoria.guardarCuenta(u, { linkId: link.id, externalId: 'c1', nombre: 'BBVA Crédito', banco: 'BBVA', bancoDominio: 'bbva.mx', tipo: 'credito', ultimos4: '0001', saldo: 0, color: '#072146', activo: true });
+    const base = { cuentaId: cuenta.id, descripcionRaw: 'NETFLIX.COM', comercio: 'Netflix', comercioDominio: 'netflix.com', monto: 249, tipo: 'gasto' as const, categoriaId: 'suscripciones', categoriaFuente: 'regla' as const, esMsi: false, fuente: 'import' as const };
+    await repoMemoria.insertarMovimientos(u, ['2026-06-18', '2026-07-18', '2026-08-18'].map((fecha, i) => ({ ...base, fecha, hash: `h${i}` })));
+    let recs = await repoMemoria.conciliarRecurrentes(u, detectarRecurrentes(await repoMemoria.movimientos(u)));
+    const netflix = recs.find((r) => r.nombre === 'Netflix')!;
+    expect(netflix.activo).toBe(true);
+    await repoMemoria.guardarRecurrente(u, { ...netflix, activo: false, ignorado: true });
+    recs = await repoMemoria.conciliarRecurrentes(u, detectarRecurrentes(await repoMemoria.movimientos(u)));
+    const otraVez = recs.filter((r) => r.nombre === 'Netflix');
+    expect(otraVez).toHaveLength(1);
+    expect(otraVez[0]).toMatchObject({ activo: false, ignorado: true });
+  });
+});

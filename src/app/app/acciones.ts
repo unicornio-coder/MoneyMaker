@@ -95,3 +95,13 @@ export async function agregarEfectivo(concepto: string, monto: number, fecha?: s
   revalidarTodo();
   return { ok: true };
 }
+
+/** Nota libre del usuario en un movimiento (máximo 200 caracteres). */
+export async function guardarNota(movimientoId: string, nota: string): Promise<R> {
+  const { usuario, repo } = await contexto();
+  const limpia = nota.replace(/\s+/g, ' ').trim().slice(0, 200);
+  const m = await repo.actualizarMovimiento(usuario.id, movimientoId, { nota: limpia || null });
+  if (!m) return { ok: false, error: 'No encontramos el movimiento.' };
+  revalidarTodo();
+  return { ok: true };
+}

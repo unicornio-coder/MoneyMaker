@@ -55,6 +55,8 @@ export type Movimiento = {
   detalle?: string | null;
   /** Resumen del recibo casado (artículos, origen/destino, pedido). Nunca el correo completo. */
   recibo?: Record<string, unknown> | null;
+  /** Nota libre del usuario ("regalo de mamá", "me lo pagan"). */
+  nota?: string | null;
 };
 
 export type Recurrente = {
@@ -71,6 +73,8 @@ export type Recurrente = {
   veces: number;
   activo: boolean;
   canceladoAt?: string | null;
+  /** El usuario dijo "no es recurrente": queda inactivo y el detector no lo vuelve a crear. */
+  ignorado?: boolean;
   msiCuotasTotal?: number | null;
   msiCuotasPagadas?: number | null;
   msiTermina?: string | null;

@@ -15,12 +15,13 @@ export default async function InicioPage({ searchParams }: { searchParams: { cue
   const agg = getAggregator();
   const credBitso = await repo.credencial(usuario.id, 'bitso').catch(() => null);
   const posBitso = (credBitso?.datos.posiciones as { ticker: string; nombre: string; dominio: string; cantidad: number; valor: number; variacion: number }[] | undefined) ?? null;
-  const [cuentasBase, movimientos, recurrentes, objetivos, instituciones] = await Promise.all([
+  const [cuentasBase, movimientos, recurrentes, objetivos, instituciones, links] = await Promise.all([
     repo.cuentas(usuario.id),
     repo.movimientos(usuario.id, { desde }),
     repo.recurrentes(usuario.id),
     repo.objetivos(usuario.id),
     agg.listarInstituciones().catch(() => []),
+    repo.links(usuario.id),
   ]);
 
   const cuentas: CuentaVista[] = cuentasBase.map((c) => {
@@ -45,6 +46,7 @@ export default async function InicioPage({ searchParams }: { searchParams: { cue
     instituciones,
     agregador: agg.nombre,
     sandbox: agg.entorno === 'sandbox',
+    fuentes: links.map((l) => ({ id: l.id, proveedor: l.proveedor, institucion: l.institucion, estado: l.estado })),
   };
   return <Inicio datos={datos} cuentaInicial={searchParams.cuenta ?? null} />;
 }
