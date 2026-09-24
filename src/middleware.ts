@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { MODO_MOCK, SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/env';
 
-const PUBLICAS = ['/login', '/registro', '/recuperar', '/restablecer', '/auth', '/legal', '/api/waitlist', '/api/health', '/api/stripe/webhook', '/api/belvo/webhook', '/api/cron', '/manifest.webmanifest', '/icon.svg'];
+const PUBLICAS = ['/login', '/registro', '/recuperar', '/restablecer', '/auth', '/legal', '/api/waitlist', '/api/health', '/api/notificaciones', '/api/correo/entrante', '/api/stripe/webhook', '/api/belvo/webhook', '/api/cron', '/manifest.webmanifest', '/icon.svg'];
 
 export async function middleware(req: NextRequest) {
   if (MODO_MOCK) return NextResponse.next();

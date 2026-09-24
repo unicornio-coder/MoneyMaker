@@ -5,7 +5,7 @@ import type { Activo, Credencial, Cuenta, EventoCalendario, Importacion, Insight
 
 export type Link = {
   id: string;
-  proveedor: 'belvo' | 'gmail' | 'import' | 'manual' | 'bitso';
+  proveedor: 'belvo' | 'gmail' | 'import' | 'manual' | 'bitso' | 'dispositivo' | 'correo';
   externalId?: string | null;
   institucion: string;
   institucionDominio?: string | null;
@@ -33,6 +33,8 @@ export interface Repo {
 
   // Fuentes y cuentas
   links(userId: string): Promise<Link[]>;
+  /** Dueño de un link por su externalId (tokens de dispositivo, alias de correo). Requiere cliente de servicio en Supabase. */
+  usuarioPorExternalId(proveedor: Link['proveedor'], externalId: string): Promise<string | null>;
   guardarLink(userId: string, link: Omit<Link, 'id'> & { id?: string }): Promise<Link>;
   eliminarLink(userId: string, linkId: string): Promise<void>;
   cuentas(userId: string): Promise<Cuenta[]>;

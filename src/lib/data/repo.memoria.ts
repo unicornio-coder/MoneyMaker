@@ -62,6 +62,10 @@ export const repoMemoria: Repo = {
   async links(userId) {
     return estadoDe(userId).links;
   },
+  async usuarioPorExternalId(proveedor, externalId) {
+    for (const [userId, e] of estados) if (e.links.some((l: Link) => l.proveedor === proveedor && l.externalId === externalId)) return userId;
+    return null;
+  },
   async guardarLink(userId, link) {
     const e = estadoDe(userId);
     const existente = link.id ? e.links.find((l) => l.id === link.id) : e.links.find((l) => l.proveedor === link.proveedor && l.externalId && l.externalId === link.externalId);

@@ -2,7 +2,7 @@
 
 export type TipoCuenta = 'credito' | 'debito' | 'inversion' | 'efectivo';
 export type TipoMovimiento = 'gasto' | 'ingreso' | 'pago_tarjeta' | 'transferencia';
-export type FuenteDato = 'belvo' | 'import' | 'gmail' | 'manual' | 'bitso';
+export type FuenteDato = 'belvo' | 'import' | 'gmail' | 'manual' | 'bitso' | 'dispositivo' | 'correo';
 export type TipoRecurrente = 'suscripcion' | 'servicio' | 'msi' | 'colegiatura' | 'otro';
 export type Frecuencia = 'semanal' | 'quincenal' | 'mensual' | 'anual';
 export type Periodo = 'q' | 'mes' | 'anio';
@@ -131,7 +131,7 @@ export type Perfil = {
   planIntervalo?: 'mes' | 'anio' | null;
 };
 
-export type Credencial = { proveedor: 'gmail' | 'bitso'; etiqueta?: string | null; datos: Record<string, unknown>; updatedAt: string };
+export type Credencial = { proveedor: 'gmail' | 'bitso' | 'dispositivo' | 'correo'; etiqueta?: string | null; datos: Record<string, unknown>; updatedAt: string };
 
 /** Movimiento tal como lo entrega una fuente antes de categorizar y deduplicar. Monto en pesos. */
 export type MovimientoCrudo = {
