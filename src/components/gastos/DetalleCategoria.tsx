@@ -56,7 +56,7 @@ export function DetalleCategoria({ categoriaId, movimientos, cuentas, rango, onC
                   <Avatar domain={m.comercioDominio} nombre={m.comercio} size={40} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13.5px] font-bold">{m.comercio}</div>
-                    <div className="text-[11px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {nombreCuenta.get(m.cuentaId) ?? ''}</div>
+                    <div className="truncate text-[11px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {m.detalle ? `${m.detalle} · ` : ''}{nombreCuenta.get(m.cuentaId) ?? ''}</div>
                   </div>
                   <span className="font-display text-[14px] font-bold">{money(m.monto)}</span>
                 </button>

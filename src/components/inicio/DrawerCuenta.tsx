@@ -143,7 +143,7 @@ export function DrawerCuenta({ cuenta, movimientos, cuentas, onClose }: Props) {
                   <Avatar domain={m.comercioDominio} nombre={m.comercio} size={42} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13.5px] font-bold">{m.comercio}{m.esMsi && m.msiCuota ? ` · cuota ${m.msiCuota}/${m.msiTotal}` : ''}</div>
-                    <div className="text-[11px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {categoria(m.categoriaId).nombre}</div>
+                    <div className="truncate text-[11px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {m.detalle ?? categoria(m.categoriaId).nombre}</div>
                   </div>
                   <Money value={m.monto} tone={m.tipo === 'ingreso' ? 'green' : 'inherit'} signed={m.tipo === 'ingreso'} className="text-[14.5px] font-bold" />
                 </li>

@@ -5,6 +5,8 @@ import type { Repo } from '@/lib/data/repo';
 import { infoBanco } from '@/lib/domain/comercios';
 import { ingerirMovimientos } from './ingest';
 import { parsearAlerta, type CorreoAlerta } from './gmail.parsers';
+import { parsearRecibo, REMITENTES_RECIBOS, type Recibo } from './recibos';
+import { aplicarRecibos } from './enriquecer';
 
 const AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN = 'https://oauth2.googleapis.com/token';
@@ -60,24 +62,30 @@ function textoDe(payload: Parte): string {
 }
 
 /** Lee alertas de los últimos `dias` días y las ingiere. Idempotente por hash y por id de mensaje. */
-export async function sincronizarGmail(repo: Repo, userId: string, dias = 7): Promise<{ ok: boolean; insertados: number; leidos: number; error?: string }> {
+export async function sincronizarGmail(repo: Repo, userId: string, dias = 7): Promise<{ ok: boolean; insertados: number; leidos: number; enriquecidos?: number; error?: string }> {
   const cred = await repo.credencial(userId, 'gmail');
   const link = (await repo.links(userId)).find((l) => l.proveedor === 'gmail');
   if (!cred || !link) return { ok: false, insertados: 0, leidos: 0, error: 'Gmail no está conectado.' };
   try {
     const token = await accessToken(String(cred.datos.refresh_token));
     const procesados = new Set<string>((cred.datos.procesados as string[]) ?? []);
-    const q = `newer_than:${dias}d (${REMITENTES.map((d) => `from:${d}`).join(' OR ')})`;
+    const q = `newer_than:${dias}d (${[...REMITENTES, ...REMITENTES_RECIBOS].map((d) => `from:${d}`).join(' OR ')})`;
     const lista = await fetch(`${API}/messages?q=${encodeURIComponent(q)}&maxResults=200`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json() as Promise<{ messages?: { id: string }[] }>);
     const ids = (lista.messages ?? []).map((m) => m.id).filter((id) => !procesados.has(id));
 
+    const recibos: Recibo[] = [];
     const porCuenta = new Map<string, { banco: string; tipoCuenta: 'credito' | 'debito'; ultimos4: string | null; movs: CorreoAlerta[]; parseados: ReturnType<typeof parsearAlerta>[] }>();
     for (const id of ids) {
       const msg = await fetch(`${API}/messages/${id}?format=full`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json() as Promise<{ payload: Parte & { headers: { name: string; value: string }[] }; internalDate: string }>);
       const h = (n: string) => msg.payload.headers.find((x) => x.name.toLowerCase() === n)?.value ?? '';
       const correo: CorreoAlerta = { from: h('from'), subject: h('subject'), text: textoDe(msg.payload).slice(0, 4000), fecha: new Date(Number(msg.internalDate)).toISOString() };
-      const p = parsearAlerta(correo);
       procesados.add(id);
+      const recibo = parsearRecibo(correo);
+      if (recibo) {
+        recibos.push(recibo);
+        continue;
+      }
+      const p = parsearAlerta(correo);
       if (!p) continue;
       const k = `${p.banco}|${p.tipoCuenta}|${p.ultimos4 ?? ''}`;
       const g = porCuenta.get(k) ?? { banco: p.banco, tipoCuenta: p.tipoCuenta, ultimos4: p.ultimos4, movs: [], parseados: [] };
@@ -99,8 +107,10 @@ export async function sincronizarGmail(repo: Repo, userId: string, dias = 7): Pr
     }
 
     await repo.guardarCredencial(userId, { proveedor: 'gmail', etiqueta: cred.etiqueta, datos: { ...cred.datos, procesados: [...procesados].slice(-3000) } });
+    // Recibos (Amazon, Uber, Rappi, Mercado Libre…): se casan con los cargos y escriben el detalle.
+    const enriquecidos = await aplicarRecibos(repo, userId, recibos);
     await repo.guardarLink(userId, { ...link, estado: 'ok', ultimoSync: new Date().toISOString() });
-    return { ok: true, insertados, leidos: ids.length };
+    return { ok: true, insertados, leidos: ids.length, enriquecidos: enriquecidos.casados };
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
     await repo.guardarLink(userId, { ...link, estado: /401|403|invalid_grant/.test(error) ? 'roto' : link.estado });

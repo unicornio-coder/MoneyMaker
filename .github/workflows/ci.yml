@@ -56,3 +56,22 @@ jobs:
             test-results/capturas
             playwright-report
           retention-days: 7
+
+  # Bot de publicación: cuando lint, tipos, pruebas, build y E2E están en verde y el PR trae la etiqueta
+  # "publicar", se fusiona solo a main y Vercel despliega. Así un cambio llega a la página sin pasos manuales.
+  publicar:
+    name: Fusionar a main si el PR lleva "publicar"
+    runs-on: ubuntu-latest
+    needs: [calidad, e2e]
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'publicar')
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Fusionar
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            await github.rest.pulls.merge({ ...context.repo, pull_number: pr.number, merge_method: 'merge', commit_title: `${pr.title} (#${pr.number})` });
+            core.info(`PR #${pr.number} fusionado a main.`);

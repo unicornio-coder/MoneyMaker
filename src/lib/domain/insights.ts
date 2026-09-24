@@ -97,6 +97,25 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
     } else vistos.set(k, m);
   }
 
+  // 5b. Vigilancia después de cancelar: un servicio marcado como cancelado que vuelve a cobrar.
+  for (const r of recurrentes.filter((x) => x.canceladoAt && (x.tipo === 'suscripcion' || x.tipo === 'servicio'))) {
+    const desde = r.canceladoAt!.slice(0, 10);
+    const cobro = movs
+      .filter((m) => m.tipo === 'gasto' && m.fecha > desde && (m.recurrenteId === r.id || normalizarNombre(m.comercio) === normalizarNombre(r.nombre)))
+      .sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+    if (!cobro) continue;
+    out.push({
+      clave: `sigue-cobrando:${r.id}:${cobro.id}`,
+      tipo: 'cargo_tras_cancelar',
+      titulo: `${r.nombre} te siguió cobrando`,
+      texto: `Marcaste ${r.nombre} como cancelado el ${fechaLarga(desde)} y el ${fechaLarga(cobro.fecha)} apareció un cargo de ${fmt(cobro.monto)}. Reclama con el comprobante de cancelación; si no responden, al banco (contracargo) o a Profeco.`,
+      monto: cobro.monto,
+      ctaLabel: 'Ver el cargo',
+      ctaHref: `/app/gastos?q=${encodeURIComponent(r.nombre)}`,
+      referencia: { recurrenteId: r.id, movimientoIds: [cobro.id] },
+    });
+  }
+
   // 6. Comisiones e intereses del periodo
   const comisiones = gastos.filter((m) => m.categoriaId === 'comisiones');
   if (comisiones.length) {
@@ -153,6 +172,10 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
   }
 
   return out;
+}
+
+function normalizarNombre(s: string): string {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 function fmt(n: number) {

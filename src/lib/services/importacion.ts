@@ -9,6 +9,7 @@ import type { Cuenta, Importacion, MovimientoCrudo, MovimientoNormalizado, Resum
 import { registrar } from './analytics';
 import { ingerirMovimientos, propuestaQuincena, recalcular, type PropuestaQuincena } from './ingest';
 import { ErrorImportacion, esErrorImportacion, extraerArchivo, hashArchivo } from './ingestion';
+import { casarRecibosPendientes } from './enriquecer';
 import { PDF_MAX_BYTES } from './ingestion/pdf';
 
 const RESUMEN_VACIO: ResumenEstado = { institucion: null, producto: null, tipoCuenta: null, ultimos4: null, periodoInicio: null, periodoFin: null, fechaCorte: null, fechaLimitePago: null, pagoMinimoCentavos: null, saldoAlCorteCentavos: null, limiteCreditoCentavos: null, totalCargosCentavos: null, totalAbonosCentavos: null, tarjetasAdicionales: [], esEstadoDeCuenta: false, paginas: null };
@@ -227,6 +228,8 @@ export async function confirmarImportaciones(repo: Repo, userId: string, items: 
   }
 
   await recalcular(repo, userId);
+  // Recibos leídos por correo que esperaban su cargo (Amazon, Uber, Rappi…): ahora que el estado de cuenta llegó, se casan.
+  await casarRecibosPendientes(repo, userId).catch(() => 0);
   const recurrentes = await repo.recurrentes(userId);
   const activos = recurrentes.filter((r) => r.activo);
   return {

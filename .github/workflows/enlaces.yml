@@ -1,0 +1,51 @@
+name: Enlaces de cancelación
+
+# Bot del catálogo: cada semana comprueba que cada url_cancelacion de qa/entregables/merchants.json siga viva.
+# Los enlaces rotos se reportan en un issue "Enlaces de cancelación rotos" (las empresas los mueven a propósito).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * 2'
+  push:
+    branches: [main]
+    paths:
+      - qa/entregables/merchants.json
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probar cada enlace
+        id: prueba
+        shell: bash
+        run: |
+          rotos=""
+          while IFS=$'\t' read -r nombre url; do
+            [ -z "$url" ] && continue
+            code=$(curl -sS -L -o /dev/null -w '%{http_code}' --max-time 25 -A "Mozilla/5.0 (MoneyMaker bot de enlaces)" "$url" || echo 000)
+            echo "$code  $nombre  $url"
+            case "$code" in 200|201|202|204|301|302|303|307|308|401|403|405|429) ;; *) rotos="$rotos\n- **$nombre**: $url → $code" ;; esac
+          done < <(node -e "const d=require('./qa/entregables/merchants.json');for(const m of d.merchants){if(m.url_cancelacion)console.log(m.nombre+'\t'+m.url_cancelacion)}")
+          if [ -n "$rotos" ]; then
+            echo "rotos<<EOF" >> "$GITHUB_OUTPUT"; printf "%b" "$rotos" >> "$GITHUB_OUTPUT"; echo "" >> "$GITHUB_OUTPUT"; echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Reportar
+        if: steps.prueba.outputs.rotos != ''
+        uses: actions/github-script@v7
+        env:
+          ROTOS: ${{ steps.prueba.outputs.rotos }}
+        with:
+          script: |
+            const titulo = 'Enlaces de cancelación rotos';
+            const { data: abiertos } = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: 'catalogo' });
+            const existente = abiertos.find((i) => i.title === titulo);
+            const cuerpo = `Enlaces que ya no responden (revisión ${new Date().toISOString().slice(0, 10)}):\n${process.env.ROTOS}\n\nCorrige \`url_cancelacion\` en \`qa/entregables/merchants.json\`.`;
+            if (existente) await github.rest.issues.createComment({ ...context.repo, issue_number: existente.number, body: cuerpo });
+            else await github.rest.issues.create({ ...context.repo, title: titulo, body: cuerpo, labels: ['catalogo'] });
