@@ -133,7 +133,7 @@ function SecPerfil({ perfil, usuario }: { perfil: Perfil; usuario: UsuarioSesion
         <div className="mb-1.5 text-[12.5px] font-semibold">Días en que te pagan</div>
         <div className="grid grid-cols-8 gap-1.5">
           {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-            <button key={d} type="button" onClick={() => toggleDia(d)} className={cn('h-9 rounded-[10px] text-[12.5px] font-bold transition-colors', dias.includes(d) ? 'bg-ink text-white dark:bg-white dark:text-ink' : 'bg-bg-muted text-txt-2 dark:bg-surface-2')}>{d}</button>
+            <button key={d} type="button" aria-pressed={dias.includes(d)} onClick={() => toggleDia(d)} className={cn('h-9 rounded-[10px] text-[12.5px] font-bold transition-colors', dias.includes(d) ? 'bg-ink text-white dark:bg-white dark:text-ink' : 'bg-bg-muted text-txt-2 dark:bg-surface-2')}>{d}</button>
           ))}
         </div>
         <p className="mt-1.5 text-[11.5px] text-txt-2 dark:text-fg-2">Quincena típica: 5 y 20. Un solo día = presupuesto mensual.</p>

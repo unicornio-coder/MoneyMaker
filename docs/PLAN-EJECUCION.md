@@ -7,7 +7,7 @@ Cada tarea dice qué se hace, cómo, quién lo ejecuta (yo desde Claude Code, un
 | Paso | Quién | Estado |
 |---|---|---|
 | Cambio en rama, PR a `main` con la etiqueta `publicar` | yo | hecho |
-| CI: lint, tipos, 126 pruebas, build, 8 E2E con capturas | bot `ci.yml` | hecho |
+| CI: lint, tipos, pruebas, build, 12 E2E (importación, capturas, onboarding, cancelación) | bot `ci.yml` | hecho |
 | Fusión automática a `main` cuando todo está en verde | bot `ci.yml` → job `publicar` | hecho |
 | Deploy | Vercel desde `main` | hecho (Cowork confirmó la rama) |
 | Guardia: cada hora revisa `/api/health` y las pantallas públicas; abre y cierra un issue | bot `salud.yml` | hecho |
