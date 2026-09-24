@@ -5,6 +5,7 @@ import { contexto } from '@/lib/data/contexto';
 import { conectarBitso, desconectarBitso, sincronizarBitso } from '@/lib/services/bitso';
 import { desconectarGmail, sincronizarGmail } from '@/lib/services/gmail';
 import { registrar } from '@/lib/services/analytics';
+import { aliasCorreo, crearTokenDispositivo, dominioCorreoEntrante } from '@/lib/services/entrada';
 
 const rev = () => ['/app', '/app/ajustes', '/app/inversiones', '/app/gastos'].forEach((p) => revalidatePath(p));
 
@@ -30,4 +31,21 @@ export async function desconectarConector(proveedor: 'gmail' | 'bitso') {
   else await desconectarBitso(repo, usuario.id);
   rev();
   return { ok: true as const };
+}
+
+/** Token para la app Android (se muestra una vez). Crear otro invalida el anterior. */
+export async function generarTokenDispositivo() {
+  const { usuario, repo } = await contexto();
+  const token = await crearTokenDispositivo(repo, usuario.id);
+  await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'dispositivo' });
+  rev();
+  return { ok: true as const, token };
+}
+
+/** Dirección de reenvío del usuario (estable). */
+export async function obtenerCorreoReenvio() {
+  const { usuario, repo } = await contexto();
+  const alias = await aliasCorreo(repo, usuario.id);
+  rev();
+  return { ok: true as const, direccion: `${alias}@${dominioCorreoEntrante()}`, activo: !!process.env.CORREO_ENTRANTE_SECRET };
 }

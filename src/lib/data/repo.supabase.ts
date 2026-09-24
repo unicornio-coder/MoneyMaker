@@ -97,6 +97,11 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       lanzar('links', error);
       return (data ?? []).map(aLink);
     },
+    async usuarioPorExternalId(proveedor, externalId) {
+      const { data, error } = await cli().from('links').select('user_id').eq('proveedor', proveedor).eq('external_id', externalId).maybeSingle();
+      lanzar('usuarioPorExternalId', error);
+      return data ? String(data.user_id) : null;
+    },
     async guardarLink(userId, l) {
       const fila: Fila = { user_id: userId, proveedor: l.proveedor, external_id: l.externalId ?? null, institucion: l.institucion, institucion_dominio: l.institucionDominio ?? null, estado: l.estado, ultimo_sync: l.ultimoSync ?? null };
       if (l.id) fila.id = l.id;
