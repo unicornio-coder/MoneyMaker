@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categorizar, detectarMsi, hashMovimiento, nombreLimpio, normalizar } from './categorizar';
+import { categorizar, detalleBasico, detectarMsi, hashMovimiento, nombreLimpio, normalizar } from './categorizar';
 
 const cargo = (descripcion: string, monto = 100) => ({ fecha: '2026-09-10', descripcion, monto, esAbono: false });
 const abono = (descripcion: string, monto = 100) => ({ fecha: '2026-09-10', descripcion, monto, esAbono: true });
@@ -109,5 +109,26 @@ describe('SPEI con propósito', () => {
     expect(categorizar(cargo('SPEI ENVIADO RENTA SEPTIEMBRE ARRENDADORA SA', 12000))).toMatchObject({ tipo: 'gasto', categoriaId: 'hogar', comercio: 'Renta' });
     expect(categorizar(cargo('TRANSFERENCIA COLEGIATURA COLEGIO WESTHILL', 8000))).toMatchObject({ tipo: 'gasto', categoriaId: 'colegiaturas' });
     expect(categorizar(cargo('SPEI ENVIADO MARIA LOPEZ 1234', 700))).toMatchObject({ tipo: 'transferencia' });
+  });
+});
+
+describe('detalleBasico (sin recibo)', () => {
+  it('saca lo útil del descriptor', () => {
+    expect(detalleBasico('UBER *TRIP HELP.UBER.COM')).toBe('Viaje');
+    expect(detalleBasico('UBER *EATS PENDING')).toBe('Pedido de comida');
+    expect(detalleBasico('DIDI FOOD MX')).toBe('Pedido de comida');
+    expect(detalleBasico('OXXO SUC 4521 CDMX')).toBe('Sucursal 4521');
+    expect(detalleBasico('7 ELEVEN 10234 POLANCO')).toBe('Sucursal 10234');
+    expect(detalleBasico('AMZN MKTP MX*2K3J4L')).toBe('Compra en línea');
+    expect(detalleBasico('AMAZON PRIME MX')).toBe('Membresía Prime');
+    expect(detalleBasico('MERCADOPAGO*FARMACIA SAN PABLO 0012')).toBe('Pago a Farmacia San Pablo');
+    expect(detalleBasico('PAYPAL *SPOTIFY')).toBe('Pago a Spotify');
+    expect(detalleBasico('PEMEX EST 12345')).toBe('Sucursal 12345');
+    expect(detalleBasico('GASOLINERA BP INSURGENTES')).toBe('Gasolina');
+    expect(detalleBasico('RETIRO CAJERO ATM BBVA')).toBe('Retiro en cajero');
+  });
+  it('null cuando no aporta', () => {
+    expect(detalleBasico('NETFLIX.COM')).toBeNull();
+    expect(detalleBasico('STARBUCKS REFORMA')).toBeNull();
   });
 });
