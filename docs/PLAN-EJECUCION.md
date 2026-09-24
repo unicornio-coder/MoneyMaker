@@ -30,7 +30,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | App menos "IA": un solo CTA por bloque, menos chips | Inicio (#28); Gastos y Fijos (#36): sin chips de periodo duplicados en la barra, efectivo plegado, una cifra con una línea de contexto, sin dona ni variaciones por tarjeta, Fijos con un solo bloque arriba | hecho |
 | Logos reales en producción | bot `logos.yml` | hecho (109 logos en `public/logos`) |
 | Rendimiento | Los catálogos (40 KB de JSON) ya no viajan a todas las pantallas: `domain/texto.ts` (normalizar, detalleBasico) y `domain/catalogo.bancos.ts` separados; solo Fijos carga el catálogo de comercios. Logos con `Cache-Control` de un día + una semana stale. Los logos locales pesan ≤ 6 KB y ≤ 128 px, así que `next/image` no aporta | hecho (#39) |
-| Modo oscuro pantalla por pantalla | Capturas en `docs/capturas/oscuro/` y correcciones | en curso |
+| Modo oscuro pantalla por pantalla | 13 pantallas × 2 anchos en `docs/capturas/oscuro/`. Todo legible; se corrigió la tabla de Presupuesto en móvil (nombres cortados) y el encabezado del P&L | hecho (#40) |
 
 ## 2. Conectar todos los movimientos
 

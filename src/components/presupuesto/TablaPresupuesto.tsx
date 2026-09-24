@@ -24,7 +24,7 @@ function Fila({ presupuestoId, l }: { presupuestoId: string; l: LineaVsActual })
   const pctBarra = Math.min(100, l.pct);
   return (
     <div className={cn('rounded-card px-3.5 py-3 transition-all duration-[250ms]', l.excedido ? 'bg-ink text-white shadow-exceeded' : 'card')}>
-      <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] items-center gap-2 text-[12.5px]">
+      <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_34px] items-center gap-1.5 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] sm:gap-2 text-[12.5px]">
         <div className="flex min-w-0 items-center gap-2 font-bold">
           <span className="h-2 w-2 flex-none rounded-full ring-1 ring-black/10 dark:ring-white/30" style={{ background: l.excedido ? '#4ADE80' : cat.color }} />
           <span className="line-clamp-2 leading-tight sm:truncate">{l.nombre ?? cat.nombre}</span>
@@ -54,7 +54,7 @@ function Fila({ presupuestoId, l }: { presupuestoId: string; l: LineaVsActual })
 export function TablaPresupuesto({ presupuestoId, lineas }: { presupuestoId: string; lineas: LineaVsActual[] }) {
   return (
     <section className="space-y-2">
-      <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] gap-2 px-3.5 text-[9px] font-bold uppercase tracking-[0.3px] text-txt-2 dark:text-fg-2 md:text-[10.3px] md:tracking-[0.9px]">
+      <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_34px] gap-1.5 px-3.5 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] sm:gap-2 text-[9px] font-bold uppercase tracking-[0.3px] text-txt-2 dark:text-fg-2 md:text-[10.3px] md:tracking-[0.9px]">
         <span>Categoría</span><span className="text-right">Presup.</span><span className="text-right">Actual</span><span className="text-right">Difer.</span><span className="text-right">%</span>
       </div>
       {lineas.length === 0 && <p className="card px-4 py-8 text-center text-[12.5px] text-txt-2">Sin líneas todavía. Crea una con &quot;Nuevo presupuesto&quot;.</p>}
