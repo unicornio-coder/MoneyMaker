@@ -1,7 +1,7 @@
 // Diccionario de comercios de México. Capa 1 del categorizador: barato, explicable y editable.
 // patron = fragmento normalizado (sin acentos, mayúsculas, sin dígitos) que debe aparecer en la descripción.
 
-import { bancoDelCatalogo } from './catalogo';
+import { bancoDelCatalogo } from './catalogo.bancos';
 
 export type ComercioConocido = {
   patron: string;

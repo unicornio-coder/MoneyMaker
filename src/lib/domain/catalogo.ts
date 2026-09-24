@@ -3,8 +3,9 @@
 
 import categoriasJson from '../../../qa/entregables/categorias.json';
 import merchantsJson from '../../../qa/entregables/merchants.json';
-import bancosJson from '../../../qa/entregables/bancos.json';
 import type { ComercioConocido } from './comercios';
+
+export { BANCOS_CATALOGO, bancoDelCatalogo, type BancoCatalogo } from './catalogo.bancos';
 
 export type CategoriaCatalogo = { id: string; nombre: string; color_token: string; palabras_clave: string[]; ejemplos: string[]; excluir?: string[] };
 export type ComercioCatalogo = {
@@ -23,19 +24,9 @@ export type ComercioCatalogo = {
   /** La trampa que va a intentar el servicio al cancelar, y cómo librarla. */
   truco?: string;
 };
-export type BancoCatalogo = {
-  id: string;
-  nombre: string;
-  nombre_corto: string;
-  tipo: string;
-  color: string | null;
-  dominio: string;
-  formato_pdf: { tiene_contraseña: boolean; regla_contraseña: string | null; manda_pdf_por_correo: boolean; remitente: string | null };
-};
 
 export const CATEGORIAS_CATALOGO: CategoriaCatalogo[] = (categoriasJson as { categorias: CategoriaCatalogo[] }).categorias;
 export const COMERCIOS_CATALOGO: ComercioCatalogo[] = (merchantsJson as { merchants: ComercioCatalogo[] }).merchants;
-export const BANCOS_CATALOGO: BancoCatalogo[] = (bancosJson as { bancos: BancoCatalogo[] }).bancos;
 
 /** Comercios del catálogo en el formato del diccionario interno (todos son suscripciones o servicios recurrentes). */
 export const COMERCIOS_DESDE_CATALOGO: ComercioConocido[] = COMERCIOS_CATALOGO.flatMap((c) =>
@@ -92,17 +83,3 @@ export function categoriaPorPalabrasClave(normalizada: string, sentido: 'cargo' 
   return null;
 }
 
-/** Banco del catálogo por nombre o id (insensible a mayúsculas y acentos). */
-export function bancoDelCatalogo(nombre: string): BancoCatalogo | null {
-  const k = nombre
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9+]/g, '');
-  if (!k) return null;
-  return (
-    BANCOS_CATALOGO.find((b) => b.id === k || b.nombre_corto.toLowerCase().replace(/[^a-z0-9+]/g, '') === k) ??
-    BANCOS_CATALOGO.find((b) => k.includes(b.nombre_corto.toLowerCase().replace(/[^a-z0-9+]/g, ''))) ??
-    null
-  );
-}

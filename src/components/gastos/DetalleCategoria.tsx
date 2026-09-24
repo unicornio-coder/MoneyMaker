@@ -1,6 +1,6 @@
 'use client';
 
-import { detalleBasico } from '@/lib/domain/categorizar';
+import { detalleBasico } from '@/lib/domain/texto';
 
 import { money, fechaCorta } from '@/lib/format';
 import { categoria } from '@/lib/domain/categorias';

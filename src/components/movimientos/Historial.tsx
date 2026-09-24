@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { detalleBasico } from '@/lib/domain/categorizar';
+import { detalleBasico } from '@/lib/domain/texto';
 import { fechaRelativa } from '@/lib/format';
 import { deISO } from '@/lib/domain/fechas';
 import { categoria, etiquetaTipo } from '@/lib/domain/categorias';

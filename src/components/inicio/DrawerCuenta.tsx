@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, FileText, Bell, PieChart, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { detalleBasico } from '@/lib/domain/categorizar';
+import { detalleBasico } from '@/lib/domain/texto';
 import { money, fechaCorta, pct } from '@/lib/format';
 import { categoria } from '@/lib/domain/categorias';
 import type { Movimiento } from '@/lib/domain/tipos';
