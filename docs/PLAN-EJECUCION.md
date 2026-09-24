@@ -37,7 +37,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | PDF de estado de cuenta | Ya existe, asíncrono con etapas | — | hecho |
 | Alertas bancarias por correo | `gmail.parsers.ts` (BBVA, Amex, Nu, Banorte, Santander, HSBC, Banamex, Scotiabank) | — | hecho (falta que JC cree el OAuth de Google en producción) |
 | Recibos por correo (Amazon, Mercado Libre, Uber, DiDi, Rappi, Uber Eats) | `recibos.ts` + `enriquecer.ts` | yo | hecho (#31) |
-| Outlook / Hotmail | Microsoft Graph `Mail.Read` con el mismo parser | yo | siguiente |
+| Outlook / Hotmail | `services/outlook.ts` (Microsoft Graph `Mail.Read`), `/api/outlook/auth|callback`, mismo pipeline que Gmail (`buzon.ts`), cron y Ajustes; detrás de `MS_CLIENT_ID/SECRET` | yo | código hecho (#37); JC: app en Entra ID |
 | Dirección de reenvío `<alias>@in.moneymaker.mx` | `/api/correo/entrante` listo (firma HMAC o secreto, Resend/Postmark/Cloudflare); alias por usuario en Ajustes. Falta: dominio, MX y `CORREO_ENTRANTE_SECRET` en Vercel | yo (hecho) + JC (DNS y secreto) | código hecho |
 | Notificaciones en Android | Servidor listo: `/api/notificaciones` con token por usuario (Ajustes → "Vincular mi teléfono"), lista blanca de 20 apps, mismo parser y misma ingesta. Falta la app Android (Capacitor + `NotificationListenerService`) | yo (servidor hecho; app siguiente) + JC (Google Play) | servidor hecho |
 | Belvo como opción avanzada | Ya integrado en sandbox; activarlo en la hoja de "Agregar cuenta" con el aviso de que comparte credenciales | JC decide | pendiente |

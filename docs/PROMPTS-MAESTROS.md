@@ -74,6 +74,12 @@ No escribas llaves ni tokens en el chat. No cambies código.
    Environment Variables (Production y Preview) y lanza redeploy. Verifica que
    https://money-maker-tawny.vercel.app/api/health diga "gmail": true.
 5. Vercel → Environment Variables: confirma ANTHROPIC_API_KEY en Production y agrégala a Preview.
+5b. Outlook / Hotmail: en https://entra.microsoft.com → App registrations → New registration "MoneyMaker",
+   cuentas "Personal Microsoft accounts and any organization", redirect URI tipo Web
+   https://money-maker-tawny.vercel.app/api/outlook/callback. En API permissions agrega Microsoft Graph
+   delegado: Mail.Read, User.Read, offline_access. En Certificates & secrets crea un client secret.
+   Guarda MS_CLIENT_ID (Application (client) ID) y MS_CLIENT_SECRET (el valor del secreto) en Vercel →
+   Environment Variables (Production y Preview) y lanza redeploy. Verifica que /api/health diga "outlook": true.
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →

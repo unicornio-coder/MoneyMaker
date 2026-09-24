@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server';
 import { repoSupabaseCon } from '@/lib/data/repo.supabase';
 import { sincronizarLink } from '@/lib/services/conectar';
 import { sincronizarGmail } from '@/lib/services/gmail';
+import { sincronizarOutlook } from '@/lib/services/outlook';
 import { sincronizarBitso } from '@/lib/services/bitso';
 import { MODO_MOCK } from '@/lib/supabase/env';
 
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
       let r: { ok: boolean };
       if (l.proveedor === 'belvo' && l.external_id) r = await sincronizarLink(repo, userId, String(l.id), String(l.external_id), 'belvo', 2);
       else if (l.proveedor === 'gmail') r = await sincronizarGmail(repo, userId);
+      else if (l.proveedor === 'outlook') r = await sincronizarOutlook(repo, userId);
       else if (l.proveedor === 'bitso') r = await sincronizarBitso(repo, userId);
       else continue;
       if (r.ok) ok++;

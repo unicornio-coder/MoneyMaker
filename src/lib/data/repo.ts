@@ -5,7 +5,7 @@ import type { Activo, Credencial, Cuenta, EventoCalendario, Importacion, Insight
 
 export type Link = {
   id: string;
-  proveedor: 'belvo' | 'gmail' | 'import' | 'manual' | 'bitso' | 'dispositivo' | 'correo';
+  proveedor: 'belvo' | 'gmail' | 'outlook' | 'import' | 'manual' | 'bitso' | 'dispositivo' | 'correo';
   externalId?: string | null;
   institucion: string;
   institucionDominio?: string | null;
