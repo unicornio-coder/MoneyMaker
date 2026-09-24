@@ -346,7 +346,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
             <div className="text-[14px] font-bold">{t(TEXTOS.exito.quincena_titulo, { dias: pq.dias.join(' y ') })}</div>
             <p className="text-[12.5px] text-txt-2 dark:text-fg-2">{TEXTOS.exito.quincena_texto}{pq.ingresoQuincenal > 0 ? ` Ingreso estimado por quincena: ${money(pq.ingresoQuincenal)}.` : ''}</p>
             {quincena === 'aplicada' ? (
-              <p className="flex items-center gap-2 text-[12.5px] font-semibold text-green"><Check size={16} /> Listo: tu quincena va del {pq.dias[0]} {pq.dias[1] ? `al ${pq.dias[1] - 1} y del ${pq.dias[1]}` : ''} en adelante.</p>
+              <p className="flex items-center gap-2 text-[12.5px] font-semibold text-green-dark dark:text-green-light"><Check size={16} /> Listo: tu quincena va del {pq.dias[0]} {pq.dias[1] ? `al ${pq.dias[1] - 1} y del ${pq.dias[1]}` : ''} en adelante.</p>
             ) : (
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button variant="green" className="flex-1" disabled={quincena === 'aplicando'} onClick={() => void aceptarQuincena()}>{quincena === 'aplicando' ? 'Guardando…' : TEXTOS.exito.quincena_si}</Button>
@@ -377,7 +377,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         className={cn('flex cursor-pointer flex-col items-center justify-center rounded-card-xl border-2 border-dashed px-6 py-10 text-center transition-colors', arrastrando ? 'border-green bg-green-50 dark:bg-surface-2' : 'border-line-dashed bg-surface hover:bg-bg-hover dark:border-edge-2 dark:hover:bg-surface-2')}
       >
         <input ref={inputRef} type="file" multiple accept=".pdf,.csv,.txt,.xlsx,.xls,application/pdf" className="hidden" onChange={(e) => e.target.files && agregar(e.target.files)} data-testid="input-archivos" />
-        <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green dark:bg-surface-2 dark:text-green-light"><Upload size={26} /></span>
+        <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light"><Upload size={26} /></span>
         <div className="font-display text-[17px] font-bold">{TEXTOS.carga.titulo}</div>
         <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">{TEXTOS.carga.subtitulo}</p>
         <p className="mt-0.5 hidden text-[12px] text-txt-3 md:block">{TEXTOS.carga.ayuda}</p>
@@ -401,7 +401,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         <section className="space-y-2">
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-[15px] font-bold">{tx.titulo}</h2>
-            <button type="button" onClick={() => inputRef.current?.click()} className="text-[12px] font-bold text-green">{tx.agregar_mas}</button>
+            <button type="button" onClick={() => inputRef.current?.click()} className="text-[12px] font-bold text-green-dark dark:text-green-light">{tx.agregar_mas}</button>
           </div>
           <ul className="space-y-2" data-testid="lista-archivos">
             {items.map((it, idx) => {
@@ -423,7 +423,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                         {it.estado === 'contraseña' && tx.contraseña}
                         {it.estado === 'revisar' && imp && `${tx.revisar} · ${info?.nombre ?? 'Banco'}${imp.resumen.ultimos4 ? ` ···· ${imp.resumen.ultimos4}` : ''} · ${t(TEXTOS.revision.movimientos, { n: imp.movimientos.length })}`}
                         {it.estado === 'error' && (it.codigo === 'contraseña_agotada' ? TEXTOS.contraseña.agotada : textoError(it.codigo ?? 'servidor'))}
-                        {it.estado === 'error' && it.codigo === 'sesion_expirada' && <a href="/login?next=/app/importar" className="ml-1 font-bold text-green">Entrar</a>}
+                        {it.estado === 'error' && it.codigo === 'sesion_expirada' && <a href="/login?next=/app/importar" className="ml-1 font-bold text-green-dark dark:text-green-light">Entrar</a>}
                       </div>
                       {(it.estado === 'subiendo' || it.estado === 'leyendo') && (
                         <div className="mt-1.5 h-1 overflow-hidden rounded-pill bg-line dark:bg-surface-2">
@@ -431,7 +431,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                         </div>
                       )}
                     </div>
-                    {it.estado === 'revisar' && <Check size={18} className="flex-none text-green" />}
+                    {it.estado === 'revisar' && <Check size={18} className="flex-none text-green-dark dark:text-green-light" />}
                     {it.estado === 'error' && it.file && it.codigo !== 'ya_subido' && (
                       <button type="button" onClick={() => reintentar(it)} className="flex h-8 items-center gap-1 rounded-pill bg-bg-muted px-3 text-[11.5px] font-bold hover:bg-line dark:bg-surface-2" aria-label={tx.reintentar}><RotateCcw size={13} /> {tx.reintentar}</button>
                     )}
@@ -487,7 +487,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                         {r.periodoInicio && r.periodoFin ? `${TEXTOS.revision.periodo}: ${fechaCorta(r.periodoInicio)} – ${fechaCorta(r.periodoFin)}` : 'Periodo no detectado'} · {t(TEXTOS.revision.movimientos, { n: imp.movimientos.length })}
                         {r.saldoAlCorteCentavos != null && ` · ${TEXTOS.revision.saldo_corte}: ${formatearCentavos(r.saldoAlCorteCentavos)}`}
                       </div>
-                      <div className="mt-1 text-[12px] font-semibold text-green">{destino.cuenta ? t(TEXTOS.revision.ya_existe, { cuenta: destino.cuenta.nombre }) : destino.hermano ? TEXTOS.revision.misma_tarjeta : TEXTOS.revision.nueva}</div>
+                      <div className="mt-1 text-[12px] font-semibold text-green-dark dark:text-green-light">{destino.cuenta ? t(TEXTOS.revision.ya_existe, { cuenta: destino.cuenta.nombre }) : destino.hermano ? TEXTOS.revision.misma_tarjeta : TEXTOS.revision.nueva}</div>
                       {imp.cuadre === 'sin_cuadre' && <p className="mt-1.5 flex items-center gap-1.5 text-[12px] text-txt-2 dark:text-fg-2"><AlertCircle size={14} className="text-warning" /> {TEXTOS.revision.sin_cuadre}</p>}
                       {imp.advertencias.filter((x) => x !== 'sin_cuadre').map((x) => (
                         <p key={x} className="mt-1 flex items-center gap-1.5 text-[12px] text-txt-2 dark:text-fg-2"><AlertCircle size={14} className="text-warning" /> {textoError(x) === textoError('servidor') && !(TEXTOS.errores as Record<string, string>)[x] ? x : textoError(x)}</p>
@@ -512,10 +512,10 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                   )}
                   {movimientosDe(it).length > 0 && (
                     <details className="mt-3" open={editandoMovs === it.key}>
-                      <summary className="flex cursor-pointer list-none items-center gap-1 text-[12px] font-bold text-green"><ChevronRight size={14} /> Ver movimientos ({movimientosDe(it).length})</summary>
+                      <summary className="flex cursor-pointer list-none items-center gap-1 text-[12px] font-bold text-green-dark dark:text-green-light"><ChevronRight size={14} /> Ver movimientos ({movimientosDe(it).length})</summary>
                       <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px] text-txt-2 dark:text-fg-2">
                         <span>{editandoMovs === it.key ? 'Corrige lo que haga falta. Los cambios se guardan al confirmar.' : 'Si algo no coincide con tu estado de cuenta, corrígelo aquí.'}</span>
-                        <button type="button" onClick={() => setEditandoMovs(editandoMovs === it.key ? null : it.key)} className="flex-none font-bold text-green">{editandoMovs === it.key ? 'Terminar' : 'Editar'}</button>
+                        <button type="button" onClick={() => setEditandoMovs(editandoMovs === it.key ? null : it.key)} className="flex-none font-bold text-green-dark dark:text-green-light">{editandoMovs === it.key ? 'Terminar' : 'Editar'}</button>
                       </div>
                       <ul className="mt-2 max-h-[320px] divide-y divide-edge overflow-y-auto rounded-card border border-edge" data-testid="tabla-movimientos">
                         {movimientosDe(it).map((m, i) => (
@@ -524,7 +524,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                               <>
                                 <input type="date" value={m.fecha} onChange={(e) => editarMov(it, i, { fecha: e.target.value })} aria-label="Fecha" className="input h-8 w-[130px] flex-none px-2 py-0 text-[12px]" />
                                 <input value={m.descripcion} onChange={(e) => editarMov(it, i, { descripcion: e.target.value })} aria-label="Descripción" className="input h-8 min-w-0 flex-1 px-2 py-0 text-[12px]" />
-                                <button type="button" onClick={() => editarMov(it, i, { esAbono: !m.esAbono })} aria-label={m.esAbono ? 'Abono, cambiar a cargo' : 'Cargo, cambiar a abono'} className={cn('h-8 flex-none rounded-pill px-2.5 text-[11px] font-bold', m.esAbono ? 'bg-green-50 text-green dark:bg-surface-2' : 'bg-bg-chip text-txt-2 dark:bg-surface-2')}>{m.esAbono ? 'Abono' : 'Cargo'}</button>
+                                <button type="button" onClick={() => editarMov(it, i, { esAbono: !m.esAbono })} aria-label={m.esAbono ? 'Abono, cambiar a cargo' : 'Cargo, cambiar a abono'} className={cn('h-8 flex-none rounded-pill px-2.5 text-[11px] font-bold', m.esAbono ? 'bg-green-50 text-green-dark dark:text-green-light dark:bg-surface-2' : 'bg-bg-chip text-txt-2 dark:bg-surface-2')}>{m.esAbono ? 'Abono' : 'Cargo'}</button>
                                 <input type="number" inputMode="decimal" min={0} step="0.01" value={(m.montoCentavos / 100).toFixed(2)} onChange={(e) => editarMov(it, i, { montoCentavos: Math.max(0, Math.round(Number(e.target.value || 0) * 100)) })} aria-label="Monto" className="input h-8 w-[104px] flex-none px-2 py-0 text-right font-display text-[12px] font-bold" />
                                 <button type="button" onClick={() => quitarMov(it, i)} aria-label="Quitar movimiento" className="flex h-8 w-8 flex-none items-center justify-center rounded-full text-txt-3 hover:bg-bg-muted dark:hover:bg-surface-2"><Trash2 size={14} /></button>
                               </>
@@ -532,7 +532,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                               <>
                                 <span className="w-12 flex-none text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)}</span>
                                 <span className="min-w-0 flex-1 truncate">{m.descripcion}{m.msi ? ` · ${m.msi.cuota}/${m.msi.total} MSI` : ''}</span>
-                                <span className={cn('font-display font-bold', m.esAbono ? 'text-green' : '')}>{m.esAbono ? '+' : ''}{formatearCentavos(m.montoCentavos)}</span>
+                                <span className={cn('font-display font-bold', m.esAbono ? 'text-green-dark dark:text-green-light' : '')}>{m.esAbono ? '+' : ''}{formatearCentavos(m.montoCentavos)}</span>
                               </>
                             )}
                           </li>
@@ -541,7 +541,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                       {ediciones[it.key] && (
                         <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px]">
                           <span className="text-txt-2 dark:text-fg-2">{ediciones[it.key].length} movimientos · cambios sin guardar</span>
-                          <button type="button" disabled={guardandoMovs === it.key} onClick={() => void guardarMovs(it)} className="font-bold text-green disabled:opacity-60">{guardandoMovs === it.key ? 'Guardando…' : 'Guardar cambios'}</button>
+                          <button type="button" disabled={guardandoMovs === it.key} onClick={() => void guardarMovs(it)} className="font-bold text-green-dark dark:text-green-light disabled:opacity-60">{guardandoMovs === it.key ? 'Guardando…' : 'Guardar cambios'}</button>
                         </div>
                       )}
                     </details>

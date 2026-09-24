@@ -146,9 +146,9 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
           )}
           <ol className="space-y-2 rounded-card border border-edge p-4">
             {(conocido?.pasosCancelacion ?? PASOS_GENERICOS).map((p, i) => (
-              <li key={i} className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green dark:bg-surface-2">{i + 1}</span>{p}</li>
+              <li key={i} className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green-dark dark:text-green-light dark:bg-surface-2">{i + 1}</span>{p}</li>
             ))}
-            <li className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green dark:bg-surface-2"><ListChecks size={11} /></span>Vuelve aquí y toca &ldquo;Ya la cancelé&rdquo;: si el cargo regresa, te avisamos con el comprobante.</li>
+            <li className="flex gap-2.5 text-[12.5px] text-txt-2 dark:text-fg-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green-dark dark:text-green-light dark:bg-surface-2"><ListChecks size={11} /></span>Vuelve aquí y toca &ldquo;Ya la cancelé&rdquo;: si el cargo regresa, te avisamos con el comprobante.</li>
           </ol>
           {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
           {r && <Button variant="outline" size="lg" full disabled={pendiente} onClick={yaCancele}><Check size={18} /> Ya la cancelé</Button>}
@@ -182,7 +182,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
           <p className="mx-auto mt-1.5 max-w-[340px] text-[13px] text-txt-2 dark:text-fg-2">
             {modoListo === 'cancelada' ? `Dejamos de contar ${sel.nombre}. Si el cargo vuelve a aparecer te avisamos.` : `Te escribimos en menos de 24 horas para confirmar la cancelación de ${sel.nombre}.`}
           </p>
-          {mensual > 0 && <p className="mt-4 font-display text-[18px] font-bold text-green">Ahorras {money(mensual * 12)} al año</p>}
+          {mensual > 0 && <p className="mt-4 font-display text-[18px] font-bold text-green-dark dark:text-green-light">Ahorras {money(mensual * 12)} al año</p>}
           {modoListo === 'porMi' && r && (
             <a href={urlCarta(r.id, { nombre: form.nombre, correo: form.correo, ultimos4: form.ultimos4, notas: form.notas })} className="mx-auto mt-5 flex h-11 w-fit items-center gap-2 rounded-pill border border-line-2 px-4 text-[13px] font-semibold hover:bg-bg-hover dark:border-edge dark:hover:bg-surface-2"><FileDown size={16} /> Descargar carta de cancelación (PDF)</a>
           )}

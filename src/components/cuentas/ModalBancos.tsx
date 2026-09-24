@@ -95,7 +95,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
                   <span className="block truncate text-[13.5px] font-bold">{i.nombre}</span>
                   <span className="block text-[11px] text-txt-2 dark:text-fg-2">{i.automatica ? 'Conexión automática' : 'Por estado de cuenta'}</span>
                 </span>
-                {sel === i.id ? <Check size={18} className="text-green" /> : !i.automatica ? <Upload size={16} className="text-txt-3" /> : null}
+                {sel === i.id ? <Check size={18} className="text-green-dark dark:text-green-light" /> : !i.automatica ? <Upload size={16} className="text-txt-3" /> : null}
               </button>
             </li>
           ))}
@@ -104,7 +104,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
         {agregador === 'belvo' && sandbox && (
           <p className="rounded-input bg-bg-muted px-3 py-2 text-[12px] text-txt-2 dark:bg-surface-2 dark:text-fg-2">Modo de prueba de Belvo: en la ventana que se abre elige cualquier banco y entra con usuario <span className="font-semibold text-fg">bnk100</span> y contraseña <span className="font-semibold text-fg">full</span>. Verás cuentas y movimientos de prueba.</p>
         )}
-        {estado && <p className="text-[12.5px] font-semibold text-green">{estado}</p>}
+        {estado && <p className="text-[12.5px] font-semibold text-green-dark dark:text-green-light">{estado}</p>}
         {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
         <Button variant="green" size="lg" full disabled={!inst || pendiente || !!estado} onClick={conectar}>
           {pendiente || estado ? 'Conectando…' : inst ? (inst.automatica ? `Conectar ${inst.nombre}` : `Subir estado de cuenta de ${inst.nombre}`) : 'Elige un banco'}

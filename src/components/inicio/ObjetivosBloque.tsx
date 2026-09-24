@@ -5,7 +5,7 @@ import { money, fechaCorta } from '@/lib/format';
 import type { Objetivo } from '@/lib/domain/tipos';
 
 const GRUPOS: { id: Objetivo['grupo']; label: string; icon: typeof PiggyBank; bg: string }[] = [
-  { id: 'ahorro', label: 'Ahorro', icon: PiggyBank, bg: 'bg-green-50 text-green' },
+  { id: 'ahorro', label: 'Ahorro', icon: PiggyBank, bg: 'bg-green-50 text-green-dark dark:text-green-light' },
   { id: 'deuda', label: 'Deuda', icon: CreditCard, bg: 'bg-negative-50 text-negative' },
   { id: 'inversion', label: 'Inversión', icon: TrendingUp, bg: 'bg-invest-soft text-invest' },
 ];
@@ -15,7 +15,7 @@ export function ObjetivosBloque({ objetivos, compacto = true }: { objetivos: Obj
     <section className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-[18px] font-bold">Objetivos</h2>
-        <Link href="/app/objetivos" className="text-[12px] font-semibold text-green">Ver todos</Link>
+        <Link href="/app/objetivos" className="text-[12px] font-semibold text-green-dark dark:text-green-light">Ver todos</Link>
       </div>
       {GRUPOS.map((g) => {
         const lista = objetivos.filter((o) => o.grupo === g.id).slice(0, compacto ? 2 : undefined);

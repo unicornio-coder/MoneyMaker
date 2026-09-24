@@ -15,7 +15,7 @@ const config: Config = {
         warning: { DEFAULT: '#F59E0B', soft: '#FFFBEB' },
         bg: { DEFAULT: '#FFFFFF', page: '#F7F8F7', muted: '#F4F6F4', input: '#F4F4F2', chip: '#F0F2F0', hover: '#FAFBFA', frame: '#E9EEEB' },
         line: { DEFAULT: '#EEF2EF', 2: '#E6ECE9', input: '#E5E7EB', grid: '#E3E8E5', dashed: '#C9D2CE', handle: '#D9E1DD', soft: '#F0F0EE' },
-        txt: { DEFAULT: '#0B1F17', 2: '#5F6B67', 3: '#8A958F', inactive: '#7A8C84', muted: '#6B7A74', gray: '#6B7280', light: '#9CA3AF' },
+        txt: { DEFAULT: '#0B1F17', 2: 'var(--fg-2)', 3: 'var(--fg-3)', inactive: '#7A8C84', muted: '#6B7A74', gray: '#6B7280', light: '#9CA3AF' },
         bank: { nu: '#820AD1', amex: '#006FCF', bbva: '#072146', gbm: '#0B1F17', bitso: '#16A34A', coppel: '#F5C400' },
         cat: { fijos: '#0B1F17', comida: '#16A34A', transporte: '#2563EB', online: '#6366F1' },
         // Semánticos que cambian con el tema (definidos en tokens.css)

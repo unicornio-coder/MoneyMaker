@@ -41,7 +41,7 @@ function Fila({ presupuestoId, l }: { presupuestoId: string; l: LineaVsActual })
           />
         </div>
         <div className={cn('rounded-[8px] px-2 py-1.5 text-right font-display text-[13px] font-bold', l.excedido ? 'bg-white/10' : 'bg-[rgba(127,140,134,0.12)]')}>{money(l.actual)}</div>
-        <div className={cn('text-right font-display text-[13px] font-bold', l.excedido ? 'text-green-light' : l.diferencia >= 0 ? 'text-green' : 'text-negative')}>{l.diferencia >= 0 ? '' : '-'}{money(Math.abs(l.diferencia))}</div>
+        <div className={cn('text-right font-display text-[13px] font-bold', l.excedido ? 'text-green-light' : l.diferencia >= 0 ? 'text-green-dark dark:text-green-light' : 'text-negative')}>{l.diferencia >= 0 ? '' : '-'}{money(Math.abs(l.diferencia))}</div>
         <div className={cn('text-right text-[12px] font-bold', l.excedido ? 'text-white' : 'text-txt-2 dark:text-fg-2')}>{Math.round(l.pct)}%</div>
       </div>
       <div className={cn('mt-2 h-1.5 w-full rounded-pill', l.excedido ? 'bg-white/12' : 'bg-line dark:bg-surface-2')}>

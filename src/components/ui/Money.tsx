@@ -24,7 +24,7 @@ export function Money({ value, className, tone = 'inherit', signed, animate }: P
       className={cn(
         'font-display tabular-nums',
         tone === 'ink' && 'text-fg',
-        tone === 'green' && 'text-green',
+        tone === 'green' && 'text-green-dark dark:text-green-light',
         tone === 'blue' && 'text-negative',
         animate && 'animate-rise',
         className,

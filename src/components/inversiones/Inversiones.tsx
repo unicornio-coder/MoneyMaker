@@ -73,7 +73,7 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, sa
             <div className="text-[12.5px] text-txt-2 dark:text-fg-2">Total invertido</div>
             <Money value={sel === 'total' ? total : (cuentas.find((c) => c.id === sel)?.saldo ?? 0)} animate className="block text-[34px] font-bold leading-none tracking-[-1.2px]" tone="ink" />
           </div>
-          <div className={cn('rounded-pill px-2.5 py-1 text-[12px] font-bold', variacion >= 0 ? 'bg-green-50 text-green dark:bg-surface-2 dark:text-green-light' : 'bg-negative-50 text-negative')}>{variacion >= 0 ? '+' : ''}{variacion.toFixed(1)} % · 30 días</div>
+          <div className={cn('rounded-pill px-2.5 py-1 text-[12px] font-bold', variacion >= 0 ? 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light' : 'bg-negative-50 text-negative')}>{variacion >= 0 ? '+' : ''}{variacion.toFixed(1)} % · 30 días</div>
         </div>
         <div className="mt-3 flex gap-1.5 overflow-x-auto">
           <Chip active={sel === 'total'} onClick={() => setSel('total')} size="sm">Total</Chip>
@@ -95,7 +95,7 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, sa
             <li key={c.id}>
               <button type="button" onClick={() => setAbierta(c.id)} className="flex h-[68px] w-full items-center gap-3 px-4 text-left hover:bg-bg-hover dark:hover:bg-surface-2">
                 <Avatar domain={c.bancoDominio} nombre={c.banco} size={42} logoPct={58} />
-                <span className="min-w-0 flex-1"><span className="block truncate text-[13.5px] font-bold">{c.nombre}</span><span className="block text-[11px] text-green">{c.inversion?.rendimiento}</span></span>
+                <span className="min-w-0 flex-1"><span className="block truncate text-[13.5px] font-bold">{c.nombre}</span><span className="block text-[11px] text-green-dark dark:text-green-light">{c.inversion?.rendimiento}</span></span>
                 <Money value={c.saldo} className="text-[15px] font-bold" />
                 <ChevronRight size={18} className="text-txt-3" />
               </button>

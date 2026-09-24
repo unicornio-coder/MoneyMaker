@@ -98,7 +98,7 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
         ))
       )}
       {!todos && lista.length > inicial && (
-        <button type="button" onClick={() => setTodos(true)} className="h-11 w-full rounded-card text-[13px] font-bold text-green hover:bg-green-50 dark:hover:bg-surface-2">
+        <button type="button" onClick={() => setTodos(true)} className="h-11 w-full rounded-card text-[13px] font-bold text-green-dark dark:text-green-light hover:bg-green-50 dark:hover:bg-surface-2">
           Ver todos ({lista.length})
         </button>
       )}

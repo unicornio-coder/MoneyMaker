@@ -87,6 +87,10 @@ No escribas llaves ni tokens en el chat. No cambies código.
    "Listo para revisar" y dime: banco, tarjeta, periodo, cuántos movimientos, y si algún cargo de Amazon,
    Uber, Rappi o Mercado Libre ya muestra el detalle de lo que compré.
 8. Revisa los issues abiertos con etiquetas "salud" y "catalogo" y pégame el resumen.
+9. Android: abre apps/android en Android Studio (Open → carpeta), deja que sincronice Gradle y corre la app en un
+   teléfono. En la web ve a Ajustes → Cuentas conectadas → "Vincular mi teléfono", copia el código y pégalo en la
+   app; activa el permiso de notificaciones. Haz una compra chica con una tarjeta cuyo banco notifique (BBVA, Nu…)
+   y dime si el cargo apareció en MoneyMaker y en cuántos segundos. Si Gradle marca errores, pégamelos completos.
 
 Al final, una lista de lo que quedó hecho y lo que no pudiste hacer, con el motivo exacto.
 ```

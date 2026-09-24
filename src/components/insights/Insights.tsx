@@ -22,11 +22,11 @@ const FILTROS: { value: Filtro; label: string; tipos: string[] }[] = [
 
 // Familia de color por tipo: verde = oportunidad, tinta = información, azul = atención (nunca rojo).
 const TONO: Record<string, string> = {
-  puedes_invertir: 'bg-green text-white',
+  puedes_invertir: 'bg-green-dark text-white',
   suscripcion_nueva: 'bg-ink text-white',
   suscripciones_total: 'bg-ink text-white',
   msi_termina: 'bg-green-light text-ink',
-  msi_total: 'bg-invest text-white',
+  msi_total: 'bg-ink text-white',
   cargo_duplicado: 'bg-negative text-white',
   cargo_tras_cancelar: 'bg-negative text-white',
   comisiones: 'bg-negative text-white',
@@ -67,12 +67,13 @@ export function Insights({ insights }: { insights: Insight[] }) {
           const open = abierto === i.id;
           const tono = TONO[i.tipo] ?? 'bg-surface text-fg border border-edge';
           const claro = tono.includes('bg-surface') || tono.includes('green-light');
+          const sobreVerdeClaro = tono.includes('green-light');
           return (
             <article key={i.id} className={cn('overflow-hidden rounded-20 shadow-card transition-all duration-[250ms]', tono, !i.leido && 'ring-2 ring-green-light/60')}>
               <button type="button" onClick={() => abrir(i)} className="flex w-full items-start gap-3 px-4 py-4 text-left">
                 <div className="min-w-0 flex-1">
                   <div className="font-display text-[15.5px] font-bold leading-snug">{i.titulo}</div>
-                  {!open && <div className={cn('mt-1 line-clamp-1 text-[12.5px]', claro ? 'text-txt-2 dark:text-fg-2' : 'opacity-80')}>{i.texto}</div>}
+                  {!open && <div className={cn('mt-1 line-clamp-1 text-[12.5px]', sobreVerdeClaro ? 'text-ink/80' : claro ? 'text-txt-2 dark:text-fg-2' : 'text-white')}>{i.texto}</div>}
                 </div>
                 {i.monto != null && <div className="flex-none font-display text-[16px] font-bold">{money(i.monto)}</div>}
               </button>

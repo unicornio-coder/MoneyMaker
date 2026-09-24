@@ -7,7 +7,7 @@ Cada tarea dice qué se hace, cómo, quién lo ejecuta (yo desde Claude Code, un
 | Paso | Quién | Estado |
 |---|---|---|
 | Cambio en rama, PR a `main` con la etiqueta `publicar` | yo | hecho |
-| CI: lint, tipos, pruebas, build, 12 E2E (importación, capturas, onboarding, cancelación) | bot `ci.yml` | hecho |
+| CI: lint, tipos, pruebas, build, 16 E2E (importación, capturas, onboarding, cancelación, accesibilidad con axe en claro y oscuro) | bot `ci.yml` | hecho |
 | Fusión automática a `main` cuando todo está en verde | bot `ci.yml` → job `publicar` | hecho |
 | Deploy | Vercel desde `main` | hecho (Cowork confirmó la rama) |
 | Guardia: cada hora revisa `/api/health` y las pantallas públicas; abre y cierra un issue | bot `salud.yml` | hecho |
@@ -30,6 +30,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | App menos "IA": un solo CTA por bloque, menos chips | Inicio (#28); Gastos y Fijos (#36): sin chips de periodo duplicados en la barra, efectivo plegado, una cifra con una línea de contexto, sin dona ni variaciones por tarjeta, Fijos con un solo bloque arriba | hecho |
 | Logos reales en producción | bot `logos.yml` | hecho (109 logos en `public/logos`) |
 | Rendimiento | Los catálogos (40 KB de JSON) ya no viajan a todas las pantallas: `domain/texto.ts` (normalizar, detalleBasico) y `domain/catalogo.bancos.ts` separados; solo Fijos carga el catálogo de comercios. Logos con `Cache-Control` de un día + una semana stale. Los logos locales pesan ≤ 6 KB y ≤ 128 px, así que `next/image` no aporta | hecho (#39) |
+| Accesibilidad (WCAG 2.1 AA) | axe en 14 pantallas × 2 anchos × 2 temas: de ~250 nodos con fallas a 4 (el azul de gasto sobre fondo oscuro, paleta fija). ChipGroup con pestañas reales, landmarks en landing y auth, verde oscuro para texto pequeño, grises de texto que cambian con el tema. E2E `accesibilidad.spec.ts` lo vigila | hecho (#41) |
 | Modo oscuro pantalla por pantalla | 13 pantallas × 2 anchos en `docs/capturas/oscuro/`. Todo legible; se corrigió la tabla de Presupuesto en móvil (nombres cortados) y el encabezado del P&L | hecho (#40) |
 
 ## 2. Conectar todos los movimientos
@@ -41,7 +42,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Recibos por correo (Amazon, Mercado Libre, Uber, DiDi, Rappi, Uber Eats) | `recibos.ts` + `enriquecer.ts` | yo | hecho (#31) |
 | Outlook / Hotmail | `services/outlook.ts` (Microsoft Graph `Mail.Read`), `/api/outlook/auth|callback`, mismo pipeline que Gmail (`buzon.ts`), cron y Ajustes; detrás de `MS_CLIENT_ID/SECRET` | yo | código hecho (#37); JC: app en Entra ID |
 | Dirección de reenvío `<alias>@in.moneymaker.mx` | `/api/correo/entrante` listo (firma HMAC o secreto, Resend/Postmark/Cloudflare); alias por usuario en Ajustes. Falta: dominio, MX y `CORREO_ENTRANTE_SECRET` en Vercel | yo (hecho) + JC (DNS y secreto) | código hecho |
-| Notificaciones en Android | Servidor listo: `/api/notificaciones` con token por usuario (Ajustes → "Vincular mi teléfono"), lista blanca de 20 apps, mismo parser y misma ingesta. Falta la app Android (Capacitor + `NotificationListenerService`) | yo (servidor hecho; app siguiente) + JC (Google Play) | servidor hecho |
+| Notificaciones en Android | Servidor: `/api/notificaciones` con token por usuario. App: `apps/android` (Kotlin, `NotificationListenerService` + WorkManager con reintentos, pantalla de vinculación, lista blanca de 21 apps). No se compiló aquí (sin Android SDK): JC la abre en Android Studio y la sube a Play | yo (hecho #42) + JC (compilar y publicar) | código hecho |
 | Belvo como opción avanzada | Ya integrado en sandbox; activarlo en la hoja de "Agregar cuenta" con el aviso de que comparte credenciales | JC decide | pendiente |
 
 ## 3. Detalle por cargo (Amazon, Uber…)
@@ -61,11 +62,13 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 |---|---|---|
 | Catálogo con enlace directo, pasos y truco | 26 servicios en `merchants.json` | hecho (#28) |
 | Flujo en la app | "Ir directo a cancelar", aviso con el truco, pasos, "Ya la cancelé" | hecho (#28, #29) |
-| Vigilancia post-cancelación | Si el cargo regresa en 45 días → insight "Te siguen cobrando" con comprobante | siguiente |
+| Vigilancia post-cancelación | Si el cargo regresa en 45 días → insight "Te siguen cobrando" con comprobante | hecho (#31: insight `cargo_tras_cancelar` con el cargo y qué hacer) |
 | Cancelar por mí (llamada/chat) | Carta de cancelación en PDF (`domain/carta.ts` + `services/carta.ts` con pdf-lib, `/api/cancelacion/carta`) con fundamento LFPC arts. 7, 56 y 76 bis; se descarga desde "Solicitud recibida" y desde el drawer. Envío por correo al servicio: pendiente (necesita remitente) | hecho (#38) |
 | Enlaces vivos | bot `enlaces.yml` semanal | hecho |
 
 ## Lo que solo JC puede hacer
+
+0. Abrir `apps/android` en Android Studio, correrla en un teléfono con tu código de vinculación y, si funciona, subirla a Google Play (ver `apps/android/README.md`).
 
 0. GitHub → Settings → General → Default branch → `main` (un clic). Sin esto no corren los bots con horario.
 

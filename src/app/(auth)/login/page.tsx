@@ -10,7 +10,7 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
       <LoginForm next={searchParams.next} errorInicial={searchParams.error ? 'No pudimos iniciar sesión con Google. Intenta de nuevo.' : undefined} />
       <p className="mt-8 text-center text-[13px] text-txt-2 dark:text-fg-2">
         ¿Nuevo aquí?{' '}
-        <Link href="/registro" className="font-semibold text-green underline-offset-4 hover:underline">Crear cuenta</Link>
+        <Link href="/registro" className="font-semibold text-green-dark dark:text-green-light underline-offset-4 hover:underline">Crear cuenta</Link>
       </p>
     </div>
   );

@@ -57,7 +57,7 @@ export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: stri
         <span className="lg:hidden"><IconBtn onClick={() => setBuscar(true)} label="Buscar"><Search size={18} /></IconBtn></span>
         <IconBtn onClick={toggleOcultar} label={ocultar ? 'Mostrar saldos' : 'Ocultar saldos'}>{ocultar ? <EyeOff size={18} /> : <Eye size={18} />}</IconBtn>
         <IconBtn onClick={toggleTema} label="Cambiar tema">{tema === 'oscuro' ? <Sun size={18} /> : <Moon size={18} />}</IconBtn>
-        <IconBtn href="/app/insights" label="Insights"><Bell size={18} className={cn(tab.href === '/app/insights' && 'text-green')} /></IconBtn>
+        <IconBtn href="/app/insights" label="Insights"><Bell size={18} className={cn(tab.href === '/app/insights' && 'text-green-dark dark:text-green-light')} /></IconBtn>
         <Link href="/app/ajustes" aria-label="Ajustes" className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-ink font-display text-[12px] font-bold text-white dark:bg-white dark:text-ink">
           {iniciales}
         </Link>

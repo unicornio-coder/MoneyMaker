@@ -100,7 +100,7 @@ export function DrawerCuenta({ cuenta, movimientos, cuentas, onClose }: Props) {
             <div className="card p-4">
               <div className="flex items-center justify-between">
                 <div className="text-[13px] font-bold">Cómo va tu inversión</div>
-                <div className="text-[12px] font-bold text-green">{cuenta.inversion.rendimiento}</div>
+                <div className="text-[12px] font-bold text-green-dark dark:text-green-light">{cuenta.inversion.rendimiento}</div>
               </div>
               <div className="mt-2"><LineaInversion serie={cuenta.inversion.serie} /></div>
             </div>
@@ -117,7 +117,7 @@ export function DrawerCuenta({ cuenta, movimientos, cuentas, onClose }: Props) {
                       </div>
                       <div className="text-right">
                         <div className="font-display text-[14.5px] font-bold">{money(p.valor)}</div>
-                        <div className={cn('text-[11px] font-bold', p.variacion < 0 ? 'text-negative' : 'text-green')}>{pct(p.variacion)}</div>
+                        <div className={cn('text-[11px] font-bold', p.variacion < 0 ? 'text-negative' : 'text-green-dark dark:text-green-light')}>{pct(p.variacion)}</div>
                       </div>
                     </li>
                   ))}
@@ -152,7 +152,7 @@ export function DrawerCuenta({ cuenta, movimientos, cuentas, onClose }: Props) {
             </ul>
           )}
           {!verTodo && movs.length > 5 && (
-            <button type="button" onClick={() => setVerTodo(true)} className="mt-2 flex h-[50px] w-full items-center justify-center gap-1 rounded-card text-[13px] font-bold text-green hover:bg-green-50 dark:hover:bg-surface-2">
+            <button type="button" onClick={() => setVerTodo(true)} className="mt-2 flex h-[50px] w-full items-center justify-center gap-1 rounded-card text-[13px] font-bold text-green-dark dark:text-green-light hover:bg-green-50 dark:hover:bg-surface-2">
               Ver más <ChevronRight size={16} />
             </button>
           )}

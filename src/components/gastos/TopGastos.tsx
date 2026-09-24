@@ -33,7 +33,6 @@ export function TopGastos({ movimientos, anteriores, rango, onCategoria }: Props
             const p = (c.monto / total) * 100;
             return (
               <span key={c.categoriaId} className="flex h-full items-center justify-center rounded-[7px] text-[9px] font-bold text-white transition-[flex] duration-[320ms]" style={{ flex: Math.max(p, 3), background: categoria(c.categoriaId).color }}>
-                {p >= 8 ? `${Math.round(p)}%` : ''}
               </span>
             );
           })}

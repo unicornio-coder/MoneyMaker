@@ -25,7 +25,7 @@ export default function TerminosPage() {
         <p>MoneyMaker se ofrece “tal cual”. No somos responsables por decisiones que tomes con base en la información mostrada, por retrasos o errores en los datos que entregan los bancos o proveedores, ni por interrupciones del servicio.</p>
         <h2 className="mt-6 font-display text-[18px] font-bold">7. Ley aplicable</h2>
         <p>Estos términos se rigen por las leyes de los Estados Unidos Mexicanos. Cualquier controversia se someterá a los tribunales de la Ciudad de México.</p>
-        <p className="mt-8"><Link href="/legal/privacidad" className="font-semibold text-green">Aviso de privacidad</Link></p>
+        <p className="mt-8"><Link href="/legal/privacidad" className="font-semibold text-green-dark dark:text-green-light">Aviso de privacidad</Link></p>
       </main>
     </div>
   );

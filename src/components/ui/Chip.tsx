@@ -10,14 +10,18 @@ type Props = {
   tone?: 'lime' | 'ink' | 'blue';
   size?: 'sm' | 'md';
   className?: string;
+  /** Dentro de un ChipGroup el chip es una pestaña (role=tab + aria-selected). */
+  tab?: boolean;
 };
 
-export function Chip({ active, onClick, children, tone = 'ink', size = 'md', className }: Props) {
+export function Chip({ active, onClick, children, tone = 'ink', size = 'md', className, tab }: Props) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-pressed={active}
+      role={tab ? 'tab' : undefined}
+      aria-selected={tab ? active : undefined}
+      aria-pressed={tab ? undefined : active}
       className={cn(
         'whitespace-nowrap rounded-pill border font-semibold transition-all duration-[180ms] ease-out',
         size === 'md' ? 'px-3.5 py-1.5 text-[12.5px]' : 'px-3 py-1 text-[11px]',
@@ -46,7 +50,7 @@ export function ChipGroup<T extends string>({ value, onChange, options, tone, si
   return (
     <div className={cn('flex gap-1.5', className)} role="tablist">
       {options.map((o) => (
-        <Chip key={o.value} active={o.value === value} onClick={() => onChange(o.value)} tone={tone} size={size}>
+        <Chip key={o.value} tab active={o.value === value} onClick={() => onChange(o.value)} tone={tone} size={size}>
           {o.label}
         </Chip>
       ))}

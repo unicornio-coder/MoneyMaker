@@ -124,7 +124,7 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
                       className={cn('relative flex items-start gap-3.5 rounded-card-lg p-4 text-left transition-all duration-[220ms] animate-rise', on ? 'text-white shadow-green' : 'bg-surface text-fg shadow-card hover:-translate-y-0.5 hover:shadow-hover')}
                       style={{ animationDelay: `${i * 50}ms`, ...(on ? { background: 'linear-gradient(135deg, #0B1F17 0%, #15803D 60%, #16A34A 100%)' } : {}) }}
                     >
-                      <span className={cn('flex h-10 w-10 flex-none items-center justify-center rounded-full', on ? 'bg-white/15 text-green-light' : 'bg-green-50 text-green dark:bg-surface-2 dark:text-green-light')}><Icon size={19} /></span>
+                      <span className={cn('flex h-10 w-10 flex-none items-center justify-center rounded-full', on ? 'bg-white/15 text-green-light' : 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light')}><Icon size={19} /></span>
                       <span className="min-w-0 flex-1 pr-6">
                         <span className="block text-[14px] font-bold leading-snug">{m.label}</span>
                         <span className={cn('mt-0.5 block text-[12px] leading-snug', on ? 'text-white/75' : 'text-txt-2 dark:text-fg-2')}>{m.beneficio}</span>
@@ -159,11 +159,11 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
               <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">7 días gratis. Sin tarjeta.</h1>
               <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Después, $250 MXN al mes. Cancela cuando quieras desde Ajustes, sin llamadas.</p>
               <div className="mt-6 rounded-card-xl border-2 border-green bg-green-50 p-6 dark:bg-surface-2">
-                <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green">MoneyMaker</div>
+                <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green-dark dark:text-green-light">MoneyMaker</div>
                 <div className="mt-2 font-display text-[44px] font-bold leading-none tracking-[-1.8px]">$250<span className="text-[16px] font-semibold text-txt-2 dark:text-fg-2"> MXN al mes</span></div>
                 <div className="mt-1.5 text-[12.5px] text-txt-2 dark:text-fg-2">Menos de $9 al día. Una suscripción olvidada cuesta más.</div>
                 <ul className="mt-5 space-y-2.5 text-[13.5px]">
-                  {['Estados de cuenta ilimitados, de todos tus bancos', 'Presupuesto por quincena que se arma con tus datos', 'Suscripciones y meses sin intereses detectados y cancelables', 'Cuánto puedes invertir, cada quincena'].map((b) => <li key={b} className="flex items-start gap-2.5"><Check size={17} className="mt-0.5 flex-none text-green" /> {b}</li>)}
+                  {['Estados de cuenta ilimitados, de todos tus bancos', 'Presupuesto por quincena que se arma con tus datos', 'Suscripciones y meses sin intereses detectados y cancelables', 'Cuánto puedes invertir, cada quincena'].map((b) => <li key={b} className="flex items-start gap-2.5"><Check size={17} className="mt-0.5 flex-none text-green-dark dark:text-green-light" /> {b}</li>)}
                 </ul>
               </div>
             </>

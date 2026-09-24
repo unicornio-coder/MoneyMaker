@@ -21,7 +21,7 @@ export function Planes({ plan, trialTermina, planRenueva, planIntervalo, tieneSu
       <div className="text-center">
         <h2 className="font-display text-[26px] font-bold tracking-[-0.8px]">Un solo plan. Todo incluido.</h2>
         <p className="mt-1 text-[13.5px] text-txt-2 dark:text-fg-2">{plan === 'trial' ? `Tu prueba gratis termina el ${fechaCorta(planRenueva ?? trialTermina)}.` : plan === 'premium' ? `Eres Premium. Se renueva el ${planRenueva ? fechaCorta(planRenueva) : '—'}.` : 'Tu prueba terminó. Reactiva tu plan para seguir viendo tu quincena.'}</p>
-        {pago === 'ok' && <p className="mt-2 text-[13px] font-semibold text-green">Listo. Tu suscripción quedó activa.</p>}
+        {pago === 'ok' && <p className="mt-2 text-[13px] font-semibold text-green-dark dark:text-green-light">Listo. Tu suscripción quedó activa.</p>}
         {pago === 'cancelado' && <p className="mt-2 text-[13px] text-txt-2">No se hizo ningún cargo.</p>}
         {error && <p className="mt-2 text-[13px] font-semibold text-negative">{error}</p>}
       </div>
@@ -32,11 +32,11 @@ export function Planes({ plan, trialTermina, planRenueva, planIntervalo, tieneSu
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className={cn('rounded-20 border-2 p-6', plan !== 'vencido' ? 'border-green bg-green-50 dark:bg-surface-2' : 'border-edge bg-surface')}>
-          <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green">{plan === 'trial' ? 'Tu plan actual · prueba' : 'Premium'}</div>
+          <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green-dark dark:text-green-light">{plan === 'trial' ? 'Tu plan actual · prueba' : 'Premium'}</div>
           <div className="mt-2 font-display text-[40px] font-bold leading-none tracking-[-1.5px]">{anual ? '$2,500' : '$250'}<span className="text-[16px] font-semibold text-txt-2 dark:text-fg-2"> MXN/{anual ? 'año' : 'mes'}</span></div>
           <ul className="mt-5 space-y-2.5">
             {BENEFICIOS.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-[13px]"><Check size={16} className="mt-0.5 flex-none text-green" /> {b}</li>
+              <li key={b} className="flex items-start gap-2 text-[13px]"><Check size={16} className="mt-0.5 flex-none text-green-dark dark:text-green-light" /> {b}</li>
             ))}
           </ul>
           {tieneSuscripcion ? (

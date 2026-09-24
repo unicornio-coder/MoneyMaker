@@ -10,7 +10,7 @@ export default function RecuperarPage() {
       <p className="mt-1.5 text-[14px] text-txt-2 dark:text-fg-2">Te mandamos un enlace a tu correo.</p>
       <RecuperarForm />
       <p className="mt-8 text-center text-[13px] text-txt-2 dark:text-fg-2">
-        <Link href="/login" className="font-semibold text-green underline-offset-4 hover:underline">Volver a entrar</Link>
+        <Link href="/login" className="font-semibold text-green-dark dark:text-green-light underline-offset-4 hover:underline">Volver a entrar</Link>
       </p>
     </div>
   );
