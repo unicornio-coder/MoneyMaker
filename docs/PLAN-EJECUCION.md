@@ -51,7 +51,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Recibos que llegan antes que el cargo | Pendientes 45 días en la credencial; se casan al confirmar un PDF | hecho |
 | Mostrarlo | Segunda línea en historial, drawer y Gastos; bloque "Lo que compraste" en el detalle; ⌘K busca en el detalle | hecho |
 | Recibos sin parser | Claude lee el correo y devuelve el mismo JSON (salida estructurada) | siguiente |
-| Descriptor sin recibo | Limpieza con catálogo: "UBER *TRIP" → Uber · Viaje; "OXXO SUC 4521" → Oxxo · Sucursal 4521 | siguiente |
+| Descriptor sin recibo | `detalleBasico`: "UBER *TRIP" → Viaje; "OXXO SUC 4521" → Sucursal 4521; "AMZN MKTP" → Compra en línea; "MERCADOPAGO*X" → Pago a X | hecho |
 
 ## 4. Cancelar suscripciones
 

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, FileText, Bell, PieChart, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { detalleBasico } from '@/lib/domain/categorizar';
 import { money, fechaCorta, pct } from '@/lib/format';
 import { categoria } from '@/lib/domain/categorias';
 import type { Movimiento } from '@/lib/domain/tipos';
@@ -143,7 +144,7 @@ export function DrawerCuenta({ cuenta, movimientos, cuentas, onClose }: Props) {
                   <Avatar domain={m.comercioDominio} nombre={m.comercio} size={42} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13.5px] font-bold">{m.comercio}{m.esMsi && m.msiCuota ? ` · cuota ${m.msiCuota}/${m.msiTotal}` : ''}</div>
-                    <div className="truncate text-[11px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {m.detalle ?? categoria(m.categoriaId).nombre}</div>
+                    <div className="truncate text-[11px] text-txt-2 dark:text-fg-2">{fechaCorta(m.fecha)} · {m.detalle ?? detalleBasico(m.descripcionRaw) ?? categoria(m.categoriaId).nombre}</div>
                   </div>
                   <Money value={m.monto} tone={m.tipo === 'ingreso' ? 'green' : 'inherit'} signed={m.tipo === 'ingreso'} className="text-[14.5px] font-bold" />
                 </li>
