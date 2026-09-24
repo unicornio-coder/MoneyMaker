@@ -68,6 +68,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 
 ## Lo que solo JC puede hacer
 
+00. **Vercel → Deployment Protection → Vercel Authentication → "Only Preview Deployments".** Con "Standard Protection" el dominio generado `money-maker-tawny.vercel.app` pide login de Vercel a cualquiera que no sea tú en ese navegador (teléfono, incógnito, bots de salud). Mientras tanto, la app solo se ve desde un navegador con sesión de Vercel abierta.
 0. Abrir `apps/android` en Android Studio, correrla en un teléfono con tu código de vinculación y, si funciona, subirla a Google Play (ver `apps/android/README.md`).
 
 0. GitHub → Settings → General → Default branch → `main` (un clic). Sin esto no corren los bots con horario.
