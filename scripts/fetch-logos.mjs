@@ -2,6 +2,7 @@
 // (sin depender de terceros en producción) y escribe src/lib/brands.locales.json con los que se consiguieron.
 // Uso: npm run logos [-- --solo bbva.mx,nu.com.mx]   Requiere salida a internet. Es idempotente: no vuelve a bajar los que ya existen.
 // Fuentes por orden: Brandfetch (con BRANDFETCH_CLIENT_ID) → Clearbit → favicon de Google → DuckDuckGo.
+// En GitHub lo corre el bot .github/workflows/logos.yml (también cuando este archivo cambia).
 
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
