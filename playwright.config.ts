@@ -10,6 +10,8 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   fullyParallel: false,
   workers: 1,
+  // Si algo se cuelga (compilación, red), que falle en minutos y no se coma el tiempo del job.
+  globalTimeout: 15 * 60_000,
   reporter: [['list']],
   use: {
     baseURL: `http://localhost:${PUERTO}`,
@@ -22,7 +24,8 @@ export default defineConfig({
     { name: 'escritorio', use: { ...devices['Desktop Chrome'], viewport: { width: 1380, height: 900 } } },
   ],
   webServer: {
-    command: `npx next dev -p ${PUERTO}`,
+    // En CI corre contra el build de producción (determinista y rápido); en local, next dev para iterar.
+    command: process.env.CI ? `npx next start -p ${PUERTO}` : `npx next dev -p ${PUERTO}`,
     url: `http://localhost:${PUERTO}/app`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

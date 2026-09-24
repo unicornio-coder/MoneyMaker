@@ -26,6 +26,15 @@ function nombreCorto(nombre: string, email: string) {
 }
 
 /** Usuario de la sesión actual. En modo mock devuelve el usuario demo. Redirige a /login si no hay sesión. */
+/** ¿Hay sesión? Sin redirigir: la landing lo usa para ofrecer "Ir a mi panel" en vez de "Empezar". En demo, no. */
+export const haySesion = cache(async (): Promise<boolean> => {
+  if (MODO_MOCK) return false;
+  const {
+    data: { user },
+  } = await supabaseServer().auth.getUser();
+  return !!user;
+});
+
 export const usuarioActual = cache(async (): Promise<UsuarioSesion> => {
   if (MODO_MOCK) return USUARIO_DEMO;
   const supabase = supabaseServer();

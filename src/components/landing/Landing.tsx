@@ -39,15 +39,24 @@ function Titular({ children, sub, tono = 'claro', align = 'center' }: { children
   );
 }
 
-export function Landing() {
+const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.1.0';
+const BUILD = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
+
+export function Landing({ sesion = false }: { sesion?: boolean }) {
   return (
     <div className="bg-surface text-fg">
       <header className="sticky top-0 z-30 border-b border-edge bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1120px] items-center px-5 md:px-8">
           <Link href="/" className="flex items-center gap-2.5" aria-label="MoneyMaker, inicio"><Logo size={26} /><span className="font-display text-[15px] font-bold">MoneyMaker</span></Link>
           <nav className="ml-auto flex items-center gap-1 text-[13px] font-semibold" aria-label="Principal">
-            <Link href="/login" className="rounded-pill px-4 py-2 text-fg hover:bg-bg-muted dark:hover:bg-surface-2">Entrar</Link>
-            <Link href="/registro" className="btn-primary flex h-9 items-center px-4 text-[13px]">Empezar</Link>
+            {sesion ? (
+              <Link href="/app" className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[13px]">Ir a mi panel <ArrowRight size={14} /></Link>
+            ) : (
+              <>
+                <Link href="/login" className="rounded-pill px-4 py-2 text-fg hover:bg-bg-muted dark:hover:bg-surface-2">Entrar</Link>
+                <Link href="/registro" className="btn-primary flex h-9 items-center px-4 text-[13px]">Empezar</Link>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -61,7 +70,13 @@ export function Landing() {
             Tu dinero, claro.
           </h1>
           <p className="mx-auto mt-6 max-w-[560px] text-[18px] leading-relaxed text-white/75 animate-rise [animation-delay:120ms] md:text-[22px]">Todas tus cuentas. Cada quincena. Sin darnos tus claves.</p>
-          <div className="mx-auto mt-8 max-w-[460px] animate-rise [animation-delay:220ms]"><FormCorreo /></div>
+          <div className="mx-auto mt-8 max-w-[460px] animate-rise [animation-delay:220ms]">
+            {sesion ? (
+              <Link href="/app" className="mx-auto flex h-[54px] w-full max-w-[320px] items-center justify-center gap-2 rounded-pill bg-white text-[16px] font-bold text-ink transition-transform hover:bg-green-50 active:scale-[.98]">Ir a mi panel <ArrowRight size={18} /></Link>
+            ) : (
+              <FormCorreo />
+            )}
+          </div>
           <p className="mt-3 text-[12.5px] text-white/75 animate-rise [animation-delay:300ms]">7 días gratis · Cancela cuando quieras</p>
           <div className="relative mt-14 animate-rise [animation-delay:380ms] md:mt-20">
             <ProductoHero />
@@ -192,7 +207,7 @@ export function Landing() {
               <li key={b} className="flex items-center gap-2.5"><Check size={17} className="flex-none text-green-dark dark:text-green-light" /> {b}</li>
             ))}
           </ul>
-          <Link href="/registro" className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">Empezar 7 días gratis <ArrowRight size={18} /></Link>
+          <Link href={sesion ? '/app' : '/registro'} className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">{sesion ? 'Ir a mi panel' : 'Empezar 7 días gratis'} <ArrowRight size={18} /></Link>
           <p className="mt-3 text-center text-[12px] text-txt-3">Sin tarjeta para empezar. Cancela desde Ajustes.</p>
         </Revelar>
       </Seccion>
@@ -201,6 +216,7 @@ export function Landing() {
       <footer className="border-t border-edge py-8 text-center text-[12px] text-txt-3">
         <div className="flex flex-wrap justify-center gap-4"><Link href="/legal/privacidad">Aviso de privacidad</Link><Link href="/legal/terminos">Términos</Link><a href="mailto:hola@moneymaker.mx">hola@moneymaker.mx</a></div>
         <p className="mt-3">© {new Date().getFullYear()} MoneyMaker. No somos una institución financiera; no movemos dinero ni damos asesoría de inversión.</p>
+        <p className="mt-2 text-[11px]">Versión {VERSION}{BUILD ? ` · build ${BUILD}` : ''}</p>
       </footer>
     </div>
   );
