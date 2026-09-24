@@ -7,7 +7,7 @@ import type { Insight, Movimiento, Recurrente } from './tipos';
 
 export type InsightCandidato = Omit<Insight, 'id' | 'leido' | 'descartado' | 'createdAt'> & { clave: string };
 
-export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurrente[]; rango: Rango; ingresoPeriodo: number; excedente: number; hoy?: Date }): InsightCandidato[] {
+export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurrente[]; rango: Rango; ingresoPeriodo: number; excedente: number; hoy?: Date; presupuesto?: { lineas: { categoriaId: string; nombre?: string | null; limite: number; actual: number }[]; diasRestantes: number } | null }): InsightCandidato[] {
   const { movs, recurrentes, rango, ingresoPeriodo, excedente } = args;
   const hoy = args.hoy ?? new Date();
   const out: InsightCandidato[] = [];
@@ -157,6 +157,47 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
     });
   }
 
+  // 8b. Subió el precio: el último cargo de una suscripción/servicio es mayor que el anterior (≥ 5 %).
+  for (const r of recurrentes.filter((x) => x.activo && !x.ignorado && (x.tipo === 'suscripcion' || x.tipo === 'servicio'))) {
+    const cargos = movs.filter((m) => m.recurrenteId === r.id && m.tipo === 'gasto').sort((a, b) => a.fecha.localeCompare(b.fecha));
+    if (cargos.length < 2) continue;
+    const ultimo = cargos[cargos.length - 1];
+    const previo = cargos[cargos.length - 2];
+    if (ultimo.monto >= previo.monto * 1.05 && diasEntre(deISO(ultimo.fecha), hoy) <= 45) {
+      out.push({
+        clave: `precio:${r.id}:${ultimo.fecha}`,
+        tipo: 'precio_subio',
+        titulo: `${r.nombre} subió de ${fmt(previo.monto)} a ${fmt(ultimo.monto)}`,
+        texto: `Son ${fmt((ultimo.monto - previo.monto) * 12)} más al año. Si no lo vale, cancélala o baja de plan antes del siguiente cobro.`,
+        monto: ultimo.monto - previo.monto,
+        ctaLabel: 'Ver suscripción',
+        ctaHref: `/app/fijos?r=${r.id}`,
+        referencia: { recurrenteId: r.id },
+      });
+    }
+  }
+
+  // 8c. Presupuesto al 80 % o rebasado (por categoría, con días por delante)
+  if (args.presupuesto) {
+    for (const l of args.presupuesto.lineas) {
+      if (l.limite <= 0) continue;
+      const pct = (l.actual / l.limite) * 100;
+      if (pct < 80) continue;
+      const nombre = l.nombre ?? nombreCategoria(l.categoriaId);
+      const rebasado = pct >= 100;
+      out.push({
+        clave: `presu:${rebasado ? '100' : '80'}:${l.categoriaId}:${rango.inicio}`,
+        tipo: rebasado ? 'presupuesto_100' : 'presupuesto_80',
+        titulo: rebasado ? `${nombre}: te pasaste ${fmt(l.actual - l.limite)}` : `${nombre} va al ${Math.round(pct)} %`,
+        texto: rebasado ? `Llevas ${fmt(l.actual)} de ${fmt(l.limite)} en ${rango.etiqueta}. Lo que gastes de más sale de lo que podías invertir.` : `Llevas ${fmt(l.actual)} de ${fmt(l.limite)} y quedan ${args.presupuesto.diasRestantes} días de ${rango.etiqueta}.`,
+        monto: rebasado ? l.actual - l.limite : l.limite - l.actual,
+        ctaLabel: 'Ver presupuesto',
+        ctaHref: '/app/presupuesto',
+        referencia: { categoriaId: l.categoriaId },
+      });
+    }
+  }
+
   // 8. Puedes invertir
   if (excedente > 0 && ingresoPeriodo > 0) {
     out.push({
@@ -172,6 +213,10 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
   }
 
   return out;
+}
+
+function nombreCategoria(id: string): string {
+  return id === 'fijos' ? 'Fijos' : id === 'msi' ? 'Meses sin intereses' : id.charAt(0).toUpperCase() + id.slice(1);
 }
 
 function normalizarNombre(s: string): string {

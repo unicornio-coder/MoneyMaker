@@ -13,7 +13,7 @@ import type { Recurrente } from '@/lib/domain/tipos';
 import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { crearEvento, eliminarRecurrente, marcarCancelada, solicitarCancelacion } from '@/app/app/fijos/acciones';
+import { crearEvento, eliminarRecurrente, marcarCancelada, marcarNoRecurrente, solicitarCancelacion } from '@/app/app/fijos/acciones';
 import { ModalCancelar, urlCarta } from './ModalCancelar';
 
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
@@ -37,9 +37,9 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
   const recordar = () =>
     start(async () => {
       const f = new Date(proximo.getTime());
-      f.setDate(f.getDate() - 1);
+      f.setDate(f.getDate() - 3);
       const res = await crearEvento({ fecha: aISO(f), nombre: `Recordatorio: ${r.nombre} ${money(r.monto)}`, monto: r.monto, tipo: 'recordatorio', recurrenteId: r.id });
-      setMensaje(res.ok ? `Te recordamos el ${fechaCorta(aISO(f))}, un día antes del cobro.` : res.error);
+      setMensaje(res.ok ? `Te recordamos el ${fechaCorta(aISO(f))}, tres días antes del cobro.` : res.error);
       router.refresh();
     });
 
@@ -61,7 +61,9 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
 
   const borrar = () =>
     start(async () => {
-      await eliminarRecurrente(r.id);
+      // "No es recurrente": si lo detectamos nosotros, lo dejamos de contar y no lo volvemos a crear; si es manual, se borra.
+      if (r.origen === 'detectado') await marcarNoRecurrente(r.id);
+      else await eliminarRecurrente(r.id);
       onClose();
       router.refresh();
     });
@@ -143,7 +145,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
           )}
           <div className="flex gap-2">
             <button type="button" onClick={recordar} disabled={pendiente} className={cn('flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border border-white/20 text-[13px] font-semibold hover:bg-white/8')}><Bell size={16} /> Recordarme</button>
-            <button type="button" onClick={borrar} disabled={pendiente} aria-label="Quitar" className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/20 hover:bg-white/8"><Trash2 size={16} /></button>
+            <button type="button" onClick={borrar} disabled={pendiente} className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] border border-white/20 px-3 text-[12.5px] font-semibold hover:bg-white/8"><Trash2 size={15} /> {r.origen === 'detectado' ? 'No es recurrente' : 'Quitar'}</button>
           </div>
         </div>
       )}

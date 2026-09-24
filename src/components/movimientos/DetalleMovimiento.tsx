@@ -11,7 +11,7 @@ import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Money } from '@/components/ui/Money';
 import { Button } from '@/components/ui/Button';
-import { corregirCategoria } from '@/app/app/acciones';
+import { corregirCategoria, guardarNota } from '@/app/app/acciones';
 
 type Props = { movimiento: Movimiento | null; cuentas: Pick<Cuenta, 'id' | 'nombre'>[]; onClose: () => void };
 
@@ -20,11 +20,15 @@ export function DetalleMovimiento({ movimiento, cuentas, onClose }: Props) {
   const [aTodos, setATodos] = useState(true);
   const [pendiente, start] = useTransition();
   const [guardado, setGuardado] = useState(false);
+  const [nota, setNota] = useState(movimiento?.nota ?? '');
+  const [notaGuardada, setNotaGuardada] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setCat(movimiento?.categoriaId ?? 'otros');
     setGuardado(false);
+    setNota(movimiento?.nota ?? '');
+    setNotaGuardada(false);
   }, [movimiento]);
 
   if (!movimiento) return null;
@@ -67,6 +71,13 @@ export function DetalleMovimiento({ movimiento, cuentas, onClose }: Props) {
         <div className="rounded-input bg-bg-page px-3 py-2 text-[11.5px] text-txt-2 dark:bg-surface-2 dark:text-fg-2">
           <span className="font-semibold text-fg">Como lo mandó el banco:</span> {m.descripcionRaw}
           {m.esMsi && m.msiCuota && <span className="ml-1 font-semibold text-invest">· cuota {m.msiCuota} de {m.msiTotal}</span>}
+        </div>
+        <div>
+          <div className="mb-1.5 text-[12.5px] font-bold">Nota</div>
+          <div className="flex gap-2">
+            <input value={nota} onChange={(e) => { setNota(e.target.value); setNotaGuardada(false); }} maxLength={200} placeholder="Para qué fue, quién te lo paga…" aria-label="Nota del movimiento" className="input h-10 flex-1 text-[13px]" />
+            <button type="button" disabled={pendiente || nota.trim() === (m.nota ?? '')} onClick={() => start(async () => { const r = await guardarNota(m.id, nota); if (r.ok) { setNotaGuardada(true); router.refresh(); } })} className="h-10 rounded-pill border border-line-2 px-3 text-[12px] font-semibold disabled:opacity-50 dark:border-edge">{notaGuardada ? 'Guardada' : 'Guardar'}</button>
+          </div>
         </div>
         <div>
           <div className="mb-2 text-[12.5px] font-bold">Categoría</div>
