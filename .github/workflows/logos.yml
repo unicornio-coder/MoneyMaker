@@ -1,0 +1,54 @@
+name: Logos
+
+# Bot de logos: baja los logos de bancos y comercios (Clearbit, favicons, Brandfetch si hay llave) a public/logos
+# y los sube a main. Corre al pedirlo, cada lunes, y cuando cambian los catálogos de marcas.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - qa/entregables/merchants.json
+      - qa/entregables/bancos.json
+      - src/lib/domain/comercios.ts
+      - scripts/fetch-logos.mjs
+
+permissions:
+  contents: write
+
+concurrency:
+  group: logos
+  cancel-in-progress: false
+
+jobs:
+  bajar:
+    name: Bajar y subir logos
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Bajar logos
+        env:
+          BRANDFETCH_CLIENT_ID: ${{ secrets.BRANDFETCH_CLIENT_ID }}
+        run: npm run logos
+      - name: Subir a main si hay cambios
+        run: |
+          git config user.name "moneymaker-bot"
+          git config user.email "bot@moneymaker.mx"
+          git add public/logos src/lib/brands.locales.json
+          if git diff --cached --quiet; then
+            echo "Sin logos nuevos."
+            exit 0
+          fi
+          n=$(git diff --cached --name-only | grep -c '^public/logos/' || true)
+          git commit -m "Logos: $n archivos nuevos o actualizados [bot]"
+          git push origin HEAD:main

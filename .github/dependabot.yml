@@ -1,0 +1,19 @@
+# Dependencias al día, agrupadas en un solo PR semanal (se fusiona con el bot de publicación si el CI pasa).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Mexico_City
+    groups:
+      dependencias:
+        patterns: ["*"]
+    open-pull-requests-limit: 3
+    labels: [dependencias]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

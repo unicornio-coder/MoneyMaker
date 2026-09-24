@@ -1,0 +1,59 @@
+name: Salud de producción
+
+# Bot de guardia: cada hora revisa https://money-maker-tawny.vercel.app/api/health y las pantallas públicas.
+# Si algo falla, abre (o actualiza) un issue "Producción caída"; cuando vuelve, lo cierra.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      URL: https://money-maker-tawny.vercel.app
+    steps:
+      - name: Probar salud y pantallas
+        id: prueba
+        shell: bash
+        run: |
+          fallos=""
+          salud=$(curl -sS --max-time 20 "$URL/api/health" || echo '{}')
+          echo "salud: $salud"
+          echo "$salud" | grep -q '"ok":true' || fallos="$fallos\n- /api/health no responde ok"
+          echo "$salud" | grep -q '"modelo":true' || fallos="$fallos\n- ANTHROPIC_API_KEY no está en producción (integraciones.modelo=false)"
+          for ruta in / /login /registro; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "$URL$ruta" || echo 000)
+            [ "$code" = "200" ] || fallos="$fallos\n- $ruta responde $code"
+          done
+          if [ -n "$fallos" ]; then
+            echo "fallos<<EOF" >> "$GITHUB_OUTPUT"; printf "%b" "$fallos" >> "$GITHUB_OUTPUT"; echo "" >> "$GITHUB_OUTPUT"; echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "estado=caida" >> "$GITHUB_OUTPUT"
+          else
+            echo "estado=ok" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Abrir o cerrar el issue
+        uses: actions/github-script@v7
+        env:
+          ESTADO: ${{ steps.prueba.outputs.estado }}
+          FALLOS: ${{ steps.prueba.outputs.fallos }}
+        with:
+          script: |
+            const titulo = 'Producción: algo no responde';
+            const { data: abiertos } = await github.rest.issues.listForRepo({ ...context.repo, state: 'open', labels: 'salud' });
+            const existente = abiertos.find((i) => i.title === titulo);
+            const cuando = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+            if (process.env.ESTADO === 'caida') {
+              const cuerpo = `Revisión del ${cuando} (hora CDMX):\n${process.env.FALLOS}\n\nSe vuelve a revisar cada hora. Este issue se cierra solo cuando todo responda.`;
+              if (existente) await github.rest.issues.createComment({ ...context.repo, issue_number: existente.number, body: cuerpo });
+              else await github.rest.issues.create({ ...context.repo, title: titulo, body: cuerpo, labels: ['salud'] });
+            } else if (existente) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existente.number, body: `Todo responde de nuevo (${cuando}). Cierro.` });
+              await github.rest.issues.update({ ...context.repo, issue_number: existente.number, state: 'closed' });
+            }
