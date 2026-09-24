@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+    # `labeled`: poner la etiqueta "publicar" después de abrir el PR vuelve a correr el CI con la etiqueta a la vista.
+    types: [opened, synchronize, reopened, labeled]
 
 concurrency:
   group: ci-${{ github.ref }}
