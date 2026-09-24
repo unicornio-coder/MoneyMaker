@@ -49,6 +49,25 @@ export async function entrarConGoogle(next = '/app') {
   redirect(data.url);
 }
 
+/** Manda el enlace de recuperación. Responde igual exista o no la cuenta (no revela correos). */
+export async function recuperarContraseña(_: (AuthResult & { enviado?: boolean }) | undefined, form: FormData): Promise<AuthResult & { enviado?: boolean }> {
+  const email = String(form.get('email') ?? '').trim().toLowerCase();
+  if (!CORREO.test(email)) return { error: 'Escribe un correo válido.' };
+  if (MODO_MOCK) return { enviado: true };
+  await supabaseServer().auth.resetPasswordForEmail(email, { redirectTo: `${origen()}/auth/callback?next=/restablecer` });
+  return { enviado: true };
+}
+
+/** Cambia la contraseña con la sesión que abrió el enlace del correo. */
+export async function cambiarContraseña(_: AuthResult | undefined, form: FormData): Promise<AuthResult> {
+  const password = String(form.get('password') ?? '');
+  if (password.length < 8) return { error: 'La contraseña necesita al menos 8 caracteres.' };
+  if (MODO_MOCK) redirect('/app');
+  const { error } = await supabaseServer().auth.updateUser({ password });
+  if (error) return { error: 'El enlace ya no es válido. Pide uno nuevo desde "Olvidé mi contraseña".' };
+  redirect('/app');
+}
+
 export async function cerrarSesion() {
   if (!MODO_MOCK) await supabaseServer().auth.signOut();
   redirect('/login');

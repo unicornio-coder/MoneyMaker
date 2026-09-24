@@ -12,10 +12,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <Logo />
             <span className="font-display text-[15px] font-bold">MoneyMaker</span>
           </Link>
-          <span className="hidden text-[12px] font-semibold text-txt-3 md:block">Finanzas por quincena, para México</span>
+
         </header>
         <main className="mx-auto flex w-full max-w-form flex-1 flex-col justify-center px-5 pb-16 pt-4 md:pb-24">{children}</main>
-        <p className="px-5 pb-6 text-center text-[11px] text-txt-3 md:hidden">Solo lectura. El PDF se lee y se descarta. Nunca pedimos las claves de tu banco.</p>
+        <p className="px-5 pb-6 text-center text-[11px] text-txt-3 md:hidden">Sin claves del banco. El PDF se descarta.</p>
       </div>
     </div>
   );
