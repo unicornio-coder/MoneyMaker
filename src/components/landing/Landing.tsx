@@ -5,6 +5,7 @@ import { BrandLogo } from '@/components/ui/BrandLogo';
 import { EscenaConexion } from './EscenaConexion';
 import { ProductoHero } from './ProductoHero';
 import { FormCorreo } from './FormCorreo';
+import { SiempreClaro } from './SiempreClaro';
 import { Revelar } from './Revelar';
 
 // Landing al estilo Apple × Stori: una idea por pantalla, tipografía grande, producto al centro, casi sin texto.
@@ -45,6 +46,7 @@ const BUILD = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
 export function Landing({ sesion = false }: { sesion?: boolean }) {
   return (
     <div className="bg-surface text-fg">
+      <SiempreClaro />
       <header className="sticky top-0 z-30 border-b border-edge bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1120px] items-center px-5 md:px-8">
           <Link href="/" className="flex items-center gap-2.5" aria-label="MoneyMaker, inicio"><Logo size={26} /><span className="font-display text-[15px] font-bold">MoneyMaker</span></Link>
@@ -63,24 +65,24 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
 
       <main>
       {/* 1. Una promesa. El producto. Un botón. */}
-      <section className="relative overflow-hidden bg-ink text-white">
-        <span className="pointer-events-none absolute left-1/2 top-[-260px] h-[720px] w-[720px] -translate-x-1/2 rounded-full bg-green/30 blur-[140px]" aria-hidden />
+      <section className="relative overflow-hidden bg-surface text-fg">
+        <span className="pointer-events-none absolute left-1/2 top-[-320px] h-[760px] w-[760px] -translate-x-1/2 rounded-full bg-green-100 blur-[120px]" aria-hidden />
         <div className="relative mx-auto max-w-[1120px] px-5 pb-0 pt-20 text-center md:px-8 md:pt-28">
           <h1 className="mx-auto max-w-[900px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(46px, 8vw, 96px)' }}>
             Tu dinero, claro.
           </h1>
-          <p className="mx-auto mt-6 max-w-[560px] text-[18px] leading-relaxed text-white/75 animate-rise [animation-delay:120ms] md:text-[22px]">Todas tus cuentas. Cada quincena. Sin darnos tus claves.</p>
+          <p className="mx-auto mt-6 max-w-[560px] text-[18px] leading-relaxed text-txt-2 animate-rise [animation-delay:120ms] md:text-[22px]">Todas tus cuentas. Cada quincena. Sin darnos tus claves.</p>
           <div className="mx-auto mt-8 max-w-[460px] animate-rise [animation-delay:220ms]">
             {sesion ? (
-              <Link href="/app" className="mx-auto flex h-[54px] w-full max-w-[320px] items-center justify-center gap-2 rounded-pill bg-white text-[16px] font-bold text-ink transition-transform hover:bg-green-50 active:scale-[.98]">Ir a mi panel <ArrowRight size={18} /></Link>
+              <Link href="/app" className="btn-primary mx-auto flex h-[54px] w-full max-w-[320px] items-center justify-center gap-2 text-[16px]">Ir a mi panel <ArrowRight size={18} /></Link>
             ) : (
               <FormCorreo />
             )}
           </div>
-          <p className="mt-3 text-[12.5px] text-white/75 animate-rise [animation-delay:300ms]">7 días gratis · Cancela cuando quieras</p>
+          <p className="mt-3 text-[12.5px] text-txt-2 animate-rise [animation-delay:300ms]">7 días gratis · Cancela cuando quieras</p>
           <div className="relative mt-14 animate-rise [animation-delay:380ms] md:mt-20">
             <ProductoHero />
-            <span className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent" aria-hidden />
+            <span className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-surface to-transparent" aria-hidden />
           </div>
         </div>
       </section>
@@ -99,12 +101,12 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       </section>
 
       {/* 3. Conecta todo */}
-      <Seccion id="conecta" className="bg-ink py-24 text-white md:py-32">
+      <Seccion id="conecta" className="bg-bg-page py-24 md:py-32">
         <Revelar>
-          <Titular tono="oscuro" sub="Sube el estado de cuenta que ya te manda tu banco. Dos minutos después, cada movimiento tiene nombre, categoría y detalle.">Todo tu dinero, en un lugar.</Titular>
+          <Titular sub="Sube el estado de cuenta que ya te manda tu banco. Dos minutos después, cada movimiento tiene nombre, categoría y detalle.">Todo tu dinero, en un lugar.</Titular>
         </Revelar>
         <Revelar delay={150} className="mt-14">
-          <EscenaConexion />
+          <EscenaConexion tono="claro" />
         </Revelar>
       </Seccion>
 
