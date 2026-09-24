@@ -42,7 +42,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Recibos por correo (Amazon, Mercado Libre, Uber, DiDi, Rappi, Uber Eats) | `recibos.ts` + `enriquecer.ts` | yo | hecho (#31) |
 | Outlook / Hotmail | `services/outlook.ts` (Microsoft Graph `Mail.Read`), `/api/outlook/auth|callback`, mismo pipeline que Gmail (`buzon.ts`), cron y Ajustes; detrás de `MS_CLIENT_ID/SECRET` | yo | código hecho (#37); JC: app en Entra ID |
 | Dirección de reenvío `<alias>@in.moneymaker.mx` | `/api/correo/entrante` listo (firma HMAC o secreto, Resend/Postmark/Cloudflare); alias por usuario en Ajustes. Falta: dominio, MX y `CORREO_ENTRANTE_SECRET` en Vercel | yo (hecho) + JC (DNS y secreto) | código hecho |
-| Notificaciones en Android | Servidor listo: `/api/notificaciones` con token por usuario (Ajustes → "Vincular mi teléfono"), lista blanca de 20 apps, mismo parser y misma ingesta. Falta la app Android (Capacitor + `NotificationListenerService`) | yo (servidor hecho; app siguiente) + JC (Google Play) | servidor hecho |
+| Notificaciones en Android | Servidor: `/api/notificaciones` con token por usuario. App: `apps/android` (Kotlin, `NotificationListenerService` + WorkManager con reintentos, pantalla de vinculación, lista blanca de 21 apps). No se compiló aquí (sin Android SDK): JC la abre en Android Studio y la sube a Play | yo (hecho #42) + JC (compilar y publicar) | código hecho |
 | Belvo como opción avanzada | Ya integrado en sandbox; activarlo en la hoja de "Agregar cuenta" con el aviso de que comparte credenciales | JC decide | pendiente |
 
 ## 3. Detalle por cargo (Amazon, Uber…)
@@ -62,11 +62,13 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 |---|---|---|
 | Catálogo con enlace directo, pasos y truco | 26 servicios en `merchants.json` | hecho (#28) |
 | Flujo en la app | "Ir directo a cancelar", aviso con el truco, pasos, "Ya la cancelé" | hecho (#28, #29) |
-| Vigilancia post-cancelación | Si el cargo regresa en 45 días → insight "Te siguen cobrando" con comprobante | siguiente |
+| Vigilancia post-cancelación | Si el cargo regresa en 45 días → insight "Te siguen cobrando" con comprobante | hecho (#31: insight `cargo_tras_cancelar` con el cargo y qué hacer) |
 | Cancelar por mí (llamada/chat) | Carta de cancelación en PDF (`domain/carta.ts` + `services/carta.ts` con pdf-lib, `/api/cancelacion/carta`) con fundamento LFPC arts. 7, 56 y 76 bis; se descarga desde "Solicitud recibida" y desde el drawer. Envío por correo al servicio: pendiente (necesita remitente) | hecho (#38) |
 | Enlaces vivos | bot `enlaces.yml` semanal | hecho |
 
 ## Lo que solo JC puede hacer
+
+0. Abrir `apps/android` en Android Studio, correrla en un teléfono con tu código de vinculación y, si funciona, subirla a Google Play (ver `apps/android/README.md`).
 
 0. GitHub → Settings → General → Default branch → `main` (un clic). Sin esto no corren los bots con horario.
 

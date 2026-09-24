@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono provisional: círculo verde de la paleta (#16A34A) con una M blanca. Cambiar por el icono definitivo antes de Play. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#16A34A" android:pathData="M54,54m-54,0a54,54 0,1 1,108 0a54,54 0,1 1,-108 0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M30,74V34h9l15,22 15,-22h9v40h-9V49L54,66 39,49v25z" />
+</vector>

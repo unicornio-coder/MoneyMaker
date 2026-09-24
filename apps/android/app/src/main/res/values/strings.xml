@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MoneyMaker</string>
+    <string name="servicio_label">MoneyMaker: cargos de tus apps bancarias</string>
+    <string name="titulo_vincular">Vincula tu teléfono</string>
+    <string name="explicacion">Pega el código que te da MoneyMaker en Ajustes → Cuentas conectadas → Vincular mi teléfono. Luego activa el permiso de notificaciones: solo leemos las de tus apps bancarias y nunca guardamos el texto.</string>
+    <string name="pista_token">mmd_…</string>
+    <string name="guardar">Guardar código</string>
+    <string name="permiso">Activar permiso de notificaciones</string>
+    <string name="abrir_app">Abrir MoneyMaker</string>
+    <string name="estado_sin_token">Falta el código de vinculación.</string>
+    <string name="estado_sin_permiso">Código guardado. Falta el permiso de notificaciones.</string>
+    <string name="estado_listo">Listo: los cargos de tus apps bancarias aparecen en MoneyMaker en segundos.</string>
+</resources>
