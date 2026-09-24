@@ -6,6 +6,7 @@ import { Search, ExternalLink, ListChecks, ChevronRight, Check, ShieldCheck, Che
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { COMERCIOS, type ComercioConocido } from '@/lib/domain/comercios';
+import { COMERCIOS_DESDE_CATALOGO } from '@/lib/domain/catalogo';
 import { normalizar } from '@/lib/domain/categorizar';
 import { costoMensual } from '@/lib/domain/recurrentes';
 import type { Recurrente } from '@/lib/domain/tipos';
@@ -16,6 +17,9 @@ import { marcarCancelada, solicitarCancelacion } from '@/app/app/fijos/acciones'
 
 type Servicio = { id: string; nombre: string; dominio: string | null; recurrente?: Recurrente; conocido?: ComercioConocido };
 type Paso = 'elegir' | 'detalle' | 'formulario' | 'listo';
+
+// El catálogo de Producto (enlace directo, pasos y truco) va antes que el diccionario interno.
+const CONOCIDOS = [...COMERCIOS_DESDE_CATALOGO, ...COMERCIOS];
 
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
 
@@ -34,7 +38,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
   const conocidos = useMemo(() => {
     const vistos = new Set(propias.map((p) => p.nombre.toLowerCase()));
     const unicos = new Map<string, ComercioConocido>();
-    for (const c of COMERCIOS) if (c.suscripcion && c.cancelarUrl && !vistos.has(c.nombre.toLowerCase()) && !unicos.has(c.nombre)) unicos.set(c.nombre, c);
+    for (const c of CONOCIDOS) if ((c.suscripcion || c.servicio) && c.cancelarUrl && !vistos.has(c.nombre.toLowerCase()) && !unicos.has(c.nombre)) unicos.set(c.nombre, c);
     return Array.from(unicos.values()).map((c) => ({ id: `c:${c.nombre}`, nombre: c.nombre, dominio: c.dominio, conocido: c }) as Servicio);
   }, [propias]);
   const s = q.trim().toLowerCase();
@@ -42,7 +46,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
   const listaConocidos = conocidos.filter((p) => !s || p.nombre.toLowerCase().includes(s)).slice(0, s ? 12 : 8);
 
   const r = sel?.recurrente;
-  const conocido = sel?.conocido ?? (r ? COMERCIOS.find((c) => normalizar(r.nombre).includes(c.patron)) : undefined);
+  const conocido = sel?.conocido ?? (r ? CONOCIDOS.find((c) => normalizar(r.nombre).includes(c.patron)) : undefined);
   const mensual = r ? (r.tipo === 'msi' ? r.monto : costoMensual(r)) : 0;
 
   const cerrar = () => {
