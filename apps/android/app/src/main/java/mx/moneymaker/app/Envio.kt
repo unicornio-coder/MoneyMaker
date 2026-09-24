@@ -58,7 +58,7 @@ class EnvioWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 when {
                     res.isSuccessful -> Result.success()
                     res.code == 401 -> Result.failure() // token revocado: no insistir
-                    res.code in 500..599 -> Result.retry()
+                    res.code == 408 || res.code == 429 || res.code in 500..599 -> Result.retry()
                     else -> Result.failure()
                 }
             }

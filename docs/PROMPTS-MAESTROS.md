@@ -63,6 +63,11 @@ Proyecto MoneyMaker: repo unicornio-coder/MoneyMaker, proyecto Vercel "money-mak
 Supabase "Money Maker", producción https://money-maker-tawny.vercel.app. Haz cada punto y dime el resultado.
 No escribas llaves ni tokens en el chat. No cambies código.
 
+0. Vercel → proyecto money-maker → Settings → Deployment Protection → "Vercel Authentication": cámbialo a
+   "Only Preview Deployments" (o desactívalo). Hoy está en "Standard Protection", que también protege el dominio
+   generado money-maker-tawny.vercel.app: cualquiera que no esté logueado en Vercel (tu teléfono, otro navegador,
+   los bots de salud) ve la pantalla de Vercel en lugar de la app. Después abre la app en una ventana de incógnito
+   y confirma que carga la landing "Tu dinero, claro." y el login solo con correo y contraseña.
 1. GitHub → Settings → General → Default branch → cámbiala a "main". Sin esto no corren los bots con horario.
 2. GitHub → Actions: corre a mano "Salud de producción", "Enlaces de cancelación" y "Logos" en main.
    Dime si terminan en verde y si abrieron issues.

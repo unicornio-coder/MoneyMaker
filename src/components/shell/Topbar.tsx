@@ -46,7 +46,7 @@ export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: stri
     <header className="sticky top-0 z-30 flex h-[54px] items-center gap-3 border-b border-edge bg-surface/95 px-4 backdrop-blur md:px-6">
       <h1 className="min-w-0 flex-1 truncate font-display text-[18.9px] font-bold tracking-[-0.4px] md:flex-none">{titulo}</h1>
       <div className="hidden flex-1 justify-center md:flex">
-        {CON_PERIODO.has(tab.href) && <ChipGroup value={periodo} onChange={setPeriodo} options={PERIODOS} size="sm" />}
+        {CON_PERIODO.has(tab.href) && <ChipGroup label="Periodo" value={periodo} onChange={setPeriodo} options={PERIODOS} size="sm" />}
       </div>
       <div className="flex items-center gap-1">
         <button type="button" onClick={() => setBuscar(true)} aria-label="Buscar (⌘K)" className="relative hidden h-9 w-[200px] items-center rounded-pill border border-line-2 bg-bg-page pl-9 pr-3 text-left text-[12.5px] text-txt-3 transition-colors hover:border-green dark:border-edge dark:bg-surface-2 lg:flex">

@@ -13,7 +13,7 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
-        // URL de producción; en desarrollo se puede cambiar desde la pantalla de la app.
+        // URL de producción; para apuntar a otro servidor cambia este valor (o llama a Config.guardarUrl).
         buildConfigField("String", "APP_URL", "\"https://money-maker-tawny.vercel.app\"")
     }
 

@@ -20,6 +20,7 @@ test.beforeAll(async ({ request }) => {
 
 for (const tema of ['claro', 'oscuro'] as const) {
   test(`sin violaciones serias en tema ${tema}`, async ({ page }) => {
+    test.setTimeout(240_000); // 12 rutas × 2 (compilación en frío en CI + axe)
     await page.addInitScript((t) => { try { localStorage.setItem('mm-theme', t); } catch {} }, tema === 'oscuro' ? 'dark' : 'light');
     // Sin animaciones: axe mide colores a media transición si no.
     await page.emulateMedia({ colorScheme: tema === 'oscuro' ? 'dark' : 'light', reducedMotion: 'reduce' });
@@ -27,7 +28,8 @@ for (const tema of ['claro', 'oscuro'] as const) {
     for (const ruta of RUTAS) {
       await page.goto(ruta, { waitUntil: 'networkidle' });
       await page.waitForTimeout(600);
-      const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']).exclude('.text-negative').analyze();
+      const axe = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']);
+      const res = await (tema === 'oscuro' ? axe.exclude('.text-negative') : axe).analyze();
       for (const v of res.violations) {
         if (v.impact === 'serious' || v.impact === 'critical') fallas.push(`${ruta} ${v.id} ×${v.nodes.length}: ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`);
       }
