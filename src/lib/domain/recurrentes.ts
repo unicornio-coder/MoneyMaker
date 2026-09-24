@@ -192,3 +192,19 @@ export function proximoCobro(r: Pick<Recurrente, 'diaCobro' | 'frecuencia' | 'ul
   while (f < new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())) f = new Date(f.getFullYear(), f.getMonth(), f.getDate() + paso);
   return f;
 }
+
+export type CobroProximo = { recurrente: Recurrente; fecha: string; monto: number };
+
+/** Cobros fijos de los próximos `dias` días (hoy incluido), ordenados por fecha. Para "esta semana se te vienen $X". */
+export function cobrosProximos(recurrentes: Recurrente[], hoy = new Date(), dias = 7): { lista: CobroProximo[]; total: number } {
+  const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  const fin = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + dias);
+  const lista: CobroProximo[] = [];
+  for (const r of recurrentes) {
+    if (!r.activo || r.canceladoAt) continue;
+    const f = proximoCobro(r, inicio);
+    if (f >= inicio && f < fin) lista.push({ recurrente: r, fecha: aISO(f), monto: r.monto });
+  }
+  lista.sort((a, b) => a.fecha.localeCompare(b.fecha) || b.monto - a.monto);
+  return { lista, total: lista.reduce((s, c) => s + c.monto, 0) };
+}

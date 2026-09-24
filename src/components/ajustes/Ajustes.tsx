@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { cerrarSesion } from '@/lib/auth/actions';
 import { actualizarPerfil, eliminarFuente, borrarCuenta } from '@/app/app/ajustes/acciones';
-import { guardarLlavesBitso, sincronizarConector, desconectarConector, generarTokenDispositivo, obtenerCorreoReenvio } from '@/app/app/ajustes/conectores';
+import { guardarLlavesBitso, sincronizarConector, desconectarConector, generarTokenDispositivo, obtenerCorreoReenvio, actualizarFuente } from '@/app/app/ajustes/conectores';
 import { Mail, Bitcoin, RefreshCw, Smartphone, Forward, Copy } from 'lucide-react';
 
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.1.0';
@@ -179,6 +179,9 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso }: { li
               <div className="text-[11px] text-txt-2 dark:text-fg-2">{l.proveedor === 'belvo' ? 'Belvo' : l.proveedor === 'import' ? 'Estado de cuenta' : l.proveedor === 'gmail' ? 'Gmail' : l.proveedor === 'outlook' ? 'Outlook' : l.proveedor === 'dispositivo' ? 'App Android' : l.proveedor === 'correo' ? 'Correo reenviado' : l.proveedor === 'bitso' ? 'Bitso' : 'Manual'}{l.ultimoSync ? ` · ${fechaCorta(l.ultimoSync)}` : ''}</div>
             </div>
             <span className={cn('rounded-pill px-2 py-0.5 text-[10.5px] font-bold', ESTADO[l.estado].cls)}>{ESTADO[l.estado].label}</span>
+            {(l.proveedor === 'belvo' || l.proveedor === 'manual') && l.externalId && (
+              <button type="button" aria-label={`Actualizar ${l.institucion}`} disabled={pendiente} onClick={() => start(async () => { const r = await actualizarFuente(l.id); setMsg(r.ok ? `${l.institucion}: ${r.insertados} movimientos nuevos.` : r.error); router.refresh(); })} className="flex h-8 w-8 items-center justify-center rounded-full text-txt-3 hover:bg-bg-muted"><RefreshCw size={15} className={cn(pendiente && 'animate-spin')} /></button>
+            )}
             <button type="button" aria-label="Eliminar" disabled={pendiente} onClick={() => confirm(`¿Eliminar la conexión con ${l.institucion}?`) && start(async () => { await eliminarFuente(l.id); router.refresh(); })} className="flex h-8 w-8 items-center justify-center rounded-full text-txt-3 hover:bg-bg-muted"><Trash2 size={15} /></button>
           </li>
         ))}

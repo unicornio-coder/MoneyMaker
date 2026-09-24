@@ -55,11 +55,10 @@ del tratamiento, consentimiento explícito al conectar (ya está en la hoja) y b
 
 ## 2. Roadmap (orden de construcción; cada bloque termina publicado y con E2E)
 
-### Bloque 1: Cuentas conectadas de verdad (días 1–2)
-- Encender "Conectar mi banco" (Belvo) en la hoja "Agregar cuenta" con buscador de bancos, estado del link
-  (conectada / requiere token / reconectar) y "Actualizar ahora". En sandbox desde ya; producción cuando pegues llaves.
-- Refresco automático diario y al abrir la app (cron ya existe) con reintentos y aviso si un banco se desconecta.
-- Inicio al estilo Rocket: **saldo neto** arriba (activos − deudas), gasto del periodo, **próximos 7 días de cobros**.
+### Bloque 1: Cuentas conectadas de verdad (días 1–2) — **hecho en código (#45)**; producción cuando JC pegue las llaves de Belvo
+- [x] "Conectar mi banco" (Belvo) encendido en la hoja "Agregar cuenta" con buscador de bancos; estado de cada conexión y "Actualizar ahora" en Ajustes; aviso en Inicio cuando un banco pide reconectar. En sandbox desde ya; producción cuando pegues llaves.
+- [x] Refresco diario (cron 12:00 UTC) y al abrir la app; estado `mfa`/`roto` visible con aviso para reconectar.
+- [x] Inicio al estilo Rocket: **saldo neto** arriba (cuentas − tarjetas), gasto del periodo, **próximos 7 días de cobros** con enlace al calendario.
 
 ### Bloque 2: Transacciones y recurrentes al 100 % (días 2–3)
 - Transacciones: editar categoría con regla "siempre así", notas, buscar por monto/fecha, exportar.

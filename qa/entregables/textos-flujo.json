@@ -10,11 +10,11 @@
       },
       "banco": {
         "titulo": "Conectar mi banco automáticamente",
-        "texto": "Próximamente"
+        "texto": "BBVA, Banorte, Santander, HSBC, Citibanamex y más, vía Belvo. Solo lectura."
       },
       "correo": {
         "titulo": "Reenviar por correo",
-        "texto": "Próximamente"
+        "texto": "Gmail, Outlook o reenvío: alertas y recibos del banco al instante."
       }
     }
   },

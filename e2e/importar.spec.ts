@@ -28,7 +28,11 @@ test('sube 3 estados de cuenta y llena todas las pantallas', async ({ page }, te
   // "Agregar" abre la hoja con las tres opciones; solo el PDF está activo.
   await page.getByRole('button', { name: 'Agregar', exact: true }).click();
   await expect(page.getByText('Subir estado de cuenta')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Conectar mi banco automáticamente/ })).toBeDisabled();
+  await page.getByRole('button', { name: /Conectar mi banco automáticamente/ }).click();
+  await expect(page.getByRole('dialog').getByText('Vincular banco')).toBeVisible();
+  await expect(page.getByRole('dialog').getByPlaceholder('Busca tu banco')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Agregar', exact: true }).click();
   await captura(page, '02-hoja-agregar-cuenta');
   await page.getByRole('button', { name: /Subir estado de cuenta/ }).click();
   await expect(page).toHaveURL(/\/app\/importar/);
