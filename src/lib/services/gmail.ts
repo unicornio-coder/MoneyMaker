@@ -2,19 +2,13 @@
 // Pide gmail.readonly, guarda el refresh token cifrado y lee solo correos de alerta de bancos conocidos.
 
 import type { Repo } from '@/lib/data/repo';
-import { infoBanco } from '@/lib/domain/comercios';
-import { ingerirMovimientos } from './ingest';
-import { parsearAlerta, type CorreoAlerta } from './gmail.parsers';
-import { parsearRecibo, pareceComercio, reciboDesdeLLM, REMITENTES_RECIBOS, type Recibo } from './recibos';
-import { extraerReciboConLLM } from './llm';
-import { aplicarRecibos } from './enriquecer';
+import type { CorreoAlerta } from './gmail.parsers';
+import { ingerirCorreos, limpiarHtml, REMITENTES } from './buzon';
 
 const AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN = 'https://oauth2.googleapis.com/token';
 const API = 'https://gmail.googleapis.com/gmail/v1/users/me';
 export const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/userinfo.email'];
-
-const REMITENTES = ['bbva.mx', 'bbva.com', 'americanexpress.com', 'nu.com.mx', 'banorte.com', 'santander.com.mx', 'hsbc.com.mx', 'banamex.com', 'scotiabank.com.mx'];
 
 export function gmailConfigurado() {
   return !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
@@ -53,7 +47,7 @@ type Parte = { mimeType?: string; body?: { data?: string }; parts?: Parte[] };
 function textoDe(payload: Parte): string {
   if (payload.body?.data && (payload.mimeType?.startsWith('text/plain') || !payload.parts)) {
     const raw = decodificarBase64Url(payload.body.data);
-    return payload.mimeType?.startsWith('text/html') ? raw.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&') : raw;
+    return payload.mimeType?.startsWith('text/html') ? limpiarHtml(raw) : raw;
   }
   for (const p of payload.parts ?? []) {
     const t = textoDe(p);
@@ -70,55 +64,22 @@ export async function sincronizarGmail(repo: Repo, userId: string, dias = 7): Pr
   try {
     const token = await accessToken(String(cred.datos.refresh_token));
     const procesados = new Set<string>((cred.datos.procesados as string[]) ?? []);
-    const q = `newer_than:${dias}d (${[...REMITENTES, ...REMITENTES_RECIBOS].map((d) => `from:${d}`).join(' OR ')})`;
+    const q = `newer_than:${dias}d (${REMITENTES.map((d) => `from:${d}`).join(' OR ')})`;
     const lista = await fetch(`${API}/messages?q=${encodeURIComponent(q)}&maxResults=200`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json() as Promise<{ messages?: { id: string }[] }>);
     const ids = (lista.messages ?? []).map((m) => m.id).filter((id) => !procesados.has(id));
 
-    const recibos: Recibo[] = [];
-    const porCuenta = new Map<string, { banco: string; tipoCuenta: 'credito' | 'debito'; ultimos4: string | null; movs: CorreoAlerta[]; parseados: ReturnType<typeof parsearAlerta>[] }>();
+    const correos: CorreoAlerta[] = [];
     for (const id of ids) {
       const msg = await fetch(`${API}/messages/${id}?format=full`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json() as Promise<{ payload: Parte & { headers: { name: string; value: string }[] }; internalDate: string }>);
       const h = (n: string) => msg.payload.headers.find((x) => x.name.toLowerCase() === n)?.value ?? '';
-      const correo: CorreoAlerta = { from: h('from'), subject: h('subject'), text: textoDe(msg.payload).slice(0, 4000), fecha: new Date(Number(msg.internalDate)).toISOString() };
+      correos.push({ from: h('from'), subject: h('subject'), text: textoDe(msg.payload).slice(0, 4000), fecha: new Date(Number(msg.internalDate)).toISOString() });
       procesados.add(id);
-      const recibo = parsearRecibo(correo);
-      if (recibo) {
-        recibos.push(recibo);
-        continue;
-      }
-      const p = parsearAlerta(correo);
-      if (!p) {
-        if (pareceComercio(correo.from)) {
-          const leido = await extraerReciboConLLM(correo);
-          const r2 = leido ? reciboDesdeLLM(leido, correo.fecha) : null;
-          if (r2) recibos.push(r2);
-        }
-        continue;
-      }
-      const k = `${p.banco}|${p.tipoCuenta}|${p.ultimos4 ?? ''}`;
-      const g = porCuenta.get(k) ?? { banco: p.banco, tipoCuenta: p.tipoCuenta, ultimos4: p.ultimos4, movs: [], parseados: [] };
-      g.parseados.push(p);
-      porCuenta.set(k, g);
     }
-
-    let insertados = 0;
-    const cuentas = await repo.cuentas(userId);
-    for (const g of porCuenta.values()) {
-      const info = infoBanco(g.banco);
-      let cuenta = cuentas.find((c) => c.banco === info.nombre && (!g.ultimos4 || c.ultimos4 === g.ultimos4)) ?? cuentas.find((c) => c.banco === info.nombre && c.tipo === g.tipoCuenta);
-      if (!cuenta) {
-        cuenta = await repo.guardarCuenta(userId, { linkId: link.id, externalId: `gmail:${info.nombre}:${g.ultimos4 ?? g.tipoCuenta}`, nombre: `${info.nombre} ${g.tipoCuenta === 'credito' ? 'Crédito' : 'Débito'}`, banco: info.nombre, bancoDominio: info.dominio || null, tipo: g.tipoCuenta, ultimos4: g.ultimos4, saldo: 0, color: info.color, activo: true });
-        cuentas.push(cuenta);
-      }
-      const r = await ingerirMovimientos(repo, userId, cuenta, g.parseados.map((p) => p!.movimiento), 'gmail');
-      insertados += r.insertados;
-    }
+    const r = await ingerirCorreos(repo, userId, link, correos, 'gmail');
 
     await repo.guardarCredencial(userId, { proveedor: 'gmail', etiqueta: cred.etiqueta, datos: { ...cred.datos, procesados: [...procesados].slice(-3000) } });
-    // Recibos (Amazon, Uber, Rappi, Mercado Libre…): se casan con los cargos y escriben el detalle.
-    const enriquecidos = await aplicarRecibos(repo, userId, recibos);
     await repo.guardarLink(userId, { ...link, estado: 'ok', ultimoSync: new Date().toISOString() });
-    return { ok: true, insertados, leidos: ids.length, enriquecidos: enriquecidos.casados };
+    return { ok: true, insertados: r.insertados, leidos: ids.length, enriquecidos: r.recibos };
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
     await repo.guardarLink(userId, { ...link, estado: /401|403|invalid_grant/.test(error) ? 'roto' : link.estado });

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { contexto } from '@/lib/data/contexto';
 import { conectarBitso, desconectarBitso, sincronizarBitso } from '@/lib/services/bitso';
 import { desconectarGmail, sincronizarGmail } from '@/lib/services/gmail';
+import { desconectarOutlook, sincronizarOutlook } from '@/lib/services/outlook';
 import { registrar } from '@/lib/services/analytics';
 import { aliasCorreo, crearTokenDispositivo, dominioCorreoEntrante } from '@/lib/services/entrada';
 
@@ -18,16 +19,17 @@ export async function guardarLlavesBitso(key: string, secret: string) {
   return r;
 }
 
-export async function sincronizarConector(proveedor: 'gmail' | 'bitso') {
+export async function sincronizarConector(proveedor: 'gmail' | 'outlook' | 'bitso') {
   const { usuario, repo } = await contexto();
-  const r = proveedor === 'gmail' ? await sincronizarGmail(repo, usuario.id, 30) : await sincronizarBitso(repo, usuario.id);
+  const r = proveedor === 'gmail' ? await sincronizarGmail(repo, usuario.id, 30) : proveedor === 'outlook' ? await sincronizarOutlook(repo, usuario.id, 30) : await sincronizarBitso(repo, usuario.id);
   rev();
   return r;
 }
 
-export async function desconectarConector(proveedor: 'gmail' | 'bitso') {
+export async function desconectarConector(proveedor: 'gmail' | 'outlook' | 'bitso') {
   const { usuario, repo } = await contexto();
   if (proveedor === 'gmail') await desconectarGmail(repo, usuario.id);
+  else if (proveedor === 'outlook') await desconectarOutlook(repo, usuario.id);
   else await desconectarBitso(repo, usuario.id);
   rev();
   return { ok: true as const };
