@@ -1,0 +1,71 @@
+# Plan de ejecución (24 sep 2026)
+
+Cada tarea dice qué se hace, cómo, quién lo ejecuta (yo desde Claude Code, un bot en GitHub Actions, o JC) y en qué estado va. Todo lo que dice "hecho" está en `main` y Vercel lo publica solo.
+
+## 0. Cómo llega un cambio a la página (automatizado)
+
+| Paso | Quién | Estado |
+|---|---|---|
+| Cambio en rama, PR a `main` con la etiqueta `publicar` | yo | hecho |
+| CI: lint, tipos, 126 pruebas, build, 8 E2E con capturas | bot `ci.yml` | hecho |
+| Fusión automática a `main` cuando todo está en verde | bot `ci.yml` → job `publicar` | hecho |
+| Deploy | Vercel desde `main` | hecho (Cowork confirmó la rama) |
+| Guardia: cada hora revisa `/api/health` y las pantallas públicas; abre y cierra un issue | bot `salud.yml` | hecho |
+| Logos: los baja y los sube a `main` (a pedido, lunes, y al cambiar catálogos) | bot `logos.yml` | hecho; primera corrida al fusionar #30 |
+| Enlaces de cancelación: prueba cada `url_cancelacion` cada semana y reporta rotos | bot `enlaces.yml` | hecho |
+| Dependencias: PR semanal agrupado | Dependabot | hecho |
+
+Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google, Brandfetch). Eso queda en la lista de JC al final.
+
+## 1. Landing, inicio de sesión y app (diseño)
+
+| Tarea | Cómo | Estado |
+|---|---|---|
+| Landing Apple × Stori | Una idea por pantalla, producto animado, escena de conexión, "cuánto te queda", suscripciones, detalle por cargo, seguridad, precio una vez | hecho (#27) |
+| Entrar / Crear cuenta mínimos | Correo + contraseña; Google secundario; sin frases de relleno | hecho (#27) |
+| Olvidé mi contraseña | `/recuperar` manda enlace (Supabase), `/restablecer` guarda | hecho (#27) |
+| Código por WhatsApp | Requiere WhatsApp Business API (Meta) y un proveedor (Twilio); se hace después de tener usuarios reales | pendiente (decisión de JC) |
+| Onboarding | 4 pasos, nombre real, panel de marca | hecho (#26) |
+| Importar con animación de conexión (Rocket Money) | `EscenaConexion` con banco al centro y movimientos en vivo | hecho (#28) |
+| App menos "IA": un solo CTA en Inicio, menos chips | hecho en Inicio (#28); siguiente: Gastos y Fijos con el mismo criterio | en curso |
+| Logos reales en producción | bot `logos.yml` | corre al fusionar #30 |
+
+## 2. Conectar todos los movimientos
+
+| Tarea | Cómo | Quién | Estado |
+|---|---|---|---|
+| PDF de estado de cuenta | Ya existe, asíncrono con etapas | — | hecho |
+| Alertas bancarias por correo | `gmail.parsers.ts` (BBVA, Amex, Nu, Banorte, Santander, HSBC, Banamex, Scotiabank) | — | hecho (falta que JC cree el OAuth de Google en producción) |
+| Recibos por correo (Amazon, Mercado Libre, Uber, DiDi, Rappi, Uber Eats) | `recibos.ts` + `enriquecer.ts` | yo | hecho (#31) |
+| Outlook / Hotmail | Microsoft Graph `Mail.Read` con el mismo parser | yo | siguiente |
+| Dirección de reenvío `tu-id@in.moneymaker.mx` | Dominio + Resend/Postmark inbound webhook → `/api/correo/entrante` | yo + JC (DNS) | siguiente |
+| Notificaciones en Android | App Capacitor con `NotificationListenerService`, lista blanca de apps bancarias, POST a `/api/notificaciones` con el mismo parser | yo (código) + JC (cuenta de Google Play) | después de correo |
+| Belvo como opción avanzada | Ya integrado en sandbox; activarlo en la hoja de "Agregar cuenta" con el aviso de que comparte credenciales | JC decide | pendiente |
+
+## 3. Detalle por cargo (Amazon, Uber…)
+
+| Tarea | Cómo | Estado |
+|---|---|---|
+| Parsers de recibos | Regex por comercio; total, artículos, MSI, entrega, origen/destino, restaurante | hecho |
+| Casamiento recibo ↔ cargo | Descriptor compatible + monto ±1 % + fecha ±3 días; el mejor gana; ≥ 0.6 | hecho |
+| Recibos que llegan antes que el cargo | Pendientes 45 días en la credencial; se casan al confirmar un PDF | hecho |
+| Mostrarlo | Segunda línea en historial, drawer y Gastos; bloque "Lo que compraste" en el detalle; ⌘K busca en el detalle | hecho |
+| Recibos sin parser | Claude lee el correo y devuelve el mismo JSON (salida estructurada) | siguiente |
+| Descriptor sin recibo | Limpieza con catálogo: "UBER *TRIP" → Uber · Viaje; "OXXO SUC 4521" → Oxxo · Sucursal 4521 | siguiente |
+
+## 4. Cancelar suscripciones
+
+| Tarea | Cómo | Estado |
+|---|---|---|
+| Catálogo con enlace directo, pasos y truco | 26 servicios en `merchants.json` | hecho (#28) |
+| Flujo en la app | "Ir directo a cancelar", aviso con el truco, pasos, "Ya la cancelé" | hecho (#28, #29) |
+| Vigilancia post-cancelación | Si el cargo regresa en 45 días → insight "Te siguen cobrando" con comprobante | siguiente |
+| Cancelar por mí (llamada/chat) | Carta de cancelación en PDF con fundamento LFPC art. 56 y 76 bis, enviada por correo al servicio con copia | siguiente |
+| Enlaces vivos | bot `enlaces.yml` semanal | hecho |
+
+## Lo que solo JC puede hacer
+
+1. Google Cloud: cliente OAuth con `gmail.readonly` y poner `GOOGLE_CLIENT_ID/SECRET` en Vercel (para alertas y recibos por correo).
+2. Brandfetch (opcional, mejores logos): client id gratuito en `BRANDFETCH_CLIENT_ID` como secreto del repo en GitHub.
+3. Decidir WhatsApp (código de acceso) y Belvo (opción avanzada).
+4. Para notificaciones Android: cuenta de Google Play Console (USD 25, una vez).
