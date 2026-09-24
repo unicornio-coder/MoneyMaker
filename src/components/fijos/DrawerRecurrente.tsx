@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, ExternalLink, Check, LifeBuoy, Trash2 } from 'lucide-react';
+import { Bell, ExternalLink, Check, LifeBuoy, Trash2, FileDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money, fechaCorta } from '@/lib/format';
 import { COMERCIOS } from '@/lib/domain/comercios';
@@ -14,7 +14,7 @@ import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { crearEvento, eliminarRecurrente, marcarCancelada, solicitarCancelacion } from '@/app/app/fijos/acciones';
-import { ModalCancelar } from './ModalCancelar';
+import { ModalCancelar, urlCarta } from './ModalCancelar';
 
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
 
@@ -80,6 +80,9 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
           <h3 className="font-display text-[20px] font-bold">Listo</h3>
           <p className="mt-1.5 text-[13px] text-white/70">{r.canceladoAt || pendiente ? `Dejamos de contar ${r.nombre}. Te avisamos si el cargo vuelve a aparecer.` : `Recibimos tu solicitud. Te escribimos en menos de 24 horas para cancelar ${r.nombre} por ti.`}</p>
           <p className="mt-3 font-display text-[16px] font-bold text-green-light">Ahorras {money(mensual * 12)} al año</p>
+          {!r.canceladoAt && (
+            <a href={urlCarta(r.id)} className="mx-auto mt-5 flex h-11 w-fit items-center gap-2 rounded-pill border border-white/25 px-4 text-[13px] font-semibold hover:bg-white/8"><FileDown size={16} /> Descargar carta de cancelación (PDF)</a>
+          )}
           <Button variant="white" className="mt-6" onClick={cerrar}>Cerrar</Button>
         </div>
       ) : modo === 'guiada' ? (

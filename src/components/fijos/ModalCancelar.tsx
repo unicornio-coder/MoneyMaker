@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ExternalLink, ListChecks, ChevronRight, Check, ShieldCheck, ChevronLeft, AlertTriangle, Phone } from 'lucide-react';
+import { Search, ExternalLink, ListChecks, ChevronRight, Check, ShieldCheck, ChevronLeft, AlertTriangle, Phone, FileDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { COMERCIOS, type ComercioConocido } from '@/lib/domain/comercios';
@@ -183,11 +183,21 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
             {modoListo === 'cancelada' ? `Dejamos de contar ${sel.nombre}. Si el cargo vuelve a aparecer te avisamos.` : `Te escribimos en menos de 24 horas para confirmar la cancelación de ${sel.nombre}.`}
           </p>
           {mensual > 0 && <p className="mt-4 font-display text-[18px] font-bold text-green">Ahorras {money(mensual * 12)} al año</p>}
+          {modoListo === 'porMi' && r && (
+            <a href={urlCarta(r.id, { nombre: form.nombre, correo: form.correo, ultimos4: form.ultimos4, notas: form.notas })} className="mx-auto mt-5 flex h-11 w-fit items-center gap-2 rounded-pill border border-line-2 px-4 text-[13px] font-semibold hover:bg-bg-hover dark:border-edge dark:hover:bg-surface-2"><FileDown size={16} /> Descargar carta de cancelación (PDF)</a>
+          )}
           <Button className="mt-6" onClick={cerrar}>Cerrar</Button>
         </div>
       )}
     </Panel>
   );
+}
+
+/** Carta formal con fundamento en la LFPC, lista para mandar al proveedor. Se genera al descargar; no se guarda. */
+export function urlCarta(recurrenteId: string, datos: { nombre?: string; correo?: string; ultimos4?: string; notas?: string } = {}): string {
+  const p = new URLSearchParams({ recurrente: recurrenteId });
+  for (const [k, v] of Object.entries(datos)) if (typeof v === 'string' && v.trim()) p.set(k, v.trim());
+  return `/api/cancelacion/carta?${p}`;
 }
 
 function aServicio(r: Recurrente): Servicio {

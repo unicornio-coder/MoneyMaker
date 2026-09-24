@@ -60,7 +60,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Catálogo con enlace directo, pasos y truco | 26 servicios en `merchants.json` | hecho (#28) |
 | Flujo en la app | "Ir directo a cancelar", aviso con el truco, pasos, "Ya la cancelé" | hecho (#28, #29) |
 | Vigilancia post-cancelación | Si el cargo regresa en 45 días → insight "Te siguen cobrando" con comprobante | siguiente |
-| Cancelar por mí (llamada/chat) | Carta de cancelación en PDF con fundamento LFPC art. 56 y 76 bis, enviada por correo al servicio con copia | siguiente |
+| Cancelar por mí (llamada/chat) | Carta de cancelación en PDF (`domain/carta.ts` + `services/carta.ts` con pdf-lib, `/api/cancelacion/carta`) con fundamento LFPC arts. 7, 56 y 76 bis; se descarga desde "Solicitud recibida" y desde el drawer. Envío por correo al servicio: pendiente (necesita remitente) | hecho (#38) |
 | Enlaces vivos | bot `enlaces.yml` semanal | hecho |
 
 ## Lo que solo JC puede hacer

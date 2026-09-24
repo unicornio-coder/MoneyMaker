@@ -97,4 +97,11 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
   await page.getByRole('dialog').getByRole('checkbox').check();
   await page.getByRole('dialog').getByRole('button', { name: 'Enviar solicitud' }).click();
   await expect(page.getByRole('dialog').getByRole('heading', { name: 'Solicitud recibida' })).toBeVisible();
+  // La carta de cancelación se descarga como PDF con los datos del formulario.
+  const carta = page.getByRole('dialog').getByRole('link', { name: /Descargar carta de cancelación/ });
+  await expect(carta).toHaveAttribute('href', /\/api\/cancelacion\/carta\?recurrente=.+&nombre=Juan\+Carlos&correo=jc%40billup\.mx/);
+  const pdf = await request.get((await carta.getAttribute('href'))!);
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()['content-type']).toBe('application/pdf');
+  expect(pdf.headers()['content-disposition']).toContain('cancelacion-spotify.pdf');
 });
