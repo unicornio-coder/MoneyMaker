@@ -8,7 +8,8 @@ import { infoBanco } from '@/lib/domain/comercios';
 import type { FuenteDato } from '@/lib/domain/tipos';
 import { ingerirMovimientos } from './ingest';
 import { parsearAlerta, type AlertaParseada, type CorreoAlerta } from './gmail.parsers';
-import { parsearRecibo } from './recibos';
+import { parsearRecibo, pareceComercio, reciboDesdeLLM } from './recibos';
+import { extraerReciboConLLM } from './llm';
 import { aplicarRecibos } from './enriquecer';
 
 /** Apps bancarias de Android → dominio del banco (para que el parser reconozca el remitente). */
@@ -66,7 +67,18 @@ export async function procesarEntrada(repo: Repo, userId: string, correo: Correo
     return { tipo: 'recibo', casados: r.casados };
   }
   const alerta = parsearAlerta(correo);
-  if (!alerta) return { tipo: 'ignorado', motivo: 'no es alerta ni recibo' };
+  if (!alerta) {
+    // Correo de un comercio sin parser: el modelo lo lee (si hay llave) y devuelve el mismo formato.
+    if (pareceComercio(correo.from)) {
+      const leido = await extraerReciboConLLM(correo);
+      const r2 = leido ? reciboDesdeLLM(leido, correo.fecha) : null;
+      if (r2) {
+        const r = await aplicarRecibos(repo, userId, [r2]);
+        return { tipo: 'recibo', casados: r.casados };
+      }
+    }
+    return { tipo: 'ignorado', motivo: 'no es alerta ni recibo' };
+  }
   const cuenta = await cuentaParaAlerta(repo, userId, alerta, fuente);
   const r = await ingerirMovimientos(repo, userId, cuenta, [alerta.movimiento], fuente);
   return { tipo: 'movimiento', insertados: r.insertados, duplicados: r.duplicados };

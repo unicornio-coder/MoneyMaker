@@ -4,6 +4,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
+import { z } from 'zod';
 import { ExtraccionSchema, type Extraccion } from './ingestion/esquema';
 import { ErrorImportacion } from './ingestion/tipos';
 
@@ -131,4 +132,47 @@ export async function extraerEstadoDeCuenta(entrada: EntradaLLM): Promise<{ extr
     ultimoError = parsed.error.issues.slice(0, 3).map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
   }
   throw new ErrorImportacion('servidor', `La lectura no devolvió un JSON válido dos veces (${ultimoError ?? 'sin detalle'})`);
+}
+
+// ---------- Recibos sin parser ----------
+
+const ReciboSchema = z.object({
+  esRecibo: z.boolean().describe('true si el correo es un recibo o confirmación de compra, viaje o pedido con un total pagado; false si es promoción, envío sin monto u otra cosa'),
+  comercio: z.string().nullable().describe('Nombre corto del comercio o app: Amazon, Uber, Rappi, Mercado Libre, DiDi, Walmart, Liverpool…; null si no se identifica'),
+  dominio: z.string().nullable().describe('Dominio principal del comercio (amazon.com.mx, uber.com); null si no lo sabes'),
+  total: z.number().nullable().describe('Total pagado en pesos mexicanos con dos decimales; null si no aparece'),
+  fecha: z.string().nullable().describe('Fecha de la compra o viaje en formato yyyy-mm-dd; null si no aparece'),
+  detalle: z.string().describe('Una línea de máximo 60 caracteres con lo esencial: artículo principal y MSI, o "origen → destino · minutos", o "restaurante · N artículos"'),
+  articulos: z.array(z.string()).describe('Artículos o platillos comprados, uno por elemento, sin precios; lista vacía si no aplica'),
+  origen: z.string().nullable().describe('Origen del viaje si es transporte; null si no'),
+  destino: z.string().nullable().describe('Destino del viaje si es transporte; null si no'),
+  msi: z.number().nullable().describe('Número de meses sin intereses si la compra fue a meses; null si no'),
+  descriptores: z.array(z.string()).describe('2 a 4 palabras en mayúsculas con las que ese comercio aparece en un estado de cuenta bancario mexicano, p. ej. ["AMAZON","AMZN"], ["UBER"], ["MERCADOPAGO","MELI"]'),
+});
+export type ReciboLLM = z.infer<typeof ReciboSchema>;
+
+const SISTEMA_RECIBO = `Lees correos de recibos y confirmaciones de compra de México (tiendas en línea, apps de transporte, comida a domicilio, servicios) y devuelves lo esencial estructurado. Nunca inventes datos: si un campo no aparece, devuelve null. El total es lo que se pagó, no el subtotal ni el envío por separado. El detalle es una sola línea, sin precios, en español.`;
+
+/** Lee un recibo que ningún parser reconoció. Devuelve null sin llave, si no es recibo o si el modelo falla. */
+export async function extraerReciboConLLM(correo: { from: string; subject: string; text: string }): Promise<ReciboLLM | null> {
+  const c = cliente();
+  if (!c) return null;
+  try {
+    const res = await c.messages
+      .stream({
+        model: MODELO,
+        max_tokens: 2000,
+        system: SISTEMA_RECIBO,
+        messages: [{ role: 'user', content: `Remitente: ${correo.from.slice(0, 120)}\nAsunto: ${correo.subject.slice(0, 200)}\n\n${correo.text.slice(0, 12_000)}` }],
+        output_config: { effort: 'low', format: zodOutputFormat(ReciboSchema) },
+      })
+      .finalMessage();
+    if (res.stop_reason !== 'end_turn') return null;
+    const parsed = ReciboSchema.safeParse(extraerJson<unknown>(textoDe(res)));
+    if (!parsed.success || !parsed.data.esRecibo || !parsed.data.total || !parsed.data.comercio) return null;
+    return parsed.data;
+  } catch (e) {
+    console.warn('[llm] recibo', e instanceof Error ? e.name : 'error');
+    return null;
+  }
 }
