@@ -14,6 +14,7 @@ export type EventoProducto =
   | 'wow_visto' // props: { excedente } — el usuario vio "puedes invertir $X"
   | 'suscripcion_cancelada' // props: { recurrenteId }
   | 'cancelar_por_mi' // props: { recurrenteId }
+  | 'carta_cancelacion' // props: { recurrenteId }
   | 'presupuesto_editado'
   | 'checkout_iniciado'
   | 'suscripcion_pagada'
