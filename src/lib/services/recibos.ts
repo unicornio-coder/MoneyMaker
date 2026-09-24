@@ -150,3 +150,25 @@ export function casarRecibo(recibo: Recibo, movimientos: Movimiento[]): { movimi
   }
   return mejor && mejor.puntuacion >= 0.6 ? mejor : null;
 }
+
+/** Convierte la lectura del modelo (correo sin parser) al mismo formato que los parsers. */
+export function reciboDesdeLLM(r: { comercio: string | null; dominio: string | null; total: number | null; fecha: string | null; detalle: string; articulos: string[]; origen: string | null; destino: string | null; msi: number | null; descriptores: string[] }, fechaCorreo: string): Recibo | null {
+  if (!r.comercio || !r.total) return null;
+  const descriptores = r.descriptores.map((d) => d.toUpperCase().trim()).filter((d) => d.length >= 3);
+  if (!descriptores.length) descriptores.push(r.comercio.toUpperCase());
+  return {
+    comercio: r.comercio,
+    dominio: r.dominio ?? '',
+    total: Math.round(r.total * 100) / 100,
+    fecha: r.fecha && /^\d{4}-\d{2}-\d{2}$/.test(r.fecha) ? r.fecha : fechaCorreo.slice(0, 10),
+    detalle: r.detalle.slice(0, 80) || r.comercio,
+    articulos: r.articulos.slice(0, 10),
+    meta: { origen: r.origen ?? undefined, destino: r.destino ?? undefined, msi: r.msi ?? undefined },
+    descriptores,
+  };
+}
+
+/** Remitentes que nunca son recibos (bancos): no vale la pena mandarlos al modelo. */
+export function pareceComercio(from: string): boolean {
+  return !/bbva|americanexpress|banorte|santander|hsbc|banamex|scotiabank|nu\.com|klar|storicard|heybanco|mercadopago\.com\.mx.*alerta/i.test(from);
+}

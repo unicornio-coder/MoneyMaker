@@ -27,7 +27,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Código por WhatsApp | Requiere WhatsApp Business API (Meta) y un proveedor (Twilio); se hace después de tener usuarios reales | pendiente (decisión de JC) |
 | Onboarding | 4 pasos, nombre real, panel de marca | hecho (#26) |
 | Importar con animación de conexión (Rocket Money) | `EscenaConexion` con banco al centro y movimientos en vivo | hecho (#28) |
-| App menos "IA": un solo CTA en Inicio, menos chips | hecho en Inicio (#28); siguiente: Gastos y Fijos con el mismo criterio | en curso |
+| App menos "IA": un solo CTA por bloque, menos chips | Inicio (#28); Gastos y Fijos (#36): sin chips de periodo duplicados en la barra, efectivo plegado, una cifra con una línea de contexto, sin dona ni variaciones por tarjeta, Fijos con un solo bloque arriba | hecho |
 | Logos reales en producción | bot `logos.yml` | corre al fusionar #30 |
 
 ## 2. Conectar todos los movimientos
@@ -50,7 +50,7 @@ Lo único que no puede hacer un bot: llaves y accesos (Vercel, Supabase, Google,
 | Casamiento recibo ↔ cargo | Descriptor compatible + monto ±1 % + fecha ±3 días; el mejor gana; ≥ 0.6 | hecho |
 | Recibos que llegan antes que el cargo | Pendientes 45 días en la credencial; se casan al confirmar un PDF | hecho |
 | Mostrarlo | Segunda línea en historial, drawer y Gastos; bloque "Lo que compraste" en el detalle; ⌘K busca en el detalle | hecho |
-| Recibos sin parser | Claude lee el correo y devuelve el mismo JSON (salida estructurada) | siguiente |
+| Recibos sin parser | `extraerReciboConLLM` (Claude, salida estructurada, effort low) en Gmail, correo reenviado y notificaciones; solo remitentes que no son banco; sin llave se ignora | hecho |
 | Descriptor sin recibo | `detalleBasico`: "UBER *TRIP" → Viaje; "OXXO SUC 4521" → Sucursal 4521; "AMZN MKTP" → Compra en línea; "MERCADOPAGO*X" → Pago a X | hecho |
 
 ## 4. Cancelar suscripciones

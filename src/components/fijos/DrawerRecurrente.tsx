@@ -102,12 +102,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
       ) : modo === 'porMi' ? (
         <div className="space-y-4 pb-4">
           <h3 className="font-display text-[18px] font-bold">Cancelamos {r.nombre} por ti</h3>
-          <p className="text-[13px] text-white/80">Nuestro equipo se encarga: te pedimos una carta de autorización firmada desde la app y hablamos con el proveedor. Aplica para servicios que no se cancelan en línea (telefonía, internet, gimnasios, seguros).</p>
-          <ul className="space-y-1.5 text-[12.5px] text-white/70">
-            <li>· Te confirmamos por correo en menos de 24 horas.</li>
-            <li>· Sin costo extra: está incluido en tu plan.</li>
-            <li>· Si el proveedor exige que llames tú, te damos el guion exacto.</li>
-          </ul>
+          <p className="text-[13px] text-white/80">Hablamos con el proveedor con una carta de autorización que firmas desde la app. Te confirmamos por correo en menos de 24 horas. Está incluido en tu plan.</p>
           <Button variant="white" size="lg" full disabled={pendiente} onClick={porMi}>{pendiente ? 'Enviando…' : 'Solicitar cancelación'}</Button>
           <button type="button" onClick={() => setModo('guiada')} className="w-full text-center text-[12px] text-white/60">Volver</button>
         </div>

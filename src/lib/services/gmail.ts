@@ -5,7 +5,8 @@ import type { Repo } from '@/lib/data/repo';
 import { infoBanco } from '@/lib/domain/comercios';
 import { ingerirMovimientos } from './ingest';
 import { parsearAlerta, type CorreoAlerta } from './gmail.parsers';
-import { parsearRecibo, REMITENTES_RECIBOS, type Recibo } from './recibos';
+import { parsearRecibo, pareceComercio, reciboDesdeLLM, REMITENTES_RECIBOS, type Recibo } from './recibos';
+import { extraerReciboConLLM } from './llm';
 import { aplicarRecibos } from './enriquecer';
 
 const AUTH = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -86,7 +87,14 @@ export async function sincronizarGmail(repo: Repo, userId: string, dias = 7): Pr
         continue;
       }
       const p = parsearAlerta(correo);
-      if (!p) continue;
+      if (!p) {
+        if (pareceComercio(correo.from)) {
+          const leido = await extraerReciboConLLM(correo);
+          const r2 = leido ? reciboDesdeLLM(leido, correo.fecha) : null;
+          if (r2) recibos.push(r2);
+        }
+        continue;
+      }
       const k = `${p.banco}|${p.tipoCuenta}|${p.ultimos4 ?? ''}`;
       const g = porCuenta.get(k) ?? { banco: p.banco, tipoCuenta: p.tipoCuenta, ultimos4: p.ultimos4, movs: [], parseados: [] };
       g.parseados.push(p);

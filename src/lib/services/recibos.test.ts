@@ -50,3 +50,14 @@ describe('casarRecibo', () => {
     expect(casarRecibo(recibo, [mov('x', 'AMAZON MX', 999, '2026-09-10'), mov('y', 'AMAZON MX', 1299, '2026-09-10', 'ingreso')])).toBeNull();
   });
 });
+
+describe('reciboDesdeLLM', () => {
+  it('convierte la lectura del modelo al formato de los parsers y descarta lo incompleto', async () => {
+    const { reciboDesdeLLM, pareceComercio } = await import('./recibos');
+    const r = reciboDesdeLLM({ comercio: 'Liverpool', dominio: 'liverpool.com.mx', total: 2499.9, fecha: '2026-09-12', detalle: 'Tenis Nike Air · 6 MSI', articulos: ['Tenis Nike Air'], origen: null, destino: null, msi: 6, descriptores: ['LIVERPOOL', 'LPOOL'] }, '2026-09-13T10:00:00.000Z');
+    expect(r).toMatchObject({ comercio: 'Liverpool', total: 2499.9, fecha: '2026-09-12', detalle: 'Tenis Nike Air · 6 MSI', descriptores: ['LIVERPOOL', 'LPOOL'], meta: { msi: 6 } });
+    expect(reciboDesdeLLM({ comercio: null, dominio: null, total: 10, fecha: null, detalle: '', articulos: [], origen: null, destino: null, msi: null, descriptores: [] }, '2026-09-13T10:00:00.000Z')).toBeNull();
+    expect(pareceComercio('alertas@bbva.mx')).toBe(false);
+    expect(pareceComercio('ventas@liverpool.com.mx')).toBe(true);
+  });
+});

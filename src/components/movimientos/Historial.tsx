@@ -5,18 +5,17 @@ import { Search } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { detalleBasico } from '@/lib/domain/categorizar';
 import { fechaRelativa } from '@/lib/format';
-import { deISO, sumarDias, aISO } from '@/lib/domain/fechas';
+import { deISO } from '@/lib/domain/fechas';
 import { categoria, etiquetaTipo } from '@/lib/domain/categorias';
 import type { Cuenta, Movimiento } from '@/lib/domain/tipos';
 import { Chip } from '@/components/ui/Chip';
 import { Avatar } from '@/components/ui/Avatar';
 import { Money } from '@/components/ui/Money';
 
-type Filtro = 'todos' | 'hoy' | '2dias' | 'ingresos' | 'pagos';
+type Filtro = 'todos' | 'hoy' | 'ingresos' | 'pagos';
 const FILTROS: { value: Filtro; label: string }[] = [
   { value: 'todos', label: 'Todos' },
   { value: 'hoy', label: 'Hoy' },
-  { value: '2dias', label: 'Últimos 2 días' },
   { value: 'ingresos', label: 'Ingresos' },
   { value: 'pagos', label: 'Pagos' },
 ];
@@ -32,11 +31,9 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
 
   const lista = useMemo(() => {
     const h = deISO(hoy);
-    const ayer = aISO(sumarDias(h, -1));
     const q = busqueda.trim().toLowerCase();
     return movimientos.filter((m) => {
       if (filtro === 'hoy' && m.fecha !== hoy) return false;
-      if (filtro === '2dias' && m.fecha !== hoy && m.fecha !== ayer) return false;
       if (filtro === 'ingresos' && m.tipo !== 'ingreso') return false;
       if (filtro === 'pagos' && m.tipo !== 'pago_tarjeta') return false;
       if (q && !`${m.comercio} ${m.descripcionRaw} ${m.detalle ?? ''} ${categoria(m.categoriaId).nombre}`.toLowerCase().includes(q)) return false;
