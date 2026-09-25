@@ -13,7 +13,8 @@ import type { Recurrente } from '@/lib/domain/tipos';
 import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { marcarCancelada, solicitarCancelacion } from '@/app/app/fijos/acciones';
+import { marcarCancelada, solicitarCancelacion, type ResultadoSolicitud } from '@/app/app/fijos/acciones';
+import { fechaCorta } from '@/lib/format';
 
 type Servicio = { id: string; nombre: string; dominio: string | null; recurrente?: Recurrente; conocido?: ComercioConocido };
 type Paso = 'elegir' | 'detalle' | 'formulario' | 'listo';
@@ -29,7 +30,8 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
   const [q, setQ] = useState('');
   const [paso, setPaso] = useState<Paso>(inicial ? 'detalle' : 'elegir');
   const [sel, setSel] = useState<Servicio | null>(inicial ? aServicio(inicial) : null);
-  const [form, setForm] = useState({ nombre: '', correo: '', ultimos4: '', notas: '', autorizo: false });
+  const [form, setForm] = useState({ nombre: '', correo: '', ultimos4: '', correoProveedor: '', notas: '', autorizo: false });
+  const [envio, setEnvio] = useState<Extract<ResultadoSolicitud, { ok: true }> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modoListo, setModoListo] = useState<'porMi' | 'cancelada'>('porMi');
   const [pendiente, start] = useTransition();
@@ -69,8 +71,8 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
     if (!form.autorizo) return setError('Necesitamos tu autorización para hablar con el proveedor en tu nombre.');
     const notas = [`Nombre en la cuenta: ${form.nombre.trim()}`, `Correo de la cuenta: ${form.correo.trim()}`, form.ultimos4 ? `Tarjeta termina en: ${form.ultimos4}` : null, form.notas.trim() ? `Notas: ${form.notas.trim()}` : null].filter(Boolean).join('\n');
     start(async () => {
-      const res = await solicitarCancelacion(r.id, notas);
-      if (res.ok) { setModoListo('porMi'); setPaso('listo'); router.refresh(); } else setError(res.error);
+      const res = await solicitarCancelacion(r.id, notas, { nombre: form.nombre, correo: form.correo, ultimos4: form.ultimos4 || null, correoProveedor: form.correoProveedor || null });
+      if (res.ok) { setEnvio(res); setModoListo('porMi'); setPaso('listo'); router.refresh(); } else setError(res.error);
     });
   };
 
@@ -161,26 +163,33 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
           <Campo label="Nombre en la cuenta" value={form.nombre} onChange={(v) => setForm({ ...form, nombre: v })} placeholder="Como aparece en el servicio" />
           <Campo label="Correo de la cuenta" value={form.correo} onChange={(v) => setForm({ ...form, correo: v })} placeholder="tu@correo.com" type="email" />
           <Campo label="Últimos 4 dígitos de la tarjeta (opcional)" value={form.ultimos4} onChange={(v) => setForm({ ...form, ultimos4: v.replace(/\D/g, '').slice(0, 4) })} placeholder="1234" inputMode="numeric" />
+          <Campo label="Correo de atención del servicio (si lo tienes)" value={form.correoProveedor} onChange={(v) => setForm({ ...form, correoProveedor: v })} placeholder="cancelaciones@servicio.com" type="email" />
           <label className="block">
             <span className="mb-1 block text-[12px] font-semibold text-txt-2 dark:text-fg-2">Notas (opcional)</span>
             <textarea value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} rows={3} placeholder="Algo que debamos saber: plan, fecha de corte, si ya intentaste cancelar…" className="input resize-none text-[13.5px]" />
           </label>
           <label className="flex items-start gap-3 rounded-card bg-bg-muted p-3.5 text-[12.5px] leading-relaxed dark:bg-surface-2">
             <input type="checkbox" checked={form.autorizo} onChange={(e) => setForm({ ...form, autorizo: e.target.checked })} className="mt-0.5 h-4 w-4 flex-none accent-green" />
-            <span>Autorizo a MoneyMaker a contactar a {sel.nombre} en mi nombre para cancelar esta suscripción. Entiendo que no se comparten contraseñas y que puedo retirar la solicitud cuando quiera.</span>
+            <span>Autorizo a MoneyMaker a enviar en mi nombre la carta de cancelación a {sel.nombre}. No se comparten contraseñas y puedo retirar la solicitud cuando quiera.</span>
           </label>
           {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
           <Button variant="green" size="lg" full disabled={pendiente} onClick={enviar}>{pendiente ? 'Enviando…' : 'Enviar solicitud'}</Button>
-          <p className="flex items-center justify-center gap-1.5 text-[11px] text-txt-3"><ShieldCheck size={13} /> Sin costo extra. Incluido en tu plan.</p>
+          <p className="flex items-center justify-center gap-1.5 text-[11px] text-txt-3"><ShieldCheck size={13} /> La carta sale al instante, con copia a tu correo. Sin costo extra.</p>
         </div>
       )}
 
       {paso === 'listo' && sel && (
         <div className="py-8 text-center">
           <span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green text-white animate-pop"><Check size={32} strokeWidth={3} /></span>
-          <h3 className="font-display text-[22px] font-bold tracking-[-0.5px]">{modoListo === 'cancelada' ? 'Listo' : 'Solicitud recibida'}</h3>
+          <h3 className="font-display text-[22px] font-bold tracking-[-0.5px]">{modoListo === 'cancelada' ? 'Listo' : envio?.enviadoA === 'proveedor' ? 'Carta enviada' : 'Solicitud recibida'}</h3>
           <p className="mx-auto mt-1.5 max-w-[340px] text-[13px] text-txt-2 dark:text-fg-2">
-            {modoListo === 'cancelada' ? `Dejamos de contar ${sel.nombre}. Si el cargo vuelve a aparecer te avisamos.` : `Te escribimos en menos de 24 horas para confirmar la cancelación de ${sel.nombre}.`}
+            {modoListo === 'cancelada'
+              ? `Dejamos de contar ${sel.nombre}. Si el cargo vuelve a aparecer te avisamos.`
+              : envio?.enviadoA === 'proveedor'
+                ? `Enviamos tu carta a ${sel.nombre} con copia a tu correo. El ${fechaCorta(envio.seguimiento)} te preguntamos si ya se confirmó y vigilamos que no vuelvan a cobrar.`
+                : envio?.enviadoA === 'usuario'
+                  ? `Te mandamos la carta a tu correo, lista para reenviar a ${sel.nombre}. El ${fechaCorta(envio.seguimiento)} te preguntamos si ya se confirmó.`
+                  : `Tu carta está lista: descárgala abajo y mándala a ${sel.nombre}. ${envio ? `El ${fechaCorta(envio.seguimiento)} te preguntamos si ya se confirmó.` : ''}`}
           </p>
           {mensual > 0 && <p className="mt-4 font-display text-[18px] font-bold text-green-dark dark:text-green-light">Ahorras {money(mensual * 12)} al año</p>}
           {modoListo === 'porMi' && r && (

@@ -13,7 +13,7 @@ type EstadoUsuario = {
   movimientos: Movimiento[];
   correcciones: Correccion[];
   recurrentes: Recurrente[];
-  cancelaciones: { id: string; recurrenteId: string; notas?: string }[];
+  cancelaciones: { id: string; recurrenteId: string; notas?: string; tipo?: string; enviadoA?: string | null; seguimiento?: string | null; precioActual?: number | null; estado?: string; nuevoPrecio?: number | null; ahorroAnual?: number | null; comision?: number | null }[];
   presupuestos: Presupuesto[];
   activos: Activo[];
   pasivos: Pasivo[];
@@ -193,11 +193,15 @@ export const repoMemoria: Repo = {
     const e = estadoDe(userId);
     e.recurrentes = e.recurrentes.filter((r) => r.id !== id);
   },
-  async crearSolicitudCancelacion(userId, recurrenteId, notas) {
+  async crearSolicitudCancelacion(userId, recurrenteId, notas, extra) {
     const e = estadoDe(userId);
-    const s = { id: nuevoId(), recurrenteId, notas };
+    const s = { id: nuevoId(), recurrenteId, notas, tipo: extra?.tipo ?? 'cancelacion', enviadoA: extra?.enviadoA ?? null, seguimiento: extra?.seguimiento ?? null, precioActual: extra?.precioActual ?? null, estado: 'pendiente' };
     e.cancelaciones.push(s);
     return { id: s.id };
+  },
+  async actualizarSolicitud(userId, id, c) {
+    const s = estadoDe(userId).cancelaciones.find((x) => x.id === id);
+    if (s) Object.assign(s, c);
   },
 
   async presupuesto(userId, periodo, inicio) {

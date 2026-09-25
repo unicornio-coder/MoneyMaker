@@ -16,7 +16,7 @@ export function GET() {
       version: process.env.NEXT_PUBLIC_APP_VERSION ?? null,
       build: (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7) || null,
       modo: MODO_MOCK ? 'mock' : 'supabase',
-      integraciones: { modelo: hayLLM(), stripe: !!process.env.STRIPE_SECRET_KEY, belvo: !!process.env.BELVO_SECRET_ID, gmail: !!process.env.GOOGLE_CLIENT_ID, outlook: !!process.env.MS_CLIENT_ID },
+      integraciones: { modelo: hayLLM(), stripe: !!process.env.STRIPE_SECRET_KEY, belvo: !!process.env.BELVO_SECRET_ID, gmail: !!process.env.GOOGLE_CLIENT_ID, outlook: !!process.env.MS_CLIENT_ID, correo: !!process.env.RESEND_API_KEY },
       hora: new Date().toISOString(),
     },
     { headers: { 'cache-control': 'no-store' } },

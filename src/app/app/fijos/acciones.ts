@@ -7,6 +7,11 @@ import type { Frecuencia, TipoRecurrente } from '@/lib/domain/tipos';
 import { COMERCIOS } from '@/lib/domain/comercios';
 import { normalizar } from '@/lib/domain/categorizar';
 import { registrar } from '@/lib/services/analytics';
+import { aISO, sumarDias } from '@/lib/domain/fechas';
+import { costoMensual } from '@/lib/domain/recurrentes';
+import { cartaNegociacion, guionNegociacion, resultadoNegociacion } from '@/lib/domain/carta';
+import { generarCartaPdf, generarPdfCarta } from '@/lib/services/carta';
+import { enviarCorreo } from '@/lib/services/correo';
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -53,14 +58,85 @@ export async function marcarCancelada(recurrenteId: string): Promise<R> {
   return { ok: true };
 }
 
-/** "Cancelar por mí": abre un ticket para el equipo. */
-export async function solicitarCancelacion(recurrenteId: string, notas?: string): Promise<R> {
-  const { usuario, repo } = await contexto();
+export type DatosCancelacion = { nombre: string; correo: string; ultimos4?: string | null; correoProveedor?: string | null };
+export type ResultadoSolicitud = { ok: true; id: string; enviadoA: 'proveedor' | 'usuario' | null; seguimiento: string } | { ok: false; error: string };
+
+/**
+ * "Cancelar por mí", sin humanos: genera la carta, la manda por correo (al proveedor con copia al usuario si hay
+ * correo del proveedor; si no, al usuario para que la reenvíe) y agenda el seguimiento a 10 días. Sin Resend, la
+ * carta queda para descargar y el seguimiento se agenda igual.
+ */
+export async function solicitarCancelacion(recurrenteId: string, notas?: string, datos?: DatosCancelacion): Promise<ResultadoSolicitud> {
+  const { usuario, repo, perfil } = await contexto();
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos la suscripción.' };
-  const t = await repo.crearSolicitudCancelacion(usuario.id, recurrenteId, notas);
-  await registrar(repo, usuario.id, 'cancelar_por_mi', { recurrenteId, nombre: r.nombre });
-  return { ok: true, id: t.id };
+  const hoy = hoyMX();
+  const seguimiento = aISO(sumarDias(hoy, 10));
+  const titular = datos?.nombre?.trim() || perfil.nombre?.trim() || usuario.nombre;
+  const correoUsuario = datos?.correo?.trim() || usuario.email;
+  const proveedor = datos?.correoProveedor?.trim() || null;
+  const pdf = await generarCartaPdf({ servicio: r.nombre, titular, correo: correoUsuario, ultimos4: datos?.ultimos4 ?? null, montoMensual: r.tipo === 'msi' ? r.monto : costoMensual(r), fecha: aISO(hoy), notas: notas ?? null });
+  const adjunto = { nombre: `cancelacion-${r.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`, contenido: pdf };
+  let enviadoA: 'proveedor' | 'usuario' | null = null;
+  if (proveedor && correoUsuario) {
+    const env = await enviarCorreo({ para: proveedor, cc: correoUsuario, responderA: correoUsuario, asunto: `Solicitud de cancelación de ${r.nombre}`, texto: `Adjunto mi solicitud formal de cancelación del servicio ${r.nombre}. Solicito confirmación por escrito a este correo en un plazo no mayor a diez días hábiles.\n\n${titular}`, adjuntos: [adjunto] });
+    if (env.ok) enviadoA = 'proveedor';
+  }
+  if (!enviadoA && correoUsuario) {
+    const env = await enviarCorreo({ para: correoUsuario, asunto: `Tu carta para cancelar ${r.nombre}`, texto: `Aquí va tu carta de cancelación de ${r.nombre} lista para enviar. Reenvíala al correo o chat de atención del servicio y guarda su respuesta. El ${seguimiento} te preguntamos si ya se confirmó.\n\nMoneyMaker`, adjuntos: [adjunto] });
+    if (env.ok) enviadoA = 'usuario';
+  }
+  const t = await repo.crearSolicitudCancelacion(usuario.id, recurrenteId, notas, { tipo: 'cancelacion', enviadoA: enviadoA === 'proveedor' ? proveedor : enviadoA === 'usuario' ? correoUsuario : null, seguimiento });
+  await repo.guardarEvento(usuario.id, { fecha: seguimiento, nombre: `Confirmar que ${r.nombre} ya no cobra`, monto: null, tipo: 'recordatorio', recurrenteId: r.id });
+  await registrar(repo, usuario.id, 'cancelar_por_mi', { recurrenteId, nombre: r.nombre, enviadoA });
+  revalidar();
+  return { ok: true, id: t.id, enviadoA, seguimiento };
+}
+
+export type DatosNegociar = { precioActual: number; ofertaProveedor?: string | null; ofertaPrecio?: number | null; correoProveedor?: string | null; numeroCuenta?: string | null; nombre?: string | null };
+
+/** "Negociar mi tarifa": carta + guion por correo (al proveedor con copia, o al usuario) y solicitud tipo negociación. */
+export async function solicitarNegociacion(recurrenteId: string, datos: DatosNegociar): Promise<ResultadoSolicitud & { guion?: string[] }> {
+  const { usuario, repo, perfil } = await contexto();
+  const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
+  if (!r) return { ok: false, error: 'No encontramos el servicio.' };
+  if (!(datos.precioActual > 0)) return { ok: false, error: 'Escribe cuánto pagas hoy.' };
+  const hoy = hoyMX();
+  const seguimiento = aISO(sumarDias(hoy, 10));
+  const titular = datos.nombre?.trim() || perfil.nombre?.trim() || usuario.nombre;
+  const oferta = datos.ofertaProveedor?.trim() && datos.ofertaPrecio && datos.ofertaPrecio > 0 ? { proveedor: datos.ofertaProveedor.trim(), precio: datos.ofertaPrecio } : null;
+  const base = { servicio: r.nombre, titular, correo: usuario.email || null, numeroCuenta: datos.numeroCuenta?.trim() || null, precioActual: datos.precioActual, ofertaCompetencia: oferta, antiguedadMeses: r.veces || null, fecha: aISO(hoy) };
+  const guion = guionNegociacion(base);
+  const pdf = await generarPdfCarta(cartaNegociacion(base));
+  const adjunto = { nombre: `negociacion-${r.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`, contenido: pdf };
+  const proveedor = datos.correoProveedor?.trim() || null;
+  let enviadoA: 'proveedor' | 'usuario' | null = null;
+  if (proveedor && usuario.email) {
+    const env = await enviarCorreo({ para: proveedor, cc: usuario.email, responderA: usuario.email, asunto: `Solicitud de mejor tarifa: ${r.nombre}`, texto: `Adjunto mi solicitud para revisar la tarifa de ${r.nombre}. Pido respuesta por escrito en un plazo no mayor a diez días hábiles.\n\n${titular}`, adjuntos: [adjunto] });
+    if (env.ok) enviadoA = 'proveedor';
+  }
+  if (!enviadoA && usuario.email) {
+    const env = await enviarCorreo({ para: usuario.email, asunto: `Tu carta y guion para negociar ${r.nombre}`, texto: `Carta adjunta y guion para la llamada o el chat:\n\n${guion.map((g, i) => `${i + 1}. ${g}`).join('\n')}\n\nCuando te den el nuevo precio, anótalo en MoneyMaker para ver tu ahorro.`, adjuntos: [adjunto] });
+    if (env.ok) enviadoA = 'usuario';
+  }
+  const t = await repo.crearSolicitudCancelacion(usuario.id, recurrenteId, oferta ? `Oferta: ${oferta.proveedor} ${oferta.precio}` : undefined, { tipo: 'negociacion', enviadoA: enviadoA === 'proveedor' ? proveedor : enviadoA === 'usuario' ? usuario.email : null, seguimiento, precioActual: datos.precioActual });
+  await repo.guardarEvento(usuario.id, { fecha: seguimiento, nombre: `¿${r.nombre} ya respondió a tu tarifa?`, monto: null, tipo: 'recordatorio', recurrenteId: r.id });
+  await registrar(repo, usuario.id, 'negociar_por_mi', { recurrenteId, nombre: r.nombre, enviadoA });
+  revalidar();
+  return { ok: true, id: t.id, enviadoA, seguimiento, guion };
+}
+
+/** El usuario anota el nuevo precio: ahorro anual y comisión del 25 % sobre el ahorro del primer año. */
+export async function registrarNegociacion(solicitudId: string, recurrenteId: string, precioActual: number, nuevoPrecio: number): Promise<{ ok: true; ahorroAnual: number; comision: number } | { ok: false; error: string }> {
+  const { usuario, repo } = await contexto();
+  if (!(nuevoPrecio >= 0) || !(precioActual > 0)) return { ok: false, error: 'Escribe el nuevo precio.' };
+  const res = resultadoNegociacion(precioActual, nuevoPrecio);
+  await repo.actualizarSolicitud(usuario.id, solicitudId, { estado: res.ahorroAnual > 0 ? 'cancelada' : 'no_posible', nuevoPrecio, ahorroAnual: res.ahorroAnual, comision: res.comision });
+  const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
+  if (r && nuevoPrecio > 0 && nuevoPrecio !== r.monto) await repo.guardarRecurrente(usuario.id, { ...r, monto: nuevoPrecio, origen: 'manual' });
+  await registrar(repo, usuario.id, 'negociacion_resultado', { recurrenteId, ahorroAnual: res.ahorroAnual, comision: res.comision });
+  revalidar();
+  return { ok: true, ...res };
 }
 
 export async function eliminarRecurrente(recurrenteId: string): Promise<R> {

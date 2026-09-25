@@ -1,7 +1,7 @@
 // PDF de la carta de cancelación con pdf-lib (sin fuentes externas: Helvetica soporta acentos y ñ).
 
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { cartaCancelacion, type DatosCarta } from '@/lib/domain/carta';
+import { cartaCancelacion, type Carta, type DatosCarta } from '@/lib/domain/carta';
 
 const ANCHO = 595.28; // A4
 const ALTO = 841.89;
@@ -26,7 +26,10 @@ function envolver(texto: string, ancho: number, medir: (s: string) => number): s
 }
 
 export async function generarCartaPdf(d: DatosCarta): Promise<Uint8Array> {
-  const carta = cartaCancelacion(d);
+  return generarPdfCarta(cartaCancelacion(d));
+}
+
+export async function generarPdfCarta(carta: Carta): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle(carta.titulo);
   doc.setLanguage('es-MX');

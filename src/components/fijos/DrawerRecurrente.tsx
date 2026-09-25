@@ -15,6 +15,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { crearEvento, eliminarRecurrente, marcarCancelada, marcarNoRecurrente, solicitarCancelacion } from '@/app/app/fijos/acciones';
 import { ModalCancelar, urlCarta } from './ModalCancelar';
+import { ModalNegociar } from './ModalNegociar';
 
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
 
@@ -22,6 +23,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
   const [modo, setModo] = useState<'detalle' | 'guiada' | 'porMi' | 'listo'>('detalle');
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cancelando, setCancelando] = useState(false);
+  const [negociando, setNegociando] = useState(false);
   const [pendiente, start] = useTransition();
   const router = useRouter();
   if (!r) return null;
@@ -80,7 +82,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
         <div className="py-10 text-center">
           <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-light text-ink"><Check size={28} strokeWidth={3} /></span>
           <h3 className="font-display text-[20px] font-bold">Listo</h3>
-          <p className="mt-1.5 text-[13px] text-white/70">{r.canceladoAt || pendiente ? `Dejamos de contar ${r.nombre}. Te avisamos si el cargo vuelve a aparecer.` : `Recibimos tu solicitud. Te escribimos en menos de 24 horas para cancelar ${r.nombre} por ti.`}</p>
+          <p className="mt-1.5 text-[13px] text-white/70">{r.canceladoAt || pendiente ? `Dejamos de contar ${r.nombre}. Te avisamos si el cargo vuelve a aparecer.` : `Tu carta de cancelación de ${r.nombre} ya salió a tu correo. En 10 días te preguntamos si ya se confirmó.`}</p>
           <p className="mt-3 font-display text-[16px] font-bold text-green-light">Ahorras {money(mensual * 12)} al año</p>
           {!r.canceladoAt && (
             <a href={urlCarta(r.id)} className="mx-auto mt-5 flex h-11 w-fit items-center gap-2 rounded-pill border border-white/25 px-4 text-[13px] font-semibold hover:bg-white/8"><FileDown size={16} /> Descargar carta de cancelación (PDF)</a>
@@ -107,7 +109,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
       ) : modo === 'porMi' ? (
         <div className="space-y-4 pb-4">
           <h3 className="font-display text-[18px] font-bold">Cancelamos {r.nombre} por ti</h3>
-          <p className="text-[13px] text-white/80">Hablamos con el proveedor con una carta de autorización que firmas desde la app. Te confirmamos por correo en menos de 24 horas. Está incluido en tu plan.</p>
+          <p className="text-[13px] text-white/80">Generamos tu carta de cancelación y la mandamos por correo (con copia a ti). A los 10 días te preguntamos si ya se confirmó y vigilamos que no vuelvan a cobrar.</p>
           <Button variant="white" size="lg" full disabled={pendiente} onClick={porMi}>{pendiente ? 'Enviando…' : 'Solicitar cancelación'}</Button>
           <button type="button" onClick={() => setModo('guiada')} className="w-full text-center text-[12px] text-white/60">Volver</button>
         </div>
@@ -139,8 +141,8 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
             </button>
           )}
           {r.tipo === 'servicio' && !r.canceladoAt && (
-            <button type="button" onClick={() => setModo('porMi')} className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-green font-display text-[16px] font-bold text-white shadow-green transition-colors hover:bg-green-dark">
-              Cancelar o negociar por mí
+            <button type="button" onClick={() => setNegociando(true)} className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-green font-display text-[16px] font-bold text-white shadow-green transition-colors hover:bg-green-dark">
+              Negociar mi tarifa
             </button>
           )}
           <div className="flex gap-2">
@@ -150,6 +152,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
         </div>
       )}
       {cancelando && <ModalCancelar open onClose={() => { setCancelando(false); router.refresh(); }} recurrentes={[r]} inicial={r} />}
+      {negociando && <ModalNegociar recurrente={r} onClose={() => { setNegociando(false); router.refresh(); }} />}
     </Panel>
   );
 }

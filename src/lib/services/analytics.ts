@@ -15,6 +15,8 @@ export type EventoProducto =
   | 'suscripcion_cancelada' // props: { recurrenteId }
   | 'cancelar_por_mi' // props: { recurrenteId }
   | 'carta_cancelacion' // props: { recurrenteId }
+  | 'negociar_por_mi' // props: { recurrenteId, enviadoA }
+  | 'negociacion_resultado' // props: { recurrenteId, ahorroAnual, comision }
   | 'presupuesto_editado'
   | 'checkout_iniciado'
   | 'suscripcion_pagada'
