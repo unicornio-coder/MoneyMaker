@@ -83,6 +83,13 @@ No escribas llaves ni tokens en el chat. No cambies código.
    delegado: Mail.Read, User.Read, offline_access. En Certificates & secrets crea un client secret.
    Guarda MS_CLIENT_ID (Application (client) ID) y MS_CLIENT_SECRET (el valor del secreto) en Vercel →
    Environment Variables (Production y Preview) y lanza redeploy. Verifica que /api/health diga "outlook": true.
+5c. Resend (correos de salida: cartas de cancelación y negociación, después resumen del domingo): en
+   https://resend.com crea la cuenta, agrega el dominio (Domains → Add domain) y pega en el DNS los registros
+   que te muestre (SPF, DKIM, MX de retorno). Crea una API key (API Keys → Create, permiso "Sending access").
+   Guarda RESEND_API_KEY y RESEND_REMITENTE (por ejemplo "MoneyMaker <hola@tudominio.mx>", con el dominio
+   verificado) en Vercel → Environment Variables (Production y Preview) y lanza redeploy. Verifica que
+   /api/health diga "correo": true. Prueba: Gastos fijos → un servicio → "Negociar mi tarifa" → te debe llegar
+   la carta y el guion a tu correo.
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →

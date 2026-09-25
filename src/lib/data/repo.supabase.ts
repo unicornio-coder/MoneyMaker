@@ -236,10 +236,19 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       const { error } = await cli().from('recurrents').delete().eq('user_id', userId).eq('id', id);
       lanzar('eliminarRecurrente', error);
     },
-    async crearSolicitudCancelacion(userId, recurrenteId, notas) {
-      const { data, error } = await cli().from('cancel_requests').insert({ user_id: userId, recurrent_id: recurrenteId, notas: notas ?? null }).select('id').single();
+    async crearSolicitudCancelacion(userId, recurrenteId, notas, extra) {
+      const { data, error } = await cli().from('cancel_requests').insert({ user_id: userId, recurrent_id: recurrenteId, notas: notas ?? null, tipo: extra?.tipo ?? 'cancelacion', enviado_a: extra?.enviadoA ?? null, seguimiento: extra?.seguimiento ?? null, precio_actual: extra?.precioActual ?? null }).select('id').single();
       lanzar('crearSolicitudCancelacion', error);
       return { id: String(data!.id) };
+    },
+    async actualizarSolicitud(userId, id, c) {
+      const fila: Fila = {};
+      if (c.estado !== undefined) fila.estado = c.estado;
+      if (c.nuevoPrecio !== undefined) fila.nuevo_precio = c.nuevoPrecio;
+      if (c.ahorroAnual !== undefined) fila.ahorro_anual = c.ahorroAnual;
+      if (c.comision !== undefined) fila.comision = c.comision;
+      const { error } = await cli().from('cancel_requests').update(fila).eq('user_id', userId).eq('id', id);
+      lanzar('actualizarSolicitud', error);
     },
 
     async presupuesto(userId, periodo, inicio) {

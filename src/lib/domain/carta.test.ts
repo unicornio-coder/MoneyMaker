@@ -21,3 +21,16 @@ describe('carta de cancelación', () => {
     expect(c.parrafos).toHaveLength(4);
   });
 });
+
+describe('negociación', () => {
+  it('carta con competencia, guion y comisión del 25 % del ahorro anual', async () => {
+    const { cartaNegociacion, guionNegociacion, resultadoNegociacion } = await import('./carta');
+    const c = cartaNegociacion({ servicio: 'Totalplay', titular: 'Ana', correo: 'ana@billup.mx', numeroCuenta: '12345', precioActual: 899, ofertaCompetencia: { proveedor: 'Izzi', precio: 599 }, antiguedadMeses: 14, fecha: '2026-09-24' });
+    expect(c.titulo).toBe('Solicitud de mejor tarifa a Totalplay');
+    expect(c.parrafos[0]).toContain('desde hace 14 meses');
+    expect(c.parrafos[1]).toContain('Izzi me ofrece un servicio equivalente por $599 MXN');
+    expect(guionNegociacion({ servicio: 'Totalplay', precioActual: 899, ofertaCompetencia: { proveedor: 'Izzi', precio: 599 } })[1]).toBe('Izzi me da lo mismo por $599 MXN. ¿Lo igualan?');
+    expect(resultadoNegociacion(899, 649)).toEqual({ ahorroAnual: 3000, comision: 750 });
+    expect(resultadoNegociacion(899, 899)).toEqual({ ahorroAnual: 0, comision: 0 });
+  });
+});

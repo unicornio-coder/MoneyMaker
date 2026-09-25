@@ -65,11 +65,14 @@ del tratamiento, consentimiento explícito al conectar (ya está en la hoja) y b
 - [x] Recurrentes: fecha del próximo cobro en todas, recordatorio 3 días antes, aviso "subió de precio" (regla, ≥ 5 %), "No es recurrente" (queda ignorado y el detector no lo revive).
 - [x] Presupuesto: alertas al 80 % y al rebasar por categoría (Insights; por correo en el bloque 4 con Resend).
 
-### Bloque 3: Cancelación y negociación sin humanos (días 3–4)
-- Cancelar: la carta se envía por correo al proveedor (catálogo con correo/portal de cada servicio) con copia al
-  usuario, se agenda seguimiento y se vigila que el cargo no regrese. Sin equipo humano.
-- Negociar: carta de negociación (internet, telefonía, seguros) con el guion y los argumentos (competencia, permanencia)
-  y registro del resultado; comisión del 25 % sobre el ahorro del primer año cuando el usuario confirme el nuevo precio.
+### Bloque 3: Cancelación y negociación sin humanos (días 3–4) — **hecho en código**; correos reales cuando JC pegue la llave de Resend
+- [x] Cancelar: la carta en PDF se manda por correo al proveedor (campo "Correo de atención del servicio") con copia al
+  usuario, o al usuario si no hay correo del servicio; queda registrado a quién se envió, se agenda seguimiento a
+  10 días (evento en el calendario) y la vigilancia de que el cargo no regrese ya existía. Sin equipo humano.
+- [x] Negociar: "Negociar mi tarifa" en servicios (internet, telefonía, seguros…): carta de negociación + guion de 4 pasos
+  (competencia, retención, confirmación por escrito) por correo, registro del resultado (nuevo precio → ahorro anual y
+  comisión del 25 % del primer año; el recurrente se actualiza), o "no bajaron el precio". Migración 0009 aplicada.
+- Sin `RESEND_API_KEY` la carta se genera y se descarga igual; solo no sale el correo.
 
 ### Bloque 4: Cobro y retención (día 5)
 - Gratis (1 banco o 1 PDF al mes, presupuesto, recurrentes) y Plus $149/mes o $1,290/año (bancos ilimitados, tiempo
