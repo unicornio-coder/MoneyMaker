@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ExternalLink, ListChecks, ChevronRight, Check, ShieldCheck, ChevronLeft, AlertTriangle, Phone, FileDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { AvisoPlus } from '@/components/planes/AvisoPlus';
 import { money } from '@/lib/format';
 import { COMERCIOS, type ComercioConocido } from '@/lib/domain/comercios';
 import { COMERCIOS_DESDE_CATALOGO } from '@/lib/domain/catalogo';
@@ -33,6 +34,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
   const [form, setForm] = useState({ nombre: '', correo: '', ultimos4: '', correoProveedor: '', notas: '', autorizo: false });
   const [envio, setEnvio] = useState<Extract<ResultadoSolicitud, { ok: true }> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dePlan, setDePlan] = useState(false);
   const [modoListo, setModoListo] = useState<'porMi' | 'cancelada'>('porMi');
   const [pendiente, start] = useTransition();
 
@@ -72,7 +74,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
     const notas = [`Nombre en la cuenta: ${form.nombre.trim()}`, `Correo de la cuenta: ${form.correo.trim()}`, form.ultimos4 ? `Tarjeta termina en: ${form.ultimos4}` : null, form.notas.trim() ? `Notas: ${form.notas.trim()}` : null].filter(Boolean).join('\n');
     start(async () => {
       const res = await solicitarCancelacion(r.id, notas, { nombre: form.nombre, correo: form.correo, ultimos4: form.ultimos4 || null, correoProveedor: form.correoProveedor || null });
-      if (res.ok) { setEnvio(res); setModoListo('porMi'); setPaso('listo'); router.refresh(); } else setError(res.error);
+      if (res.ok) { setEnvio(res); setModoListo('porMi'); setPaso('listo'); router.refresh(); } else { setDePlan(!!res.plan); setError(res.error); }
     });
   };
 
@@ -172,7 +174,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
             <input type="checkbox" checked={form.autorizo} onChange={(e) => setForm({ ...form, autorizo: e.target.checked })} className="mt-0.5 h-4 w-4 flex-none accent-green" />
             <span>Autorizo a MoneyMaker a enviar en mi nombre la carta de cancelación a {sel.nombre}. No se comparten contraseñas y puedo retirar la solicitud cuando quiera.</span>
           </label>
-          {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
+          {error && (dePlan ? <AvisoPlus texto={error} /> : <p className="text-[12.5px] font-semibold text-negative">{error}</p>)}
           <Button variant="green" size="lg" full disabled={pendiente} onClick={enviar}>{pendiente ? 'Enviando…' : 'Enviar solicitud'}</Button>
           <p className="flex items-center justify-center gap-1.5 text-[11px] text-txt-3"><ShieldCheck size={13} /> La carta sale al instante, con copia a tu correo. Sin costo extra.</p>
         </div>

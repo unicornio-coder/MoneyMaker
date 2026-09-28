@@ -6,9 +6,12 @@ import { conectarLink, sincronizarLink } from '@/lib/services/conectar';
 import { recalcular } from '@/lib/services/ingest';
 import { infoBanco } from '@/lib/domain/comercios';
 import { registrar } from '@/lib/services/analytics';
+import { nivelPlan, puedeConectarBanco, TEXTO_LIMITE } from '@/lib/domain/plan';
+import type { Repo } from '@/lib/data/repo';
+import type { Perfil } from '@/lib/domain/tipos';
 
 export type ResultadoConexion = { cuentas: number; movimientos: number; suscripciones: number };
-type R = { ok: true; resultado?: ResultadoConexion } | { ok: false; error: string };
+type R = { ok: true; resultado?: ResultadoConexion } | { ok: false; error: string; plan?: boolean };
 
 async function resumenConexion(repo: Awaited<ReturnType<typeof contexto>>['repo'], userId: string, cuentaIds: string[]): Promise<ResultadoConexion> {
   const ids = new Set(cuentaIds);
@@ -20,9 +23,17 @@ function revalidarTodo() {
   for (const p of ['/app', '/app/gastos', '/app/fijos', '/app/presupuesto', '/app/insights', '/app/patrimonio']) revalidatePath(p);
 }
 
+/** Plan Gratis: un solo banco automático (Belvo o simulado). Los PDF, el correo y el teléfono no cuentan aquí. */
+async function bancoPermitido(repo: Repo, userId: string, perfil: Perfil): Promise<boolean> {
+  const links = await repo.links(userId);
+  const bancos = links.filter((l) => (l.proveedor === 'belvo' || l.proveedor === 'manual') && l.estado !== 'roto').length;
+  return puedeConectarBanco(nivelPlan(perfil), bancos);
+}
+
 /** Modo mock: "conecta" una institución simulada. */
 export async function conectarInstitucion(institucionId: string, nombre: string): Promise<R> {
-  const { usuario, repo } = await contexto();
+  const { usuario, repo, perfil } = await contexto();
+  if (!(await bancoPermitido(repo, usuario.id, perfil))) return { ok: false, error: TEXTO_LIMITE.bancos, plan: true };
   const r = await conectarLink(repo, usuario.id, institucionId, nombre);
   if (r.ok) await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'mock', institucion: nombre });
   revalidarTodo();
@@ -31,7 +42,8 @@ export async function conectarInstitucion(institucionId: string, nombre: string)
 
 /** Belvo: el widget ya creó el link; registramos y sincronizamos. */
 export async function registrarLinkBelvo(link: string, institution: string): Promise<R> {
-  const { usuario, repo } = await contexto();
+  const { usuario, repo, perfil } = await contexto();
+  if (!(await bancoPermitido(repo, usuario.id, perfil))) return { ok: false, error: TEXTO_LIMITE.bancos, plan: true };
   const info = infoBanco(institution.replace(/_mx.*$/i, '').replace(/_/g, ' '));
   const r = await conectarLink(repo, usuario.id, link, info.nombre);
   if (r.ok) await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'belvo', institucion: info.nombre });

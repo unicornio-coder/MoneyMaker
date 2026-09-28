@@ -12,6 +12,7 @@ import { costoMensual } from '@/lib/domain/recurrentes';
 import { cartaNegociacion, guionNegociacion, resultadoNegociacion } from '@/lib/domain/carta';
 import { generarCartaPdf, generarPdfCarta } from '@/lib/services/carta';
 import { enviarCorreo } from '@/lib/services/correo';
+import { incluye, nivelPlan, TEXTO_LIMITE } from '@/lib/domain/plan';
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -59,7 +60,7 @@ export async function marcarCancelada(recurrenteId: string): Promise<R> {
 }
 
 export type DatosCancelacion = { nombre: string; correo: string; ultimos4?: string | null; correoProveedor?: string | null };
-export type ResultadoSolicitud = { ok: true; id: string; enviadoA: 'proveedor' | 'usuario' | null; seguimiento: string } | { ok: false; error: string };
+export type ResultadoSolicitud = { ok: true; id: string; enviadoA: 'proveedor' | 'usuario' | null; seguimiento: string } | { ok: false; error: string; plan?: boolean };
 
 /**
  * "Cancelar por mí", sin humanos: genera la carta, la manda por correo (al proveedor con copia al usuario si hay
@@ -68,6 +69,7 @@ export type ResultadoSolicitud = { ok: true; id: string; enviadoA: 'proveedor' |
  */
 export async function solicitarCancelacion(recurrenteId: string, notas?: string, datos?: DatosCancelacion): Promise<ResultadoSolicitud> {
   const { usuario, repo, perfil } = await contexto();
+  if (!incluye(nivelPlan(perfil), 'cancelacion')) return { ok: false, error: TEXTO_LIMITE.cancelacion, plan: true };
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos la suscripción.' };
   const hoy = hoyMX();
@@ -98,6 +100,7 @@ export type DatosNegociar = { precioActual: number; ofertaProveedor?: string | n
 /** "Negociar mi tarifa": carta + guion por correo (al proveedor con copia, o al usuario) y solicitud tipo negociación. */
 export async function solicitarNegociacion(recurrenteId: string, datos: DatosNegociar): Promise<ResultadoSolicitud & { guion?: string[] }> {
   const { usuario, repo, perfil } = await contexto();
+  if (!incluye(nivelPlan(perfil), 'negociacion')) return { ok: false, error: TEXTO_LIMITE.negociacion, plan: true };
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos el servicio.' };
   if (!(datos.precioActual > 0)) return { ok: false, error: 'Escribe cuánto pagas hoy.' };

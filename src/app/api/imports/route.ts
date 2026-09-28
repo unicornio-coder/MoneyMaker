@@ -5,6 +5,8 @@ import { analizarArchivo, iniciarAnalisis, procesarAnalisis } from '@/lib/servic
 import { esErrorImportacion } from '@/lib/services/ingestion';
 import { PDF_MAX_BYTES } from '@/lib/services/ingestion/pdf';
 import { enSegundoPlano } from '@/lib/server/segundo-plano';
+import { importacionesDelMes, nivelPlan, puedeImportarPdf, TEXTO_LIMITE } from '@/lib/domain/plan';
+import { hoyMX, aISO } from '@/lib/domain/fechas';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -16,7 +18,12 @@ export const maxDuration = 300;
  * Con `modo=sync` espera a que termine (pruebas). El archivo nunca se guarda: se procesa en memoria y se descarta.
  */
 export async function POST(req: Request) {
-  const { usuario, repo } = await contexto();
+  const { usuario, repo, perfil } = await contexto();
+  const nivel = nivelPlan(perfil);
+  if (nivel === 'gratis') {
+    const previas = importacionesDelMes(await repo.importaciones(usuario.id), aISO(hoyMX()));
+    if (!puedeImportarPdf(nivel, previas)) return NextResponse.json({ codigo: 'limite_plan', mensaje: TEXTO_LIMITE.pdfs }, { status: 402 });
+  }
   let form: FormData;
   try {
     form = await req.formData();

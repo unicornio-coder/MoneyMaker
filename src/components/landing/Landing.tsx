@@ -201,16 +201,16 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       {/* 8. Precio, una vez */}
       <Seccion id="precio" className="py-24 md:py-32">
         <Revelar>
-          <Titular sub="Menos de $9 al día. Una suscripción olvidada cuesta más.">$250 al mes. 7 días gratis.</Titular>
+          <Titular sub="Gratis con un banco y lo básico. Plus por $149 al mes con todo, y 7 días para probarlo.">Empieza gratis. Plus por menos de $5 al día.</Titular>
         </Revelar>
         <Revelar delay={120} className="mx-auto mt-10 max-w-[520px]">
           <ul className="grid gap-2.5 text-[14.5px] sm:grid-cols-2">
-            {['Estados de cuenta ilimitados', 'Presupuesto por quincena', 'Suscripciones y MSI', 'Cuánto puedes invertir', 'Patrimonio y objetivos', 'Insights explicables'].map((b) => (
+            {['Bancos y estados de cuenta ilimitados', 'Presupuesto por quincena', 'Cancelamos y negociamos por ti', 'Resumen del domingo y avisos', 'Patrimonio y objetivos', 'Garantía de 30 días'].map((b) => (
               <li key={b} className="flex items-center gap-2.5"><Check size={17} className="flex-none text-green-dark dark:text-green-light" /> {b}</li>
             ))}
           </ul>
           <Link href={sesion ? '/app' : '/registro'} className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">{sesion ? 'Ir a mi panel' : 'Empezar 7 días gratis'} <ArrowRight size={18} /></Link>
-          <p className="mt-3 text-center text-[12px] text-txt-3">Sin tarjeta para empezar. Cancela desde Ajustes.</p>
+          <p className="mt-3 text-center text-[12px] text-txt-3">Sin tarjeta para empezar. Plus: $149 al mes o $1,290 al año. Cancela desde Ajustes.</p>
         </Revelar>
       </Seccion>
       </main>

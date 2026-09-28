@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const uid: string = id;
     const estado = estadoDesdeSuscripcion(sub);
     await repo.guardarPerfil(uid, { ...estado, stripeCustomerId: customerId });
-    if (estado.plan === 'premium' && evento.type === 'invoice.paid') await registrar(repo, uid, 'suscripcion_pagada', { intervalo: estado.planIntervalo });
+    if (estado.plan === 'plus' && evento.type === 'invoice.paid') await registrar(repo, uid, 'suscripcion_pagada', { intervalo: estado.planIntervalo });
   }
 
   switch (evento.type) {

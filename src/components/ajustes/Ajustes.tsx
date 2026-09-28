@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { User, Shield, Bell, Crown, Users, Download, LogOut, ChevronRight, ChevronLeft, Link2, Trash2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { fechaCorta, money } from '@/lib/format';
+import { TEXTO_LIMITE, type Nivel } from '@/lib/domain/plan';
+import { AvisoPlus } from '@/components/planes/AvisoPlus';
 import type { Perfil } from '@/lib/domain/tipos';
 import type { UsuarioSesion } from '@/lib/auth/session';
 import type { Link as Fuente } from '@/lib/data/repo';
@@ -27,12 +29,12 @@ const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon
   { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Bancos, importaciones y su estado', icon: Link2 },
   { id: 'seguridad', label: 'Cuenta y seguridad', sub: 'Correo, contraseña y borrado', icon: Shield },
   { id: 'notificaciones', label: 'Notificaciones', sub: 'Cobros, MSI y suscripciones nuevas', icon: Bell },
-  { id: 'plan', label: 'Plan', sub: 'Premium · prueba y facturación', icon: Crown },
+  { id: 'plan', label: 'Plan', sub: 'Gratis o Plus · prueba y facturación', icon: Crown },
   { id: 'familia', label: 'Familia', sub: 'Gastos por integrante (pronto)', icon: Users },
   { id: 'exportar', label: 'Exportar datos', sub: 'Descarga tus movimientos en CSV', icon: Download },
 ];
 
-export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, outlookConfigurado, aviso }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null }) {
+export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, outlookConfigurado, aviso, nivel = 'plus' }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; nivel?: Nivel }) {
   const [sec, setSec] = useState<Sec>((seccionInicial as Sec) ?? null);
   const router = useRouter();
 
@@ -48,7 +50,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
         {sec === 'exportar' && (
           <div className="card space-y-3 p-5">
             <p className="text-[13px] text-txt-2 dark:text-fg-2">Descarga todos tus movimientos categorizados en CSV (se abre en Excel o Numbers).</p>
-            <a href="/api/exportar" className="btn-primary inline-flex h-11 items-center gap-2 px-5 text-[13px]"><Download size={16} /> Descargar CSV</a>
+            {nivel === 'plus' ? <a href="/api/exportar" className="btn-primary inline-flex h-11 items-center gap-2 px-5 text-[13px]"><Download size={16} /> Descargar CSV</a> : <AvisoPlus texto={TEXTO_LIMITE.exportar} />}
           </div>
         )}
       </div>
@@ -62,7 +64,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
         <div className="min-w-0">
           <div className="truncate font-display text-[16px] font-bold">{perfil.nombre || usuario.nombre}</div>
           <div className="truncate text-[12.5px] text-txt-2 dark:text-fg-2">{usuario.email}</div>
-          <div className="mt-0.5 text-[11.5px] font-semibold text-green-dark dark:text-green-light">{perfil.plan === 'premium' ? 'Premium' : perfil.plan === 'trial' ? `Prueba gratis hasta el ${fechaCorta(perfil.trialTermina)}` : 'Plan vencido'}</div>
+          <div className="mt-0.5 text-[11.5px] font-semibold text-green-dark dark:text-green-light">{perfil.plan === 'plus' ? 'Plus' : perfil.plan === 'trial' ? `Prueba de Plus hasta el ${fechaCorta(perfil.planRenueva ?? perfil.trialTermina)}` : 'Plan Gratis'}</div>
         </div>
       </div>
       <ul className="card divide-y divide-edge overflow-hidden p-0">

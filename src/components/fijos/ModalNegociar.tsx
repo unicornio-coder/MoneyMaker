@@ -8,6 +8,7 @@ import type { Recurrente } from '@/lib/domain/tipos';
 import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { AvisoPlus } from '@/components/planes/AvisoPlus';
 import { registrarNegociacion, solicitarNegociacion } from '@/app/app/fijos/acciones';
 
 type Paso = 'datos' | 'enviado' | 'resultado';
@@ -21,13 +22,14 @@ export function ModalNegociar({ recurrente: r, onClose }: { recurrente: Recurren
   const [nuevoPrecio, setNuevoPrecio] = useState('');
   const [resultado, setResultado] = useState<{ ahorroAnual: number; comision: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dePlan, setDePlan] = useState(false);
   const [pendiente, start] = useTransition();
 
   const enviar = () =>
     start(async () => {
       setError(null);
       const res = await solicitarNegociacion(r.id, { precioActual: Number(form.precioActual), ofertaProveedor: form.ofertaProveedor || null, ofertaPrecio: form.ofertaPrecio ? Number(form.ofertaPrecio) : null, correoProveedor: form.correoProveedor || null, numeroCuenta: form.numeroCuenta || null });
-      if (!res.ok) return setError(res.error);
+      if (!res.ok) { setDePlan(!!res.plan); return setError(res.error); }
       setEnvio({ id: res.id, enviadoA: res.enviadoA, seguimiento: res.seguimiento, guion: res.guion ?? [] });
       setPaso('enviado');
       router.refresh();
@@ -62,7 +64,7 @@ export function ModalNegociar({ recurrente: r, onClose }: { recurrente: Recurren
           </div>
           {campo('Correo de atención del servicio (si lo tienes)', 'correoProveedor', 'atencion@servicio.com', { type: 'email' })}
           {campo('Número de cuenta o línea (opcional)', 'numeroCuenta', '')}
-          {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
+          {error && (dePlan ? <AvisoPlus texto={error} /> : <p className="text-[12.5px] font-semibold text-negative">{error}</p>)}
           <Button variant="green" size="lg" full disabled={pendiente} onClick={enviar}>{pendiente ? 'Enviando…' : 'Enviar carta y darme el guion'}</Button>
           <p className="flex items-center justify-center gap-1.5 text-[11px] text-txt-3"><ShieldCheck size={13} /> Sin claves ni contraseñas. Con copia a tu correo.</p>
         </div>

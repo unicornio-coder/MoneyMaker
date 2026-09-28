@@ -90,6 +90,15 @@ No escribas llaves ni tokens en el chat. No cambies código.
    verificado) en Vercel → Environment Variables (Production y Preview) y lanza redeploy. Verifica que
    /api/health diga "correo": true. Prueba: Gastos fijos → un servicio → "Negociar mi tarifa" → te debe llegar
    la carta y el guion a tu correo.
+5d. Stripe (cobro de Plus): en https://dashboard.stripe.com crea la cuenta (México, persona física o moral) y en
+   Product catalog → Add product crea "MoneyMaker Plus" con dos precios recurrentes: $149.00 MXN mensual y
+   $1,290.00 MXN anual. Copia el ID de cada precio (empieza con price_). En Developers → API keys copia la
+   Secret key. En Developers → Webhooks → Add endpoint pon https://money-maker-tawny.vercel.app/api/stripe/webhook
+   con los eventos checkout.session.completed, customer.subscription.created, customer.subscription.updated,
+   customer.subscription.deleted, invoice.paid e invoice.payment_failed, y copia el Signing secret. Guarda en
+   Vercel → Environment Variables (Production y Preview): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+   STRIPE_PRICE_MENSUAL y STRIPE_PRICE_ANUAL, y lanza redeploy. Verifica que /api/health diga "stripe": true.
+   Prueba en modo test con la tarjeta 4242 4242 4242 4242 desde Ajustes → Plan → "Empezar 7 días gratis".
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →
