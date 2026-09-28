@@ -176,3 +176,47 @@ export async function extraerReciboConLLM(correo: { from: string; subject: strin
     return null;
   }
 }
+
+// ---------- Insights con IA (al final del roadmap): 3 observaciones breves y accionables sobre cifras, nunca sobre texto crudo ----------
+
+const RUTAS_CTA = ['/app/fijos', '/app/gastos', '/app/presupuesto', '/app/inversiones', '/app/ajustes'] as const;
+
+export const InsightIASchema = z.object({
+  insights: z
+    .array(
+      z.object({
+        tipo: z.enum(['ia_ahorro', 'ia_alerta', 'ia_habito']),
+        titulo: z.string().min(4).max(70),
+        texto: z.string().min(10).max(260),
+        monto: z.number().nullable(),
+        ruta: z.enum(RUTAS_CTA).nullable(),
+      }),
+    )
+    .max(3),
+});
+export type InsightIA = z.infer<typeof InsightIASchema>['insights'][number];
+
+const SISTEMA_INSIGHTS = `Eres el analista de MoneyMaker, una app de finanzas personales en México. Recibes un resumen NUMÉRICO de la quincena de un usuario (gasto por categoría, suscripciones, presupuesto contra real, próximos cobros, ingreso) y devuelves como máximo 3 observaciones cortas, concretas y accionables, en español de México con tuteo y tono formal, sin emojis, sin signos de exclamación, sin inventar datos que no estén en el resumen. Cifras en pesos enteros con coma de miles (por ejemplo $1,250). Cada observación: un título de una línea y un texto de una o dos frases con una acción clara. Tipos: ia_ahorro (una oportunidad de gastar menos o ahorrar), ia_alerta (algo que conviene revisar pronto), ia_habito (un patrón útil). Si el resumen no da para tres observaciones sólidas, devuelve menos. Si no hay nada relevante, devuelve una lista vacía.`;
+
+/** Insights de IA a partir del resumen numérico. Sin llave devuelve null y la app sigue solo con reglas. */
+export async function insightsConLLM(resumen: object): Promise<InsightIA[] | null> {
+  const c = cliente();
+  if (!c) return null;
+  try {
+    const res = await c.messages
+      .stream({
+        model: MODELO,
+        max_tokens: 1200,
+        system: SISTEMA_INSIGHTS,
+        messages: [{ role: 'user', content: JSON.stringify(resumen).slice(0, 8000) }],
+        output_config: { effort: 'low', format: zodOutputFormat(InsightIASchema) },
+      })
+      .finalMessage();
+    if (res.stop_reason !== 'end_turn') return null;
+    const parsed = InsightIASchema.safeParse(extraerJson<unknown>(textoDe(res)));
+    return parsed.success ? parsed.data.insights : null;
+  } catch (e) {
+    console.warn('[llm] insights', e instanceof Error ? e.name : 'error');
+    return null;
+  }
+}

@@ -10,7 +10,8 @@ import { excedenteInvertible, proponerPresupuesto, presupuestoVsActual } from '@
 import { quincenaDe } from '@/lib/domain/quincena';
 import type { Cuenta, FuenteDato, MovimientoCrudo } from '@/lib/domain/tipos';
 import type { NuevoMovimiento, Repo } from '@/lib/data/repo';
-import { categorizarConLLM } from './llm';
+import { categorizarConLLM, hayLLM, insightsConLLM } from './llm';
+import { armarResumenIA, claveResumenIA } from '@/lib/domain/resumenIA';
 
 export { estimarIngresoQuincenal };
 
@@ -98,7 +99,31 @@ export async function recalcular(repo: Repo, userId: string): Promise<{ recurren
   const vs = presupuestoVsActual(guardado?.lineas ?? lineas, movsConRec, rango, ingresoPeriodo, hoy);
   const candidatos = generarInsights({ movs: movsConRec, recurrentes, rango, ingresoPeriodo, excedente, hoy, presupuesto: { lineas: vs.lineas, diasRestantes: vs.diasRestantes } });
   const nuevos = await repo.guardarInsights(userId, candidatos);
-  return { recurrentes: recurrentes.filter((r) => r.activo).length, insights: nuevos.length };
+  const ia = await insightsIA(repo, userId, { movs: movsConRec, recurrentes, rango, diasPago, ingresoPeriodo, excedente, hoy, diasRestantes: vs.diasRestantes, presupuesto: vs.lineas });
+  return { recurrentes: recurrentes.filter((r) => r.activo).length, insights: nuevos.length + ia };
+}
+
+/**
+ * Insights con IA: un lote por periodo (clave por periodo y forma de los datos), solo con cifras y nombres de
+ * categorías o suscripciones. Sin ANTHROPIC_API_KEY no hace nada. Nunca rompe la ingesta.
+ */
+async function insightsIA(repo: Repo, userId: string, args: Parameters<typeof armarResumenIA>[0]): Promise<number> {
+  if (!hayLLM() || args.movs.length < 10) return 0;
+  try {
+    const resumen = armarResumenIA(args);
+    const clave = claveResumenIA(resumen, args.rango.inicio);
+    const existentes = await repo.insights(userId);
+    if (existentes.some((i) => String(i.referencia?.clave ?? '').startsWith(clave))) return 0;
+    const lista = await insightsConLLM(resumen);
+    if (!lista?.length) return 0;
+    const guardados = await repo.guardarInsights(
+      userId,
+      lista.map((x, i) => ({ clave: `${clave}:${i}`, tipo: x.tipo, titulo: x.titulo, texto: x.texto, monto: x.monto ?? null, ctaLabel: x.ruta ? 'Ver' : null, ctaHref: x.ruta ?? null, referencia: { periodo: args.rango.inicio, ia: true } })),
+    );
+    return guardados.length;
+  } catch {
+    return 0;
+  }
 }
 
 export type PropuestaQuincena = { dias: number[]; depositos: number; ingresoQuincenal: number; actual: number[]; esDistinta: boolean };

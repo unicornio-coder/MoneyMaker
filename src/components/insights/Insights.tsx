@@ -13,14 +13,16 @@ import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { marcarInsight } from '@/app/app/insights/acciones';
 
-type Filtro = 'todos' | 'cobros' | 'suscripciones';
+type Filtro = 'todos' | 'cobros' | 'suscripciones' | 'para_ti';
 // La campana solo habla de dos cosas: cobros y suscripciones. Lo demás (ahorro, MSI) vive en sus pantallas.
 const TIPOS_COBROS = ['proximos_cobros', 'precio_subio', 'cargo_duplicado', 'cargo_tras_cancelar', 'comisiones', 'presupuesto_80', 'presupuesto_100'];
 const TIPOS_SUSCRIPCIONES = ['suscripcion_nueva', 'suscripciones_total'];
+const TIPOS_IA = ['ia_ahorro', 'ia_alerta', 'ia_habito'];
 const FILTROS: { value: Filtro; label: string; tipos: string[] }[] = [
-  { value: 'todos', label: 'Todos', tipos: [...TIPOS_COBROS, ...TIPOS_SUSCRIPCIONES] },
+  { value: 'todos', label: 'Todos', tipos: [...TIPOS_COBROS, ...TIPOS_SUSCRIPCIONES, ...TIPOS_IA] },
   { value: 'cobros', label: 'Cobros', tipos: TIPOS_COBROS },
   { value: 'suscripciones', label: 'Suscripciones', tipos: TIPOS_SUSCRIPCIONES },
+  { value: 'para_ti', label: 'Para ti', tipos: TIPOS_IA },
 ];
 
 // Familia de color por tipo: verde = oportunidad, tinta = información, azul = atención (nunca rojo).
@@ -37,6 +39,9 @@ const TONO: Record<string, string> = {
   cargo_tras_cancelar: 'bg-negative text-white',
   comisiones: 'bg-negative text-white',
   proximos_cobros: 'bg-surface text-fg border border-edge',
+  ia_ahorro: 'bg-ink text-white',
+  ia_alerta: 'bg-ink text-white',
+  ia_habito: 'bg-ink text-white',
 };
 
 export function Insights({ insights, objetivos = [] }: { insights: Insight[]; objetivos?: Objetivo[] }) {
