@@ -4,6 +4,8 @@
 type Args = {
   /** Institución de Belvo a preseleccionar (p. ej. 'bbva_mx_retail'). Sin valor, el widget muestra su lista. */
   institucion?: string;
+  /** Lista permitida de instituciones (nombres de Belvo). Limita el widget a bancos y fintech. */
+  instituciones?: string[];
   onSuccess: (link: string, institution: string) => void;
   onError: (mensaje: string) => void;
   onExit?: () => void;
@@ -48,7 +50,7 @@ function contenedor() {
   return div;
 }
 
-export async function abrirWidgetBelvo({ institucion, onSuccess, onError, onExit, onEstado }: Args) {
+export async function abrirWidgetBelvo({ institucion, instituciones, onSuccess, onError, onExit, onEstado }: Args) {
   try {
     onEstado?.('Pidiendo acceso a Belvo…');
     const res = await fetch('/api/belvo/token', { method: 'POST' });
@@ -64,8 +66,6 @@ export async function abrirWidgetBelvo({ institucion, onSuccess, onError, onExit
     const config: Record<string, unknown> = {
       locale: 'es',
       country_codes: ['MX'],
-      // Solo bancos: nada fiscal (SAT) ni de empleo (IMSS). Con llaves de producción aparecen los bancos reales.
-      institution_types: ['retail', 'business'],
       callback: (link: string, institution: string) => onSuccess(link, institution),
       onExit: () => onExit?.(),
       onEvent: (data: { eventName?: string; meta_data?: { error_message?: string; error_code?: string } }) => {
@@ -74,6 +74,9 @@ export async function abrirWidgetBelvo({ institucion, onSuccess, onError, onExit
       },
     };
     if (institucion) config.institution = institucion;
+    // Solo bancos y fintech: la lista viene de nuestra API (tipo bank/fintech), así el widget no ofrece SAT ni IMSS.
+    // Sin lista (p. ej. si la API no respondió) el widget muestra la suya completa, que siempre funciona.
+    if (instituciones && instituciones.length) config.institutions = instituciones;
     window.belvoSDK.createWidget(cuerpo.access, config).build();
     onEstado?.('');
   } catch (e) {
