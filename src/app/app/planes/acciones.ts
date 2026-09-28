@@ -16,7 +16,7 @@ export async function iniciarCheckout(intervalo: 'mes' | 'anio'): Promise<{ ok: 
   const customerId = await asegurarCliente(usuario.id, usuario.email, perfil.stripeCustomerId);
   if (customerId !== perfil.stripeCustomerId) await repo.guardarPerfil(usuario.id, { stripeCustomerId: customerId });
   await registrar(repo, usuario.id, 'checkout_iniciado', { intervalo });
-  const url = await crearCheckout({ customerId, userId: usuario.id, intervalo, trialUsado: !!perfil.stripeSubscriptionId || perfil.plan === 'vencido', origen: origen() });
+  const url = await crearCheckout({ customerId, userId: usuario.id, intervalo, trialUsado: !!perfil.stripeSubscriptionId || perfil.plan === 'gratis', origen: origen() });
   redirect(url);
 }
 

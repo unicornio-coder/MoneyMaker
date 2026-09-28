@@ -156,14 +156,14 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
 
           {paso === 2 && (
             <>
-              <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">7 días gratis. Sin tarjeta.</h1>
-              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Después, $250 MXN al mes. Cancela cuando quieras desde Ajustes, sin llamadas.</p>
+              <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">7 días de Plus gratis. Sin tarjeta.</h1>
+              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Al terminar sigues en el plan Gratis con lo básico, o pasas a Plus por $149 MXN al mes. Cancela cuando quieras desde Ajustes, sin llamadas.</p>
               <div className="mt-6 rounded-card-xl border-2 border-green bg-green-50 p-6 dark:bg-surface-2">
-                <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green-dark dark:text-green-light">MoneyMaker</div>
-                <div className="mt-2 font-display text-[44px] font-bold leading-none tracking-[-1.8px]">$250<span className="text-[16px] font-semibold text-txt-2 dark:text-fg-2"> MXN al mes</span></div>
-                <div className="mt-1.5 text-[12.5px] text-txt-2 dark:text-fg-2">Menos de $9 al día. Una suscripción olvidada cuesta más.</div>
+                <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green-dark dark:text-green-light">MoneyMaker Plus</div>
+                <div className="mt-2 font-display text-[44px] font-bold leading-none tracking-[-1.8px]">$149<span className="text-[16px] font-semibold text-txt-2 dark:text-fg-2"> MXN al mes</span></div>
+                <div className="mt-1.5 text-[12.5px] text-txt-2 dark:text-fg-2">Menos de $5 al día. Una suscripción olvidada cuesta más.</div>
                 <ul className="mt-5 space-y-2.5 text-[13.5px]">
-                  {['Estados de cuenta ilimitados, de todos tus bancos', 'Presupuesto por quincena que se arma con tus datos', 'Suscripciones y meses sin intereses detectados y cancelables', 'Cuánto puedes invertir, cada quincena'].map((b) => <li key={b} className="flex items-start gap-2.5"><Check size={17} className="mt-0.5 flex-none text-green-dark dark:text-green-light" /> {b}</li>)}
+                  {['Bancos y estados de cuenta ilimitados', 'Presupuesto por quincena que se arma con tus datos', 'Suscripciones detectadas; cancelamos y negociamos por ti', 'Resumen del domingo y avisos de cobros próximos'].map((b) => <li key={b} className="flex items-start gap-2.5"><Check size={17} className="mt-0.5 flex-none text-green-dark dark:text-green-light" /> {b}</li>)}
                 </ul>
               </div>
             </>

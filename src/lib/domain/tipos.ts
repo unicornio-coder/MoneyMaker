@@ -126,13 +126,16 @@ export type Perfil = {
   diasPago: number[];
   ingresoQuincenal?: number | null;
   metas: string[];
-  plan: 'trial' | 'premium' | 'vencido';
+  /** trial = 7 días de Plus; gratis = sin suscripción (límites); plus = paga. */
+  plan: 'trial' | 'gratis' | 'plus';
   trialTermina: string;
   onboardingCompleto: boolean;
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
   planRenueva?: string | null;
   planIntervalo?: 'mes' | 'anio' | null;
+  resumenDomingo?: boolean;
+  avisosCobros?: boolean;
 };
 
 export type Credencial = { proveedor: 'gmail' | 'outlook' | 'bitso' | 'dispositivo' | 'correo'; etiqueta?: string | null; datos: Record<string, unknown>; updatedAt: string };

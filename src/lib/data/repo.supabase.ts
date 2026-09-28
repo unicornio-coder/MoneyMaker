@@ -18,7 +18,14 @@ const num = (v: unknown) => (v == null ? null : Number(v));
 const str = (v: unknown) => (v == null ? null : String(v));
 
 // ---------- mapeos fila ↔ dominio ----------
-const aPerfil = (f: Fila): Perfil => ({ id: String(f.id), email: String(f.email), nombre: str(f.nombre), diasPago: (f.dias_pago as number[]) ?? [5, 20], ingresoQuincenal: num(f.ingreso_quincenal), metas: (f.metas as string[]) ?? [], plan: f.plan as Perfil['plan'], trialTermina: String(f.trial_termina), onboardingCompleto: !!f.onboarding_completo, stripeCustomerId: str(f.stripe_customer_id), stripeSubscriptionId: str(f.stripe_subscription_id), planRenueva: str(f.plan_renueva), planIntervalo: (f.plan_intervalo as Perfil['planIntervalo']) ?? null });
+const aPerfil = (f: Fila): Perfil => ({ id: String(f.id), email: String(f.email), nombre: str(f.nombre), diasPago: (f.dias_pago as number[]) ?? [5, 20], ingresoQuincenal: num(f.ingreso_quincenal), metas: (f.metas as string[]) ?? [], plan: planDeFila(f.plan), trialTermina: String(f.trial_termina), onboardingCompleto: !!f.onboarding_completo, stripeCustomerId: str(f.stripe_customer_id), stripeSubscriptionId: str(f.stripe_subscription_id), planRenueva: str(f.plan_renueva), planIntervalo: (f.plan_intervalo as Perfil['planIntervalo']) ?? null, resumenDomingo: f.resumen_domingo !== false, avisosCobros: f.avisos_cobros !== false });
+
+/** Valores viejos de la columna (antes de la migración 0010) por si quedara alguno. */
+function planDeFila(v: unknown): Perfil['plan'] {
+  if (v === 'plus' || v === 'premium') return 'plus';
+  if (v === 'trial') return 'trial';
+  return 'gratis';
+}
 const aLink = (f: Fila): Link => ({ id: String(f.id), proveedor: f.proveedor as Link['proveedor'], externalId: str(f.external_id), institucion: String(f.institucion), institucionDominio: str(f.institucion_dominio), estado: f.estado as Link['estado'], ultimoSync: str(f.ultimo_sync) });
 const aCuenta = (f: Fila): Cuenta & { externalId: string | null } => ({ id: String(f.id), linkId: str(f.link_id), externalId: str(f.external_id), nombre: String(f.nombre), banco: String(f.banco), bancoDominio: str(f.banco_dominio), tipo: f.tipo as Cuenta['tipo'], ultimos4: str(f.ultimos4), saldo: Number(f.saldo), limite: num(f.limite), pagoMinimo: num(f.pago_minimo), fechaCorte: str(f.fecha_corte), fechaLimite: str(f.fecha_limite), color: str(f.color), activo: !!f.activo });
 const aMov = (f: Fila): Movimiento => ({ id: String(f.id), cuentaId: String(f.account_id), fecha: String(f.fecha), descripcionRaw: String(f.descripcion_raw), comercio: String(f.comercio), comercioDominio: str(f.comercio_dominio), monto: Number(f.monto), tipo: f.tipo as Movimiento['tipo'], categoriaId: String(f.categoria_id), categoriaFuente: f.categoria_fuente as Movimiento['categoriaFuente'], esMsi: !!f.es_msi, msiCuota: num(f.msi_cuota), msiTotal: num(f.msi_total), recurrenteId: str(f.recurrent_id), fuente: f.fuente as Movimiento['fuente'], hash: String(f.hash), detalle: str(f.detalle), recibo: (f.recibo as Record<string, unknown> | null) ?? null, nota: str(f.nota) });
@@ -77,6 +84,8 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       if (c.stripeSubscriptionId !== undefined) fila.stripe_subscription_id = c.stripeSubscriptionId;
       if (c.planRenueva !== undefined) fila.plan_renueva = c.planRenueva;
       if (c.planIntervalo !== undefined) fila.plan_intervalo = c.planIntervalo;
+      if (c.resumenDomingo !== undefined) fila.resumen_domingo = c.resumenDomingo;
+      if (c.avisosCobros !== undefined) fila.avisos_cobros = c.avisosCobros;
       if (Object.keys(fila).length) {
         const { data: actualizado, error: eUpd } = await cli().from('profiles').update(fila).eq('id', userId).select('*').maybeSingle();
         lanzar('guardarPerfil', eUpd);

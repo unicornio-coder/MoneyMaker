@@ -74,10 +74,14 @@ del tratamiento, consentimiento explícito al conectar (ya está en la hoja) y b
   comisión del 25 % del primer año; el recurrente se actualiza), o "no bajaron el precio". Migración 0009 aplicada.
 - Sin `RESEND_API_KEY` la carta se genera y se descarga igual; solo no sale el correo.
 
-### Bloque 4: Cobro y retención (día 5)
-- Gratis (1 banco o 1 PDF al mes, presupuesto, recurrentes) y Plus $149/mes o $1,290/año (bancos ilimitados, tiempo
-  real, cancelación y negociación, reportes). Stripe Checkout, portal, webhook. Garantía visible.
-- Resumen del domingo por correo y push de cobros próximos (PWA/Android).
+### Bloque 4: Cobro y retención (día 5) — planes **hechos en código**; cobro real cuando JC pegue las llaves de Stripe
+- [x] Gratis (1 banco o 1 PDF al mes, movimientos, recurrentes, presupuesto, cancelación guiada) y Plus $149/mes o
+  $1,290/año (bancos y PDF ilimitados, "cancelar por mí", negociar, resumen y avisos, exportar). La prueba de 7 días
+  da Plus completo y al terminar la cuenta baja a Gratis sin borrar nada (`domain/plan.ts`, migración 0010). Límites
+  aplicados en servidor (conectar banco, subir PDF, cancelar/negociar por mí, exportar) con aviso "Ver Plus" en la UI.
+  Stripe Checkout, portal y webhook ya existían; ahora escriben `plus`/`gratis`. Garantía de 30 días visible en Planes,
+  landing y términos.
+- [ ] Resumen del domingo por correo y push de cobros próximos (PWA/Android).
 
 ### Bloque 5: Operación sin humanos (día 6)
 - Centro de ayuda, reporte de problema que abre issue, correos automáticos de bienvenida y de "conecta tu banco".

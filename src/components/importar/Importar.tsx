@@ -424,6 +424,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
                         {it.estado === 'revisar' && imp && `${tx.revisar} · ${info?.nombre ?? 'Banco'}${imp.resumen.ultimos4 ? ` ···· ${imp.resumen.ultimos4}` : ''} · ${t(TEXTOS.revision.movimientos, { n: imp.movimientos.length })}`}
                         {it.estado === 'error' && (it.codigo === 'contraseña_agotada' ? TEXTOS.contraseña.agotada : textoError(it.codigo ?? 'servidor'))}
                         {it.estado === 'error' && it.codigo === 'sesion_expirada' && <a href="/login?next=/app/importar" className="ml-1 font-bold text-green-dark dark:text-green-light">Entrar</a>}
+                        {it.estado === 'error' && it.codigo === 'limite_plan' && <a href="/app/planes" className="ml-1 font-bold text-green-dark dark:text-green-light">Ver Plus</a>}
                       </div>
                       {(it.estado === 'subiendo' || it.estado === 'leyendo') && (
                         <div className="mt-1.5 h-1 overflow-hidden rounded-pill bg-line dark:bg-surface-2">

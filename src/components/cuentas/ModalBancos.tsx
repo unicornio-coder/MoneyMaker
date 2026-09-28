@@ -19,7 +19,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
   const [sel, setSel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [estado, setEstado] = useState('');
-  const [conexion, setConexion] = useState<{ banco: { nombre: string; dominio?: string | null }; estado: EstadoConexion; resultado?: ResultadoConexion | null; error?: string | null } | null>(null);
+  const [conexion, setConexion] = useState<{ banco: { nombre: string; dominio?: string | null }; estado: EstadoConexion; resultado?: ResultadoConexion | null; error?: string | null; dePlan?: boolean } | null>(null);
   const [pendiente, startTransition] = useTransition();
   const router = useRouter();
 
@@ -53,7 +53,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
           setConexion({ banco: { nombre: inst.nombre, dominio: inst.dominio }, estado: 'proceso' });
           startTransition(async () => {
             const r = await registrarLinkBelvo(link, institution);
-            setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error }));
+            setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error, dePlan: !!r.plan }));
           });
         },
         onExit: () => setEstado(''),
@@ -64,7 +64,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
     setConexion({ banco: { nombre: inst.nombre, dominio: inst.dominio }, estado: 'proceso' });
     startTransition(async () => {
       const r = await conectarInstitucion(inst.id, inst.nombre);
-      setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error }));
+      setConexion((c) => c && (r.ok ? { ...c, estado: 'listo', resultado: r.resultado } : { ...c, estado: 'error', error: r.error, dePlan: !!r.plan }));
     });
   };
 
@@ -77,7 +77,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
   return (
     <>
     {conexion && (
-      <ConectandoBanco banco={conexion.banco} estado={conexion.estado} resultado={conexion.resultado} error={conexion.error} onCerrar={() => setConexion(null)} onListo={terminar} onReintentar={() => { setConexion(null); conectar(); }} />
+      <ConectandoBanco banco={conexion.banco} estado={conexion.estado} resultado={conexion.resultado} error={conexion.error} dePlan={conexion.dePlan} onCerrar={() => setConexion(null)} onListo={terminar} onReintentar={conexion.dePlan ? undefined : () => { setConexion(null); conectar(); }} />
     )}
     <Panel open={open} onClose={onClose} mode="modal" title="Vincular banco">
       <div className="space-y-3 pb-2">

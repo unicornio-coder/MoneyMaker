@@ -36,15 +36,15 @@ test('onboarding: metas, quincena, plan y primer PDF', async ({ page }) => {
   await page.getByLabel(/¿Cuánto recibes cada quincena/).fill('14500');
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByRole('heading', { name: '7 días gratis. Sin tarjeta.' })).toBeVisible();
-  await expect(page.getByText('Menos de $9 al día. Una suscripción olvidada cuesta más.')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '7 días de Plus gratis. Sin tarjeta.' })).toBeVisible();
+  await expect(page.getByText('Menos de $5 al día. Una suscripción olvidada cuesta más.')).toBeVisible();
   await page.getByRole('button', { name: 'Empezar 7 días gratis' }).click();
 
   await expect(page.getByRole('heading', { name: 'Sube tu primer estado de cuenta' })).toBeVisible();
   await expect(page.getByText('Paso 4 de 4')).toBeVisible();
   // "Atrás" regresa al plan y vuelve a avanzar.
   await page.getByRole('button', { name: 'Atrás' }).click();
-  await expect(page.getByRole('heading', { name: '7 días gratis. Sin tarjeta.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '7 días de Plus gratis. Sin tarjeta.' })).toBeVisible();
   await page.getByRole('button', { name: 'Empezar 7 días gratis' }).click();
   await page.getByRole('button', { name: 'Subir estado de cuenta' }).click();
   await expect(page).toHaveURL(/\/app\/importar/);

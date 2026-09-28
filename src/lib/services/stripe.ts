@@ -1,4 +1,4 @@
-// Cobro con Stripe: suscripción Premium mensual/anual con 7 días de prueba (tarjeta requerida).
+// Cobro con Stripe: suscripción Plus mensual/anual con 7 días de prueba (tarjeta requerida).
 // El estado del plan vive en profiles y lo actualiza el webhook; la app nunca confía en el cliente.
 
 import Stripe from 'stripe';
@@ -46,10 +46,10 @@ export async function crearPortal(customerId: string, origen: string) {
 }
 
 /** Traduce una suscripción de Stripe al estado del perfil. */
-export function estadoDesdeSuscripcion(sub: Stripe.Subscription): { plan: 'trial' | 'premium' | 'vencido'; planRenueva: string | null; planIntervalo: 'mes' | 'anio' | null; stripeSubscriptionId: string | null } {
+export function estadoDesdeSuscripcion(sub: Stripe.Subscription): { plan: 'trial' | 'gratis' | 'plus'; planRenueva: string | null; planIntervalo: 'mes' | 'anio' | null; stripeSubscriptionId: string | null } {
   const intervalo = sub.items.data[0]?.price.recurring?.interval === 'year' ? 'anio' : 'mes';
   const renueva = new Date(sub.current_period_end * 1000).toISOString();
   if (sub.status === 'trialing') return { plan: 'trial', planRenueva: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : renueva, planIntervalo: intervalo, stripeSubscriptionId: sub.id };
-  if (sub.status === 'active' || sub.status === 'past_due') return { plan: 'premium', planRenueva: renueva, planIntervalo: intervalo, stripeSubscriptionId: sub.id };
-  return { plan: 'vencido', planRenueva: null, planIntervalo: intervalo, stripeSubscriptionId: sub.status === 'canceled' ? null : sub.id };
+  if (sub.status === 'active' || sub.status === 'past_due') return { plan: 'plus', planRenueva: renueva, planIntervalo: intervalo, stripeSubscriptionId: sub.id };
+  return { plan: 'gratis', planRenueva: null, planIntervalo: intervalo, stripeSubscriptionId: sub.status === 'canceled' ? null : sub.id };
 }
