@@ -63,7 +63,7 @@ export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInic
     <div className="mx-auto max-w-[760px] space-y-6">
       <SelectorPeriodo modo={modo} onModo={cambiarModo} rango={rango} onRango={setRango} />
 
-      <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark">
+      <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="text-[12.5px] font-semibold text-white/70">Gastaste · {rango.etiqueta}</div>
         <Money value={total} animate className="mt-1 block text-[38px] font-bold leading-none tracking-[-1.6px] text-white" />
         {gastos.length > 0 && <div className="mt-2 text-[12px] text-white/60">{contexto}</div>}

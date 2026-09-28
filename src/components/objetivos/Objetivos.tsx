@@ -29,10 +29,10 @@ export function Objetivos({ objetivos, cuentas }: { objetivos: Objetivo[]; cuent
   return (
     <div className="mx-auto max-w-[720px] space-y-5">
       <div className="flex items-center justify-between">
-        <p className="text-[13px] text-txt-2 dark:text-fg-2">{objetivos.filter((o) => o.completado).length} de {objetivos.length} completados</p>
-        <button type="button" onClick={() => setNuevo(true)} className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[12px]"><Plus size={15} /> Nuevo objetivo</button>
+        <p className="text-[13px] text-txt-2 dark:text-fg-2">{objetivos.filter((o) => o.completado).length} de {objetivos.length} completadas</p>
+        <button type="button" onClick={() => setNuevo(true)} className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[12px]"><Plus size={15} /> Nueva meta</button>
       </div>
-      {objetivos.length === 0 && <EmptyState icon={Flag} titulo="Sin objetivos todavía" texto="Crea un objetivo de ahorro, deuda o inversión y sigue tu avance cada quincena." cta={{ label: 'Nuevo objetivo', onClick: () => setNuevo(true) }} />}
+      {objetivos.length === 0 && <EmptyState icon={Flag} titulo="Sin metas todavía" texto="Crea una meta de ahorro, deuda o inversión y sigue tu avance cada quincena." cta={{ label: 'Nueva meta', onClick: () => setNuevo(true) }} />}
       {GRUPOS.map((g) => {
         const lista = objetivos.filter((o) => o.grupo === g.id);
         if (!lista.length) return null;
@@ -89,7 +89,7 @@ function ModalObjetivo({ open, objetivo, cuentas, onClose }: { open: boolean; ob
   };
 
   return (
-    <Panel key={key} open={open} onClose={onClose} mode="modal" title={objetivo ? 'Editar objetivo' : 'Nuevo objetivo'}>
+    <Panel key={key} open={open} onClose={onClose} mode="modal" title={objetivo ? 'Editar meta' : 'Nueva meta'}>
       <form onSubmit={guardar} className="space-y-3.5 pb-2">
         <div className="flex gap-1.5">
           {GRUPOS.map((g) => <button key={g.id} type="button" onClick={() => setGrupo(g.id)} className={cn('rounded-pill border px-3 py-1.5 text-[12px] font-semibold', grupo === g.id ? 'border-ink bg-ink text-white dark:border-white dark:bg-white dark:text-ink' : 'border-line-2 dark:border-edge')}>{g.label}</button>)}

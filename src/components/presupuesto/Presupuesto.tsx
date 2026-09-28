@@ -60,7 +60,7 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
         </div>
       </div>
 
-      <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark">
+      <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="flex items-baseline justify-between gap-3">
           <div className="text-[12.5px] font-semibold text-white/70">Gastado · {rango.etiqueta}{!r.actual ? ' (último periodo con datos)' : ''}</div>
           <div className="text-[12px] text-white/60">de {money(resumen.limiteTotal)}</div>
