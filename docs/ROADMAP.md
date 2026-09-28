@@ -104,8 +104,12 @@ del tratamiento, consentimiento explícito al conectar (ya está en la hoja) y b
 - [x] E2E: onboarding → importar → Inicio → Gastos → Suscripciones → cancelar → Presupuesto → Ayuda (specs
   `flujos`, `importar`, `capturas`, `accesibilidad`).
 
-### Bloque 6: Lanzamiento (día 7)
-- Revisión pantalla por pantalla, textos, accesibilidad, legales, precios en la landing, README de operación.
+### Bloque 6: Lanzamiento (día 7) — **hecho en código**
+- [x] Revisión pantalla por pantalla (capturas en `docs/capturas/rediseno-*` y `bloque-*`), textos sin nombres viejos
+  ("Gastos fijos", "Premium", "$250"), estados vacíos que invitan a conectar banco o subir PDF, accesibilidad con axe
+  en 13 rutas (claro y oscuro), aviso de privacidad con Resend y Microsoft y borrado inmediato, términos con Gratis/Plus
+  y garantía, precios en landing/onboarding/planes, `docs/OPERACION.md` (README de operación) y README al día.
+- Lo que sigue depende de llaves de JC (sección 3) y de la revisión legal de los borradores.
 
 ### Después (semanas 2–4)
 - Score de crédito (Círculo de Crédito), compartir con pareja, CFDI del SAT para detalle por compra.

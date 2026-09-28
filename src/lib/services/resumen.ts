@@ -31,7 +31,7 @@ export function textoResumen(r: ResumenSemanal, nombre: string | null, urlApp: s
   } else l.push('Próximos 7 días: sin cobros fijos programados.');
   if (r.suscripcionesNuevas.length) {
     l.push('');
-    l.push(`Suscripciones nuevas: ${r.suscripcionesNuevas.map((s) => `${s.nombre} (${formatMXN(s.monto)} al mes)`).join(', ')}. Si no las reconoces, cancélalas desde Gastos fijos.`);
+    l.push(`Suscripciones nuevas: ${r.suscripcionesNuevas.map((s) => `${s.nombre} (${formatMXN(s.monto)} al mes)`).join(', ')}. Si no las reconoces, cancélalas desde Suscripciones.`);
   }
   l.push('');
   l.push(`Ver mi panel: ${urlApp}/app`);
@@ -43,7 +43,7 @@ export function htmlResumen(r: ResumenSemanal, nombre: string | null, urlApp: st
   const fila = (k: string, v: string) => `<tr><td style="padding:6px 0;color:#5f6b67;font-size:13px">${esc(k)}</td><td style="padding:6px 0;text-align:right;font-weight:600;font-size:13px;color:#0B1F17">${esc(v)}</td></tr>`;
   const variacion = r.variacion === null ? '' : r.variacion === 0 ? 'Igual que la semana pasada.' : r.variacion > 0 ? `${r.variacion} % más que la semana pasada.` : `${Math.abs(r.variacion)} % menos que la semana pasada.`;
   const proximos = r.proximos.lista.length ? r.proximos.lista.map((c) => fila(`${fechaCorta(c.fecha)} · ${c.recurrente.nombre}`, formatMXN(c.monto))).join('') : `<tr><td style="padding:6px 0;color:#5f6b67;font-size:13px">Sin cobros fijos programados.</td></tr>`;
-  const nuevas = r.suscripcionesNuevas.length ? `<p style="margin:18px 0 0;font-size:13px;color:#0B1F17"><b>Suscripciones nuevas:</b> ${esc(r.suscripcionesNuevas.map((s) => `${s.nombre} (${formatMXN(s.monto)} al mes)`).join(', '))}. Si no las reconoces, cancélalas desde Gastos fijos.</p>` : '';
+  const nuevas = r.suscripcionesNuevas.length ? `<p style="margin:18px 0 0;font-size:13px;color:#0B1F17"><b>Suscripciones nuevas:</b> ${esc(r.suscripcionesNuevas.map((s) => `${s.nombre} (${formatMXN(s.monto)} al mes)`).join(', '))}. Si no las reconoces, cancélalas desde Suscripciones.</p>` : '';
   return `<!doctype html><html lang="es"><body style="margin:0;background:#F7F8F7;font-family:Inter,Helvetica,Arial,sans-serif;color:#0B1F17">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#fff;border-radius:18px;padding:28px">

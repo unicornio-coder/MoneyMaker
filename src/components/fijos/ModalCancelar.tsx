@@ -112,7 +112,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial, pasoInicial
                 </ul>
               </>
             )}
-            {listaPropias.length + listaConocidos.length === 0 && <p className="py-8 text-center text-[12.5px] text-txt-2">No encontramos ese servicio. Agrégalo en Gastos fijos y te ayudamos a cancelarlo.</p>}
+            {listaPropias.length + listaConocidos.length === 0 && <p className="py-8 text-center text-[12.5px] text-txt-2">No encontramos ese servicio. Agrégalo en Suscripciones con &ldquo;Nuevo&rdquo; y te ayudamos a cancelarlo.</p>}
           </div>
         </div>
       )}

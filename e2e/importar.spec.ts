@@ -22,7 +22,7 @@ test('sube 3 estados de cuenta y llena todas las pantallas', async ({ page }, te
   const pdfs = await Promise.all(CASOS.map(async (c) => ({ name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado({ ...c, archivo: `${testInfo.project.name}-${c.archivo}` }) })));
 
   await page.goto('/app');
-  await expect(page.getByRole('heading', { name: 'Aún no hay cuentas' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Conecta tu dinero' })).toBeVisible();
   await captura(page, '01-inicio-vacio');
 
   // "Agregar" abre la hoja con las tres opciones; solo el PDF está activo.
