@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import type { Insight, Objetivo } from '@/lib/domain/tipos';
 import { ObjetivosBloque } from '@/components/inicio/ObjetivosBloque';
+import { PromoAvisos } from '@/components/avisos/PromoAvisos';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { marcarInsight } from '@/app/app/insights/acciones';
@@ -52,6 +53,7 @@ export function Insights({ insights, objetivos = [] }: { insights: Insight[]; ob
   if (!relevantes.length) {
     return (
       <div className="mx-auto max-w-[640px] space-y-6">
+        <PromoAvisos />
         <EmptyState icon={Bell} titulo="Sin avisos por ahora" texto="Aquí te avisamos un día y tres días antes de cada cobro, y cuando aparezca una suscripción nueva." />
         <ObjetivosBloque objetivos={objetivos} compacto={false} titulo="Metas" />
       </div>
@@ -70,6 +72,7 @@ export function Insights({ insights, objetivos = [] }: { insights: Insight[]; ob
 
   return (
     <div className="mx-auto max-w-[640px] space-y-4">
+      <PromoAvisos />
       <div className="-mx-3.5 flex gap-1.5 overflow-x-auto px-3.5 md:mx-0 md:px-0">
         {FILTROS.map((f) => (
           <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} size="sm">{f.label}</Chip>

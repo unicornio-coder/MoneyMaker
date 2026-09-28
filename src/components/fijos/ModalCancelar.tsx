@@ -26,10 +26,10 @@ const CONOCIDOS = [...COMERCIOS_DESDE_CATALOGO, ...COMERCIOS];
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
 
 /** Flujo de cancelación: elegir servicio → opciones (por ti o tú mismo) → formulario de autorización → listo. */
-export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: boolean; onClose: () => void; recurrentes: Recurrente[]; inicial?: Recurrente | null }) {
+export function ModalCancelar({ open, onClose, recurrentes, inicial, pasoInicial }: { open: boolean; onClose: () => void; recurrentes: Recurrente[]; inicial?: Recurrente | null; pasoInicial?: 'detalle' | 'formulario' }) {
   const router = useRouter();
   const [q, setQ] = useState('');
-  const [paso, setPaso] = useState<Paso>(inicial ? 'detalle' : 'elegir');
+  const [paso, setPaso] = useState<Paso>(inicial ? (pasoInicial ?? 'detalle') : 'elegir');
   const [sel, setSel] = useState<Servicio | null>(inicial ? aServicio(inicial) : null);
   const [form, setForm] = useState({ nombre: '', correo: '', ultimos4: '', correoProveedor: '', notas: '', autorizo: false });
   const [envio, setEnvio] = useState<Extract<ResultadoSolicitud, { ok: true }> | null>(null);
@@ -55,7 +55,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
 
   const cerrar = () => {
     onClose();
-    setTimeout(() => { setPaso(inicial ? 'detalle' : 'elegir'); setSel(inicial ? aServicio(inicial) : null); setQ(''); setError(null); }, 200);
+    setTimeout(() => { setPaso(inicial ? (pasoInicial ?? 'detalle') : 'elegir'); setSel(inicial ? aServicio(inicial) : null); setQ(''); setError(null); }, 200);
   };
   const elegir = (sv: Servicio) => { setSel(sv); setPaso('detalle'); setError(null); };
 

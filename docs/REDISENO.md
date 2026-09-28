@@ -93,6 +93,9 @@ Sale: círculos por cuenta, dona, "top gastos" con texto.
   próximas con badge, movimientos recientes) y Gastos (total del periodo con filtro por cuenta, tiles por categoría con
   icono que filtran la tabla, tabla de movimientos, efectivo plegado). Fuera: gráfica por quincena, círculos por cuenta,
   dona, "sube tu Excel" de Inicio.
-- **Fase 3**: Presupuesto con iconos, filtro por cuenta y Excel; Suscripciones con detalle tipo recordatorio; landing con
-  más imagen; pantalla "Activa los avisos".
+- **Fase 3 (hecha)**: Presupuesto con un solo bloque arriba (gastado de límite, te quedan, filtro por cuenta), lista por
+  categoría con icono y límite editable, "Subir mi Excel" (la hoja se lee en el navegador y se mapea a categorías);
+  detalle de suscripción tipo app de recordatorios (próximo cobro, ciclo, total pagado, categoría, "avisarme 3 días
+  antes", cancelar en 3 botones); landing con pantallas reales (hero y sección "Así se ve") y menos texto; tarjeta
+  "Activa los avisos" en la campana.
 - Después: insights con IA (al final, como pediste).
