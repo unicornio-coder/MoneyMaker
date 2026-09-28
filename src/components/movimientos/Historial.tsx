@@ -66,7 +66,7 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
       {buscando && <input autoFocus value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar comercio o categoría" className="input text-[13px]" />}
       <div className="-mx-3.5 flex gap-1.5 overflow-x-auto px-3.5 md:mx-0 md:px-0">
         {FILTROS.map((f) => (
-          <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} tone="lime">
+          <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} size="sm">
             {f.label}
           </Chip>
         ))}

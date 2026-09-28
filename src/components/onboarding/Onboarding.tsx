@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PiggyBank, CreditCard, TrendingUp, Repeat, Users, Home, Check, ChevronLeft, FileText, Lock, ShieldCheck, Upload } from 'lucide-react';
+import { PiggyBank, CreditCard, TrendingUp, Repeat, Users, Home, Check, ChevronLeft, Landmark, FileUp, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { money } from '@/lib/format';
 import { Logo } from '@/components/shell/Logo';
 import { PanelMarca } from '@/components/auth/PanelMarca';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { ModalBancos } from '@/components/cuentas/ModalBancos';
 import { actualizarPerfil } from '@/app/app/ajustes/acciones';
-import { resumenOnboarding } from '@/app/onboarding/acciones';
+import { crearContraseña } from '@/lib/auth/actions';
+import type { DatosInicio } from '@/components/inicio/tipos';
 
-// Cuatro pasos, sin conexión bancaria: metas → quincena → plan → primer estado de cuenta.
-// La lectura del PDF ocurre en /app/importar, que ya tiene todo el flujo (cola, contraseña, revisión).
-// Escritorio: panel de marca a la izquierda (el mismo de login) y los pasos a la derecha. Móvil: una columna.
+// Tres pasos: tu cuenta (nombre y contraseña opcional) → metas → conecta (banco o PDF). Sin "saltar": sin una fuente de
+// datos no hay panel. Los días de pago se infieren de la nómina y se ajustan en Ajustes.
 
 const METAS = [
   { id: 'ahorrar', label: 'Ahorrar cada quincena', beneficio: 'Te decimos cuánto te sobra antes de gastarlo.', icon: PiggyBank },
@@ -26,31 +26,31 @@ const METAS = [
   { id: 'casa', label: 'Comprar casa o auto', beneficio: 'Patrimonio y metas grandes con fecha.', icon: Home },
 ];
 
-const PASOS = ['Metas', 'Quincena', 'Plan', 'Primer PDF'];
+const PASOS = ['Tu cuenta', 'Metas', 'Conecta'];
 const ULTIMO = PASOS.length - 1;
 
 type Props = {
   /** Nombre real del usuario (perfil o registro); null si solo tenemos el correo. */
   nombre: string | null;
-  perfil: { metas: string[]; diasPago: number[]; ingresoQuincenal: number | null };
+  perfil: { metas: string[] };
   pasoInicial: number;
+  /** Ya entró con contraseña: no se la volvemos a pedir. */
+  tieneContraseña: boolean;
+  instituciones: DatosInicio['instituciones'];
+  agregador: 'belvo' | 'mock';
+  sandbox?: boolean;
 };
 
-export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props) {
+export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial, tieneContraseña, instituciones, agregador, sandbox }: Props) {
   const [paso, setPaso] = useState(Math.min(ULTIMO, pasoInicial));
   const [nombre, setNombre] = useState(nombreInicial ?? '');
+  const [password, setPassword] = useState('');
+  const [ver, setVer] = useState(false);
   const [metas, setMetas] = useState<string[]>(perfil.metas);
-  const [dias, setDias] = useState<number[]>(perfil.diasPago?.length ? perfil.diasPago : [5, 20]);
-  const [ingreso, setIngreso] = useState(perfil.ingresoQuincenal ? String(perfil.ingresoQuincenal) : '');
   const [error, setError] = useState<string | null>(null);
-  const [resumen, setResumen] = useState<Awaited<ReturnType<typeof resumenOnboarding>> | null>(null);
+  const [bancos, setBancos] = useState(false);
   const [pendiente, start] = useTransition();
   const router = useRouter();
-  const primerNombre = nombre.trim().split(/\s+/)[0] ?? '';
-
-  useEffect(() => {
-    if (paso === ULTIMO) resumenOnboarding().then(setResumen).catch(() => setResumen(null));
-  }, [paso]);
 
   const terminar = (destino: '/app/importar' | '/app') =>
     start(async () => {
@@ -62,19 +62,24 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
   const siguiente = () => {
     setError(null);
     if (paso === 0) {
+      if (!nombre.trim()) return setError('Escribe tu nombre.');
+      if (password && password.length < 8) return setError('La contraseña necesita al menos 8 caracteres.');
       start(async () => {
-        const r = await actualizarPerfil(nombre.trim() ? { metas, nombre: nombre.trim() } : { metas });
+        const r = await actualizarPerfil({ nombre: nombre.trim() });
         if (!r.ok) return setError(r.error ?? 'No se pudo guardar.');
+        if (password) {
+          const c = await crearContraseña(password);
+          if (c.error) return setError(c.error);
+        }
         setPaso(1);
       });
     } else if (paso === 1) {
-      if (!dias.length) return setError('Elige al menos un día de pago.');
       start(async () => {
-        await actualizarPerfil({ diasPago: dias, ingresoQuincenal: ingreso ? Number(ingreso) : null });
+        const r = await actualizarPerfil({ metas });
+        if (!r.ok) return setError(r.error ?? 'No se pudo guardar.');
         setPaso(2);
       });
-    } else if (paso === 2) setPaso(3);
-    else terminar('/app/importar');
+    }
   };
 
   return (
@@ -93,7 +98,7 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
             )}
             <div className="ml-auto text-[12px] font-semibold text-txt-2 dark:text-fg-2">Paso {paso + 1} de {PASOS.length}</div>
           </div>
-          <ol className="mx-auto grid max-w-[640px] grid-cols-4 gap-1.5 px-5 pb-3" aria-label="Pasos">
+          <ol className="mx-auto grid max-w-[640px] grid-cols-3 gap-1.5 px-5 pb-3" aria-label="Pasos">
             {PASOS.map((p, i) => (
               <li key={p} className="min-w-0">
                 <div className={cn('h-1 rounded-pill transition-colors duration-300', i <= paso ? 'bg-green' : 'bg-line dark:bg-surface-2')} />
@@ -106,11 +111,25 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
         <main className="mx-auto w-full max-w-[640px] flex-1 animate-screen px-5 pb-8 pt-7 md:pt-9" key={paso}>
           {paso === 0 && (
             <>
-              <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">{primerNombre ? `Hola, ${primerNombre}. ` : ''}¿Qué quieres lograr?</h1>
-              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Elige una o varias. Acomodamos tu panel según lo que te importa; puedes cambiarlo después.</p>
-              {!nombreInicial && (
-                <div className="mt-5"><Input label="¿Cómo te llamas?" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre" autoComplete="given-name" className="bg-surface" /></div>
-              )}
+              <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[34px]">Bienvenido a MoneyMaker</h1>
+              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Dinos cómo te llamas. La contraseña es opcional: sin ella entras siempre con el enlace que te mandamos al correo.</p>
+              <div className="mt-6 space-y-4">
+                <Input label="Tu nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Como quieres que te llamemos" autoComplete="given-name" className="bg-surface" autoFocus />
+                {!tieneContraseña && (
+                  <div className="relative">
+                    <Input label="Contraseña (opcional)" type={ver ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8 caracteres" autoComplete="new-password" className="bg-surface pr-12" />
+                    <button type="button" onClick={() => setVer((v) => !v)} aria-label={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="absolute bottom-3 right-3 text-txt-3 transition-colors hover:text-fg">{ver ? <EyeOff size={17} /> : <Eye size={17} />}</button>
+                  </div>
+                )}
+              </div>
+              {error && <p className="mt-3 text-[12.5px] font-semibold text-negative">{error}</p>}
+            </>
+          )}
+
+          {paso === 1 && (
+            <>
+              <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[34px]">¿Qué quieres lograr?</h1>
+              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Elige una o varias. Puedes cambiarlo después.</p>
               <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {METAS.map((m, i) => {
                   const on = metas.includes(m.id);
@@ -138,76 +157,41 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial }: Props
             </>
           )}
 
-          {paso === 1 && (
-            <>
-              <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">¿Cuándo te pagan?</h1>
-              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Tu presupuesto se arma por quincena, no por mes. Toca los días en que recibes tu pago. Si no estás seguro, déjalo así: lo detectamos con tu nómina.</p>
-              <div className="mt-6 grid grid-cols-8 gap-1.5">
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
-                  const on = dias.includes(d);
-                  return <button key={d} type="button" aria-pressed={on} onClick={() => setDias((xs) => (on ? xs.filter((x) => x !== d) : [...xs, d].sort((a, b) => a - b)))} className={cn('h-10 rounded-[10px] font-display text-[13px] font-bold transition-colors', on ? 'bg-ink text-white dark:bg-white dark:text-ink' : 'bg-surface text-txt-2 shadow-card hover:bg-green-50 dark:text-fg-2 dark:hover:bg-surface-2')}>{d}</button>;
-                })}
-              </div>
-              <p className="mt-3 text-[12.5px] text-txt-2 dark:text-fg-2">{dias.length ? `Tu quincena empieza los días ${dias.join(' y ')}.` : 'Elige al menos un día.'}</p>
-              <div className="mt-5"><Input label="¿Cuánto recibes cada quincena? (opcional)" value={ingreso} onChange={(e) => setIngreso(e.target.value.replace(/[^\d]/g, ''))} inputMode="numeric" placeholder="14500" hint="Si lo dejas vacío lo estimamos con tus depósitos de nómina." className="bg-surface" /></div>
-              {error && <p className="mt-3 text-[12.5px] font-semibold text-negative">{error}</p>}
-            </>
-          )}
-
           {paso === 2 && (
             <>
-              <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">7 días de Plus gratis. Sin tarjeta.</h1>
-              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Al terminar sigues en el plan Gratis con lo básico, o pasas a Plus por $149 MXN al mes. Cancela cuando quieras desde Ajustes, sin llamadas.</p>
-              <div className="mt-6 rounded-card-xl border-2 border-green bg-green-50 p-6 dark:bg-surface-2">
-                <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-green-dark dark:text-green-light">MoneyMaker Plus</div>
-                <div className="mt-2 font-display text-[44px] font-bold leading-none tracking-[-1.8px]">$149<span className="text-[16px] font-semibold text-txt-2 dark:text-fg-2"> MXN al mes</span></div>
-                <div className="mt-1.5 text-[12.5px] text-txt-2 dark:text-fg-2">Menos de $5 al día. Una suscripción olvidada cuesta más.</div>
-                <ul className="mt-5 space-y-2.5 text-[13.5px]">
-                  {['Bancos y estados de cuenta ilimitados', 'Presupuesto por quincena que se arma con tus datos', 'Suscripciones detectadas; cancelamos y negociamos por ti', 'Resumen del domingo y avisos de cobros próximos'].map((b) => <li key={b} className="flex items-start gap-2.5"><Check size={17} className="mt-0.5 flex-none text-green-dark dark:text-green-light" /> {b}</li>)}
-                </ul>
+              <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[34px]">Conecta tu dinero</h1>
+              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Elige una forma de empezar. Con una basta; después puedes agregar más.</p>
+              <div className="mt-6 grid gap-3">
+                <button type="button" onClick={() => setBancos(true)} className="flex items-center gap-4 rounded-card-xl bg-ink p-5 text-left text-white shadow-dark transition-transform hover:-translate-y-0.5">
+                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-green text-white"><Landmark size={22} /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-display text-[18px] font-bold leading-snug">Conectar mi banco</span>
+                    <span className="mt-0.5 block text-[12.5px] text-white/70">BBVA, Banorte, Santander, Nu y más. Se actualiza solo cada día.</span>
+                  </span>
+                </button>
+                <button type="button" disabled={pendiente} onClick={() => terminar('/app/importar')} className="flex items-center gap-4 rounded-card-xl bg-surface p-5 text-left shadow-card transition-transform hover:-translate-y-0.5">
+                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light"><FileUp size={22} /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-display text-[18px] font-bold leading-snug">Subir estado de cuenta</span>
+                    <span className="mt-0.5 block text-[12.5px] text-txt-2 dark:text-fg-2">El PDF que te manda tu banco. Se lee y se descarta.</span>
+                  </span>
+                </button>
               </div>
-            </>
-          )}
-
-          {paso === 3 && (
-            <>
-              <h1 className="font-display text-[27px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[32px]">Sube tu primer estado de cuenta</h1>
-              <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">El PDF que ya te manda tu banco. En dos minutos ves tus suscripciones, tus meses sin intereses y cuánto te queda esta quincena.</p>
-              <div className="mt-6 rounded-card-xl bg-ink p-5 text-white">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-green text-white"><Upload size={22} /></span>
-                  <div>
-                    <div className="font-display text-[17px] font-bold leading-snug">Uno o varios PDFs, de tarjeta o de débito</div>
-                    <div className="text-[12.5px] text-white/70">Con contraseña también. Cada archivo se lee en menos de un minuto.</div>
-                  </div>
-                </div>
-                <ul className="mt-4 grid gap-2 text-[12.5px] text-white/85 sm:grid-cols-3">
-                  {[[ShieldCheck, 'Solo lectura'], [FileText, 'El PDF se descarta'], [Lock, 'Sin claves del banco']].map(([I, t]) => {
-                    const Icon = I as typeof Lock;
-                    return <li key={String(t)} className="flex items-center gap-2"><Icon size={14} className="flex-none text-green-light" /> {String(t)}</li>;
-                  })}
-                </ul>
-              </div>
-              {resumen && resumen.cuentas > 0 && (
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {[['Cuentas', String(resumen.cuentas)], ['Movimientos leídos', String(resumen.movimientos)], ['Suscripciones', `${resumen.suscripciones} · ${money(resumen.suscripcionesMensual)}/mes`], ['Meses sin intereses', `${resumen.msi} · ${money(resumen.msiMensual)}/mes`]].map(([l, v]) => (
-                    <div key={l} className="rounded-card bg-surface p-4 shadow-card"><div className="text-[11px] font-semibold text-txt-2 dark:text-fg-2">{l}</div><div className="font-display text-[18px] font-bold">{v}</div></div>
-                  ))}
-                </div>
-              )}
-              <p className="mt-4 text-[12.5px] text-txt-2 dark:text-fg-2">¿No lo tienes a la mano? Entra a tu panel y súbelo cuando quieras desde &ldquo;Agregar cuenta&rdquo;.</p>
+              <p className="mt-5 flex items-center justify-center gap-1.5 text-[12px] text-txt-3"><ShieldCheck size={14} /> Solo lectura. Nunca pedimos las claves de tu banco.</p>
+              <ModalBancos open={bancos} onClose={() => setBancos(false)} onConectado={() => terminar('/app')} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
             </>
           )}
         </main>
 
-        <footer className="sticky bottom-0 border-t border-edge bg-surface/95 backdrop-blur">
-          <div className="mx-auto flex max-w-[640px] items-center gap-3 px-5 py-3.5 pb-[max(14px,env(safe-area-inset-bottom))]">
-            {paso === ULTIMO && <button type="button" disabled={pendiente} onClick={() => terminar('/app')} className="text-[13px] font-semibold text-txt-2 dark:text-fg-2">Ver mi panel</button>}
-            <Button size="lg" full className="flex-1" disabled={pendiente || (paso === 0 && metas.length === 0)} onClick={siguiente}>
-              {pendiente ? 'Un momento…' : paso === 0 && metas.length === 0 ? 'Elige al menos una meta' : paso === 2 ? 'Empezar 7 días gratis' : paso === ULTIMO ? 'Subir estado de cuenta' : 'Continuar'}
-            </Button>
-          </div>
-        </footer>
+        {paso < ULTIMO && (
+          <footer className="sticky bottom-0 border-t border-edge bg-surface/95 backdrop-blur">
+            <div className="mx-auto flex max-w-[640px] items-center gap-3 px-5 py-3.5 pb-[max(14px,env(safe-area-inset-bottom))]">
+              <Button size="lg" full className="flex-1" disabled={pendiente || (paso === 1 && metas.length === 0)} onClick={siguiente}>
+                {pendiente ? 'Un momento…' : paso === 1 && metas.length === 0 ? 'Elige al menos una meta' : 'Continuar'}
+              </Button>
+            </div>
+          </footer>
+        )}
       </div>
     </div>
   );

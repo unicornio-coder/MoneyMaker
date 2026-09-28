@@ -44,7 +44,7 @@ export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: stri
   return (
     <>
     <header className="sticky top-0 z-30 flex h-[54px] items-center gap-3 border-b border-edge bg-surface/95 px-4 backdrop-blur md:px-6">
-      <h1 className="min-w-0 flex-1 truncate font-display text-[18.9px] font-bold tracking-[-0.4px] md:flex-none">{titulo}</h1>
+      <h1 className="min-w-0 flex-1 truncate font-display text-[22px] font-bold tracking-[-0.6px] md:flex-none">{titulo}</h1>
       <div className="hidden flex-1 justify-center md:flex">
         {CON_PERIODO.has(tab.href) && <ChipGroup label="Periodo" value={periodo} onChange={setPeriodo} options={PERIODOS} size="sm" />}
       </div>
@@ -57,7 +57,7 @@ export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: stri
         <span className="lg:hidden"><IconBtn onClick={() => setBuscar(true)} label="Buscar"><Search size={18} /></IconBtn></span>
         <IconBtn onClick={toggleOcultar} label={ocultar ? 'Mostrar saldos' : 'Ocultar saldos'}>{ocultar ? <EyeOff size={18} /> : <Eye size={18} />}</IconBtn>
         <IconBtn onClick={toggleTema} label="Cambiar tema">{tema === 'oscuro' ? <Sun size={18} /> : <Moon size={18} />}</IconBtn>
-        <IconBtn href="/app/insights" label="Insights"><Bell size={18} className={cn(tab.href === '/app/insights' && 'text-green-dark dark:text-green-light')} /></IconBtn>
+        <IconBtn href="/app/insights" label="Avisos"><Bell size={18} className={cn(tab.href === '/app/insights' && 'text-green-dark dark:text-green-light')} /></IconBtn>
         <Link href="/app/ajustes" aria-label="Ajustes" className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-ink font-display text-[12px] font-bold text-white dark:bg-white dark:text-ink">
           {iniciales}
         </Link>

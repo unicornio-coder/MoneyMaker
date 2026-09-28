@@ -59,7 +59,7 @@ export async function marcarCancelada(recurrenteId: string): Promise<R> {
   return { ok: true };
 }
 
-export type DatosCancelacion = { nombre: string; correo: string; ultimos4?: string | null; correoProveedor?: string | null };
+export type DatosCancelacion = { nombre?: string | null; correo?: string | null; ultimos4?: string | null; correoProveedor?: string | null };
 export type ResultadoSolicitud = { ok: true; id: string; enviadoA: 'proveedor' | 'usuario' | null; seguimiento: string } | { ok: false; error: string; plan?: boolean };
 
 /**

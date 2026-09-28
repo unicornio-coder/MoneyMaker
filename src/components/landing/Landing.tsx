@@ -110,28 +110,6 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </Revelar>
       </Seccion>
 
-      {/* 4. Lo que te sobra */}
-      <Seccion className="py-24 md:py-32">
-        <Revelar>
-          <Titular sub="Ingreso menos fijos, menos meses sin intereses, menos tu gasto habitual. Antes de gastarlo, no después.">Sabe cuánto te queda esta quincena.</Titular>
-        </Revelar>
-        <Revelar delay={150} className="mt-12">
-          <div className="mx-auto grid max-w-[880px] gap-4 md:grid-cols-3">
-            {[
-              ['Nómina', '$14,500', 'lo que entra', 'text-fg'],
-              ['Compromisos', '−$11,350', 'fijos, MSI y gasto habitual', 'text-negative'],
-              ['Puedes invertir', '$3,150', 'esta quincena', 'text-green-dark dark:text-green-light'],
-            ].map(([l, v, d, c], i) => (
-              <div key={String(l)} className={`card rounded-card-xl p-7 text-center ${i === 2 ? 'ring-2 ring-green' : ''}`}>
-                <div className="text-[12px] font-bold uppercase tracking-[0.9px] text-txt-2 dark:text-fg-2">{l}</div>
-                <div className={`mt-2 font-display text-[40px] font-bold leading-none tracking-[-1.8px] ${c}`}>{v}</div>
-                <div className="mt-2 text-[13px] text-txt-2 dark:text-fg-2">{d}</div>
-              </div>
-            ))}
-          </div>
-        </Revelar>
-      </Seccion>
-
       {/* 5. Suscripciones */}
       <Seccion className="bg-bg-page py-24 dark:bg-canvas md:py-32">
         <div className="grid items-center gap-12 md:grid-cols-2">

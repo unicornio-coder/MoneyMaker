@@ -6,18 +6,20 @@ import { useRouter } from 'next/navigation';
 import { Bell, X, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
-import type { Insight } from '@/lib/domain/tipos';
+import type { Insight, Objetivo } from '@/lib/domain/tipos';
+import { ObjetivosBloque } from '@/components/inicio/ObjetivosBloque';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { marcarInsight } from '@/app/app/insights/acciones';
 
-type Filtro = 'todos' | 'suscripciones' | 'msi' | 'ahorro' | 'cargos';
+type Filtro = 'todos' | 'cobros' | 'suscripciones';
+// La campana solo habla de dos cosas: cobros y suscripciones. Lo demás (ahorro, MSI) vive en sus pantallas.
+const TIPOS_COBROS = ['proximos_cobros', 'precio_subio', 'cargo_duplicado', 'cargo_tras_cancelar', 'comisiones', 'presupuesto_80', 'presupuesto_100'];
+const TIPOS_SUSCRIPCIONES = ['suscripcion_nueva', 'suscripciones_total'];
 const FILTROS: { value: Filtro; label: string; tipos: string[] }[] = [
-  { value: 'todos', label: 'Todos', tipos: [] },
-  { value: 'suscripciones', label: 'Suscripciones', tipos: ['suscripcion_nueva', 'suscripciones_total'] },
-  { value: 'msi', label: 'Meses sin intereses', tipos: ['msi_termina', 'msi_total'] },
-  { value: 'ahorro', label: 'Ahorro', tipos: ['puedes_invertir'] },
-  { value: 'cargos', label: 'Cargos', tipos: ['cargo_duplicado', 'cargo_tras_cancelar', 'comisiones', 'proximos_cobros', 'precio_subio', 'presupuesto_80', 'presupuesto_100'] },
+  { value: 'todos', label: 'Todos', tipos: [...TIPOS_COBROS, ...TIPOS_SUSCRIPCIONES] },
+  { value: 'cobros', label: 'Cobros', tipos: TIPOS_COBROS },
+  { value: 'suscripciones', label: 'Suscripciones', tipos: TIPOS_SUSCRIPCIONES },
 ];
 
 // Familia de color por tipo: verde = oportunidad, tinta = información, azul = atención (nunca rojo).
@@ -36,17 +38,25 @@ const TONO: Record<string, string> = {
   proximos_cobros: 'bg-surface text-fg border border-edge',
 };
 
-export function Insights({ insights }: { insights: Insight[] }) {
+export function Insights({ insights, objetivos = [] }: { insights: Insight[]; objetivos?: Objetivo[] }) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [abierto, setAbierto] = useState<string | null>(null);
   const [, start] = useTransition();
   const router = useRouter();
   const lista = useMemo(() => {
     const f = FILTROS.find((x) => x.value === filtro)!;
-    return insights.filter((i) => !f.tipos.length || f.tipos.includes(i.tipo));
+    return insights.filter((i) => f.tipos.includes(i.tipo));
   }, [insights, filtro]);
 
-  if (!insights.length) return <EmptyState icon={Bell} titulo="Sin insights por ahora" texto="Cuando tengamos movimientos te avisaremos de suscripciones nuevas, MSI por terminar y cargos duplicados." />;
+  const relevantes = insights.filter((i) => FILTROS[0].tipos.includes(i.tipo));
+  if (!relevantes.length) {
+    return (
+      <div className="mx-auto max-w-[640px] space-y-6">
+        <EmptyState icon={Bell} titulo="Sin avisos por ahora" texto="Aquí te avisamos un día y tres días antes de cada cobro, y cuando aparezca una suscripción nueva." />
+        <ObjetivosBloque objetivos={objetivos} compacto={false} titulo="Metas" />
+      </div>
+    );
+  }
 
   const abrir = (i: Insight) => {
     setAbierto(abierto === i.id ? null : i.id);
@@ -62,7 +72,7 @@ export function Insights({ insights }: { insights: Insight[] }) {
     <div className="mx-auto max-w-[640px] space-y-4">
       <div className="-mx-3.5 flex gap-1.5 overflow-x-auto px-3.5 md:mx-0 md:px-0">
         {FILTROS.map((f) => (
-          <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} tone="lime">{f.label}</Chip>
+          <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} size="sm">{f.label}</Chip>
         ))}
       </div>
       <div className="space-y-3">
@@ -100,6 +110,7 @@ export function Insights({ insights }: { insights: Insight[] }) {
         })}
         {lista.length === 0 && <p className="py-8 text-center text-[12.5px] text-txt-2">Nada en esta categoría.</p>}
       </div>
+      <ObjetivosBloque objetivos={objetivos} compacto={false} titulo="Metas" />
     </div>
   );
 }
