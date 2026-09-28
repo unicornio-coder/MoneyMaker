@@ -113,8 +113,12 @@ del tratamiento, consentimiento explícito al conectar (ya está en la hoja) y b
 
 ### Después (semanas 2–4)
 - Score de crédito (Círculo de Crédito), compartir con pareja, CFDI del SAT para detalle por compra.
-- **Insights con IA** (proyección "te alcanza hasta el día X", gasto hormiga, comparación anónima): al final, cuando
-  los datos reales ya entren solos. Sin datos reales, los insights son adorno.
+- [x] **Insights con IA** (hecho al final, como pidió JC): `domain/resumenIA.ts` arma un resumen solo numérico del
+  periodo (gasto por categoría contra el anterior, suscripciones, presupuesto contra real, próximos cobros, ingreso;
+  nunca descripciones del banco, con test), `services/llm.ts#insightsConLLM` pide hasta 3 observaciones con salida
+  estructurada (zod, effort low) y `ingest.ts` guarda un lote por periodo como `ia_ahorro` / `ia_alerta` / `ia_habito`
+  en la campana (filtro "Para ti", tarjetas en tinta). Sin `ANTHROPIC_API_KEY` no pasa nada. Comparación anónima y
+  proyección "te alcanza hasta el día X" quedan para después.
 
 ## 3. Tu checklist (una vez)
 1. Belvo: pasos de la sección 0.
