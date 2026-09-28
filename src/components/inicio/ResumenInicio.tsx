@@ -1,49 +1,40 @@
 'use client';
 
-import Link from 'next/link';
-import { CalendarClock, ChevronRight } from 'lucide-react';
-import { money, fechaCorta } from '@/lib/format';
-import { deISO } from '@/lib/domain/fechas';
-import { cobrosProximos } from '@/lib/domain/recurrentes';
-import type { Recurrente } from '@/lib/domain/tipos';
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { money } from '@/lib/format';
 import { Money } from '@/components/ui/Money';
-import { Avatar } from '@/components/ui/Avatar';
 import type { CuentaVista } from './tipos';
 
-/** Arriba de Inicio, como Rocket Money: saldo neto (lo que tienes menos lo que debes) y los cobros de los próximos 7 días. */
-export function ResumenInicio({ cuentas, recurrentes, hoy }: { cuentas: CuentaVista[]; recurrentes: Recurrente[]; hoy: string }) {
-  const activos = cuentas.filter((c) => c.activo !== false && c.tipo !== 'credito').reduce((s, c) => s + Math.max(0, c.saldo), 0);
-  const deudas = cuentas.filter((c) => c.activo !== false && c.tipo === 'credito').reduce((s, c) => s + Math.max(0, c.saldo), 0);
-  const neto = activos - deudas;
-  const { lista, total } = cobrosProximos(recurrentes, deISO(hoy), 7);
+/** Arriba de Inicio: saldo neto (lo que tienes menos lo que debes) en tarjeta oscura, y dos tiles: cuentas y tarjetas. */
+export function ResumenInicio({ cuentas }: { cuentas: CuentaVista[] }) {
+  const activas = cuentas.filter((c) => c.activo !== false);
+  const enCuentas = activas.filter((c) => c.tipo !== 'credito').reduce((s, c) => s + Math.max(0, c.saldo), 0);
+  const enTarjetas = activas.filter((c) => c.tipo === 'credito').reduce((s, c) => s + Math.max(0, c.saldo), 0);
+  const neto = enCuentas - enTarjetas;
+  const nCuentas = activas.filter((c) => c.tipo !== 'credito').length;
+  const nTarjetas = activas.filter((c) => c.tipo === 'credito').length;
 
   return (
-    <section className="card p-[18px]">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-[12.9px] font-semibold text-txt-2 dark:text-fg-2">Saldo neto</div>
-          <Money value={neto} animate className="mt-0.5 block text-[30px] font-bold leading-none tracking-[-1.2px]" tone={neto < 0 ? 'blue' : 'ink'} />
-          <div className="mt-1.5 text-[12px] text-txt-2 dark:text-fg-2">
-            <span className="font-semibold text-fg">{money(activos)}</span> en cuentas · <span className="font-semibold text-negative">{money(deudas)}</span> en tarjetas
-          </div>
-        </div>
-        <Link href="/app/fijos?vista=cal" className="flex items-center gap-1.5 rounded-pill border border-line-2 px-3 py-1.5 text-[12px] font-semibold hover:bg-bg-hover dark:border-edge dark:hover:bg-surface-2">
-          <CalendarClock size={14} /> Próximos 7 días · {money(total)} <ChevronRight size={14} className="text-txt-3" />
-        </Link>
+    <section className="space-y-3">
+      <div className="rounded-card-xl bg-ink p-5 text-white shadow-dark">
+        <div className="text-[12.5px] font-semibold text-white/70">Saldo neto</div>
+        <Money value={neto} animate className="mt-1 block text-[38px] font-bold leading-none tracking-[-1.6px] text-white" />
+        <div className="mt-2 text-[12px] text-white/60">Lo que tienes en cuentas menos lo que debes en tarjetas.</div>
       </div>
-      {lista.length > 0 && (
-        <ul className="mt-4 flex gap-2 overflow-x-auto pb-1">
-          {lista.slice(0, 6).map((c) => (
-            <li key={c.recurrente.id} className="flex flex-none items-center gap-2 rounded-card border border-edge px-2.5 py-2">
-              <Avatar domain={c.recurrente.comercioDominio} nombre={c.recurrente.nombre} size={28} logoPct={60} />
-              <span className="min-w-0">
-                <span className="block max-w-[110px] truncate text-[12px] font-bold">{c.recurrente.nombre}</span>
-                <span className="block text-[10.5px] text-txt-2 dark:text-fg-2">{fechaCorta(c.fecha)} · {money(c.monto)}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="card p-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light"><ArrowDownLeft size={16} /></span>
+          <div className="mt-3 text-[12px] font-semibold text-txt-2 dark:text-fg-2">Cuentas</div>
+          <Money value={enCuentas} tone="ink" className="block text-[22px] font-bold leading-tight tracking-[-0.6px]" />
+          <div className="text-[11px] text-txt-3">{nCuentas === 1 ? '1 cuenta' : `${nCuentas} cuentas`}</div>
+        </div>
+        <div className="card p-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-negative-50 text-negative dark:bg-surface-2"><ArrowUpRight size={16} /></span>
+          <div className="mt-3 text-[12px] font-semibold text-txt-2 dark:text-fg-2">Tarjetas</div>
+          <Money value={enTarjetas} tone="blue" className="block text-[22px] font-bold leading-tight tracking-[-0.6px]" />
+          <div className="text-[11px] text-txt-3">{nTarjetas === 1 ? '1 tarjeta' : `${nTarjetas} tarjetas`}{enTarjetas > 0 ? ` · ${money(enTarjetas)} por pagar` : ''}</div>
+        </div>
+      </div>
     </section>
   );
 }
