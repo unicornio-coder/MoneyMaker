@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 export default function ErrorRaiz({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error('[error raíz]', error.digest, error.message);
+    fetch('/api/errores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contexto: 'raiz', mensaje: error.message, digest: error.digest ?? null, ruta: window.location.pathname }) }).catch(() => {});
   }, [error]);
   return (
     <div className="flex min-h-dvh items-center justify-center bg-bg-input px-5 dark:bg-canvas">

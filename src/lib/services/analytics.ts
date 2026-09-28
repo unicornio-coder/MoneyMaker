@@ -20,7 +20,10 @@ export type EventoProducto =
   | 'presupuesto_editado'
   | 'checkout_iniciado'
   | 'suscripcion_pagada'
-  | 'cuenta_borrada';
+  | 'cuenta_borrada'
+  | 'reporte_problema' // props: { via }
+  | 'correo_bienvenida'
+  | 'correo_conecta';
 
 export async function registrar(repo: Repo, userId: string | null, nombre: EventoProducto, props: Record<string, unknown> = {}) {
   try {

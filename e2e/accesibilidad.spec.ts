@@ -5,7 +5,7 @@ import { CASOS, crearPdfEstado } from '../scripts/qa-pdfs.mjs';
 // Accesibilidad (axe, WCAG 2.1 AA + buenas prácticas) en claro y oscuro. Sin violaciones serias ni críticas.
 // Única excepción: el azul de gasto/deuda (#2563EB, paleta fija) sobre fondo oscuro se queda en 3.6:1.
 
-const RUTAS = ['/', '/login', '/registro', '/onboarding', '/app', '/app/gastos', '/app/fijos', '/app/presupuesto', '/app/patrimonio', '/app/insights', '/app/importar', '/app/ajustes?sec=fuentes'];
+const RUTAS = ['/', '/login', '/registro', '/onboarding', '/app', '/app/gastos', '/app/fijos', '/app/presupuesto', '/app/patrimonio', '/app/insights', '/app/importar', '/app/ayuda', '/app/ajustes?sec=fuentes'];
 
 test.describe.configure({ mode: 'serial' });
 

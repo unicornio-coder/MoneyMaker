@@ -95,3 +95,23 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
   expect(pdf.headers()['content-type']).toBe('application/pdf');
   expect(pdf.headers()['content-disposition']).toContain('cancelacion-spotify.pdf');
 });
+
+test('ayuda: preguntas y reporte de problema sin humanos', async ({ page }) => {
+  await page.goto('/app/ayuda');
+  await expect(page.getByRole('heading', { name: 'Preguntas frecuentes' })).toBeVisible();
+  const pregunta = page.getByRole('button', { name: '¿Cómo cancelo una suscripción?' });
+  await pregunta.click();
+  await expect(pregunta).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByText(/Mandar carta por correo/)).toBeVisible();
+
+  // Validación: el reporte necesita asunto y detalle.
+  await page.getByRole('button', { name: 'Enviar reporte' }).click();
+  await expect(page.getByTestId('error-reporte')).toContainText('qué pasó');
+  await page.getByLabel('Qué pasó, en pocas palabras').fill('No se leyó mi PDF');
+  await page.getByRole('button', { name: 'Enviar reporte' }).click();
+  await expect(page.getByTestId('error-reporte')).toContainText('Cuéntanos un poco más');
+  await page.getByLabel('Cuéntanos más').fill('Subí el estado de cuenta de agosto y se quedó en leyendo.');
+  await page.getByRole('button', { name: 'Enviar reporte' }).click();
+  // Sin token ni Resend en demo, queda registrado.
+  await expect(page.getByRole('status').filter({ hasText: 'Recibido' })).toBeVisible();
+});

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { MODO_MOCK } from '@/lib/supabase/env';
 import { supabaseServer } from '@/lib/supabase/server';
+import { limitarPeticion, LIMITES } from '@/lib/server/ratelimit';
 
 export type AuthResult = { error?: string };
 
@@ -48,6 +49,8 @@ export async function entrarConCorreo(_: (AuthResult & { enviado?: boolean; emai
   const next = String(form.get('next') || '/onboarding');
   if (!CORREO.test(email)) return { error: 'Escribe un correo válido.' };
   if (MODO_MOCK) redirect(next.startsWith('/') ? next : '/onboarding');
+  const lim = limitarPeticion(`acceso:${email}`, LIMITES.acceso);
+  if (!lim.ok) return { error: `Ya te mandamos varios enlaces. Revisa tu correo o intenta en ${Math.ceil(lim.reintentarEnS / 60)} min.` };
   const { error } = await supabaseServer().auth.signInWithOtp({ email, options: { shouldCreateUser: true, emailRedirectTo: `${origen()}/auth/callback?next=${encodeURIComponent(next)}` } });
   if (error) return { error: error.message.toLowerCase().includes('rate') ? 'Ya te mandamos un enlace hace poco. Revisa tu correo (y la carpeta de spam).' : 'No pudimos mandar el enlace. Intenta de nuevo en un momento.' };
   return { enviado: true, email };

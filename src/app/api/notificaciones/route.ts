@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { limitarPeticion, LIMITES, respuesta429 } from '@/lib/server/ratelimit';
 import { getRepo } from '@/lib/data';
 import { MODO_MOCK } from '@/lib/supabase/env';
 import { supabaseAdmin } from '@/lib/supabase/server';
@@ -16,6 +17,8 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
   if (!token) return NextResponse.json({ codigo: 'sin_token' }, { status: 401 });
+  const lim = limitarPeticion(`notif:${token.slice(-12)}`, LIMITES.notificaciones);
+  if (!lim.ok) return respuesta429(lim);
   const repo = MODO_MOCK ? getRepo() : repoSupabaseCon(() => supabaseAdmin());
   const userId = await usuarioPorToken(repo, token);
   if (!userId) return NextResponse.json({ codigo: 'token_invalido' }, { status: 401 });
