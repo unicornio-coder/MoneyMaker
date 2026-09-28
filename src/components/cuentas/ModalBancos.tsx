@@ -49,6 +49,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox, 
       const preseleccion = inst.origen === 'belvo' && !sandbox ? inst.id : undefined;
       abrirWidgetBelvo({
         institucion: preseleccion,
+        instituciones: instituciones.filter((i) => i.origen === 'belvo').map((i) => i.id),
         onEstado: setEstado,
         onSuccess: (link, institution) => {
           setEstado('');
