@@ -8,6 +8,7 @@ import { cn } from '@/lib/cn';
 import { fechaCorta, money } from '@/lib/format';
 import { TEXTO_LIMITE, type Nivel } from '@/lib/domain/plan';
 import { AvisoPlus } from '@/components/planes/AvisoPlus';
+import { Avisos } from '@/components/ajustes/Avisos';
 import type { Perfil } from '@/lib/domain/tipos';
 import type { UsuarioSesion } from '@/lib/auth/session';
 import type { Link as Fuente } from '@/lib/data/repo';
@@ -28,7 +29,7 @@ const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon
   { id: 'perfil', label: 'Perfil', sub: 'Nombre, días de pago e ingreso', icon: User },
   { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Bancos, importaciones y su estado', icon: Link2 },
   { id: 'seguridad', label: 'Cuenta y seguridad', sub: 'Correo, contraseña y borrado', icon: Shield },
-  { id: 'notificaciones', label: 'Notificaciones', sub: 'Cobros, MSI y suscripciones nuevas', icon: Bell },
+  { id: 'notificaciones', label: 'Avisos', sub: 'Resumen del domingo y cobros próximos', icon: Bell },
   { id: 'plan', label: 'Plan', sub: 'Gratis o Plus · prueba y facturación', icon: Crown },
   { id: 'familia', label: 'Familia', sub: 'Gastos por integrante (pronto)', icon: Users },
   { id: 'exportar', label: 'Exportar datos', sub: 'Descarga tus movimientos en CSV', icon: Download },
@@ -45,7 +46,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
         {sec === 'perfil' && <SecPerfil perfil={perfil} usuario={usuario} />}
         {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} />}
         {sec === 'seguridad' && <SecSeguridad usuario={usuario} modoMock={modoMock} />}
-        {sec === 'notificaciones' && <SecNotificaciones />}
+        {sec === 'notificaciones' && <Avisos resumenDomingo={perfil.resumenDomingo !== false} avisosCobros={perfil.avisosCobros !== false} nivel={nivel} />}
         {sec === 'familia' && <div className="card p-5 text-[13px] text-txt-2 dark:text-fg-2">Familia llega después de la beta: integrantes, cuentas compartidas y gastos por hijo.</div>}
         {sec === 'exportar' && (
           <div className="card space-y-3 p-5">
@@ -281,49 +282,6 @@ function SecSeguridad({ usuario, modoMock }: { usuario: UsuarioSesion; modoMock:
         <Input label='Escribe "BORRAR" para confirmar' value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
         <Button variant="outline" disabled={confirmar !== 'BORRAR' || pendiente} onClick={() => start(async () => { await borrarCuenta(); })} className="text-negative">{pendiente ? 'Borrando…' : 'Borrar todo'}</Button>
       </div>
-    </div>
-  );
-}
-
-function SecNotificaciones() {
-  const [prefs, setPrefs] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('mm-notif') || '{}') as Record<string, boolean>;
-    } catch {
-      return {};
-    }
-  });
-  const OPC = [
-    ['cobros', 'Recordatorio un día antes de cada cargo fijo'],
-    ['msi', 'Cuando un MSI está por terminar'],
-    ['suscripcion', 'Cuando aparece una suscripción nueva'],
-    ['quincena', 'Resumen al inicio de cada quincena'],
-    ['excedido', 'Cuando una categoría rebasa su presupuesto'],
-  ];
-  const toggle = (k: string) => {
-    const n = { ...prefs, [k]: !(prefs[k] ?? true) };
-    setPrefs(n);
-    try {
-      localStorage.setItem('mm-notif', JSON.stringify(n));
-    } catch {}
-  };
-  return (
-    <div className="card p-5">
-      <h2 className="font-display text-[18px] font-bold">Notificaciones</h2>
-      <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">Por correo y, si instalas la app, en tu teléfono.</p>
-      <ul className="mt-3 divide-y divide-edge">
-        {OPC.map(([k, label]) => {
-          const on = prefs[k] ?? true;
-          return (
-            <li key={k} className="flex h-14 items-center gap-3">
-              <span className="flex-1 text-[13px]">{label}</span>
-              <button type="button" role="switch" aria-checked={on} onClick={() => toggle(k)} className={cn('relative h-7 w-12 rounded-pill transition-colors', on ? 'bg-green' : 'bg-line-dashed dark:bg-surface-2')}>
-                <span className={cn('absolute top-1 h-5 w-5 rounded-full bg-white transition-all', on ? 'left-6' : 'left-1')} />
-              </button>
-            </li>
-          );
-        })}
-      </ul>
     </div>
   );
 }

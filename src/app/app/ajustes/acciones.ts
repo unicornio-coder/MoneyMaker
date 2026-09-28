@@ -52,3 +52,14 @@ export async function borrarCuenta(): Promise<never> {
   await supabaseServer().auth.signOut();
   redirect('/registro');
 }
+
+/** Avisos: resumen del domingo por correo y push de cobros próximos. Se guardan en el perfil. */
+export async function guardarAvisos(datos: { resumenDomingo?: boolean; avisosCobros?: boolean }): Promise<R> {
+  const { usuario, repo } = await contexto();
+  const cambios: { resumenDomingo?: boolean; avisosCobros?: boolean } = {};
+  if (typeof datos.resumenDomingo === 'boolean') cambios.resumenDomingo = datos.resumenDomingo;
+  if (typeof datos.avisosCobros === 'boolean') cambios.avisosCobros = datos.avisosCobros;
+  await repo.guardarPerfil(usuario.id, cambios);
+  revalidatePath('/app/ajustes');
+  return { ok: true };
+}

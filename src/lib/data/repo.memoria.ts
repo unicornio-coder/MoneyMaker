@@ -20,6 +20,7 @@ type EstadoUsuario = {
   objetivos: Objetivo[];
   insights: Insight[];
   eventos: EventoCalendario[];
+  push: { endpoint: string; p256dh: string; auth: string }[];
   estados: { id: string }[];
   importaciones: Importacion[];
   descriptores: { descriptor: string; veces: number; comercioLlm: string | null; categoriaLlm: string | null }[];
@@ -36,7 +37,7 @@ const nuevoId = () => `m-${Date.now().toString(36)}-${(++contador).toString(36)}
 function estadoDe(userId: string): EstadoUsuario {
   let e = estados.get(userId);
   if (!e) {
-    e = { perfil: null, links: [], cuentas: [], movimientos: [], correcciones: [], recurrentes: [], cancelaciones: [], presupuestos: [], activos: [], pasivos: [], objetivos: [], insights: [], eventos: [], estados: [], importaciones: [], descriptores: [], credenciales: [], eventos_producto: [] };
+    e = { perfil: null, links: [], cuentas: [], movimientos: [], correcciones: [], recurrentes: [], cancelaciones: [], presupuestos: [], activos: [], pasivos: [], objetivos: [], insights: [], eventos: [], push: [], estados: [], importaciones: [], descriptores: [], credenciales: [], eventos_producto: [] };
     estados.set(userId, e);
   }
   return e;
@@ -202,6 +203,18 @@ export const repoMemoria: Repo = {
   async actualizarSolicitud(userId, id, c) {
     const s = estadoDe(userId).cancelaciones.find((x) => x.id === id);
     if (s) Object.assign(s, c);
+  },
+
+  async suscripcionesPush(userId) {
+    return estadoDe(userId).push;
+  },
+  async guardarSuscripcionPush(userId, s) {
+    const e = estadoDe(userId);
+    e.push = [...e.push.filter((x) => x.endpoint !== s.endpoint), { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth }];
+  },
+  async eliminarSuscripcionPush(userId, endpoint) {
+    const e = estadoDe(userId);
+    e.push = e.push.filter((x) => x.endpoint !== endpoint);
   },
 
   async presupuesto(userId, periodo, inicio) {
