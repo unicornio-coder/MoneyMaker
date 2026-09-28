@@ -60,3 +60,25 @@ export function inicialesDeMarca(nombre: string): string {
     .map((p) => p[0]?.toUpperCase() ?? '')
     .join('');
 }
+
+function luminancia(hex: string): number {
+  const n = parseInt(hex.replace('#', '').padEnd(6, '0').slice(0, 6), 16);
+  const canal = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * canal((n >> 16) & 255) + 0.7152 * canal((n >> 8) & 255) + 0.0722 * canal(n & 255);
+}
+
+function oscurecer(hex: string, factor: number): string {
+  const n = parseInt(hex.replace('#', '').padEnd(6, '0').slice(0, 6), 16);
+  const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v * factor));
+  return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** Fondo del monograma con texto blanco legible (≥ 4.5:1): si el color de marca es claro, se oscurece lo justo. */
+export function fondoMonograma(color: string): string {
+  let fondo = /^#[0-9a-f]{6}$/i.test(color) ? color : '#0B1F17';
+  for (let i = 0; i < 12 && (1.05) / (luminancia(fondo) + 0.05) < 4.5; i++) fondo = oscurecer(fondo, 0.85);
+  return fondo;
+}

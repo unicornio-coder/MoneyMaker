@@ -89,7 +89,10 @@ Sale: círculos por cuenta, dona, "top gastos" con texto.
 - **Fase 1 (este PR)**: Belvo solo bancos; entrar con correo (enlace) y Google oculto; onboarding de 3 pasos con conexión
   obligatoria; navegación nueva (Suscripciones, sin Patrimonio, Objetivos en la campana); títulos a 22 px; chips y
   botones unificados; cancelación en 3 botones; landing sin "cuánto te queda"; Inversiones vacío limpio; campana = Avisos + Metas.
-- **Fase 2**: Inicio y Gastos rediseñados (tiles, tabla, cuentas vinculadas, suscripciones próximas).
+- **Fase 2 (hecha)**: Inicio (saldo neto en tarjeta oscura, tiles Cuentas/Tarjetas, cuentas como lista, suscripciones
+  próximas con badge, movimientos recientes) y Gastos (total del periodo con filtro por cuenta, tiles por categoría con
+  icono que filtran la tabla, tabla de movimientos, efectivo plegado). Fuera: gráfica por quincena, círculos por cuenta,
+  dona, "sube tu Excel" de Inicio.
 - **Fase 3**: Presupuesto con iconos, filtro por cuenta y Excel; Suscripciones con detalle tipo recordatorio; landing con
   más imagen; pantalla "Activa los avisos".
 - Después: insights con IA (al final, como pediste).

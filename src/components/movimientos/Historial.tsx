@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import Link from 'next/link';
+import { Search, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { detalleBasico } from '@/lib/domain/texto';
 import { fechaRelativa } from '@/lib/format';
@@ -20,9 +21,20 @@ const FILTROS: { value: Filtro; label: string }[] = [
   { value: 'pagos', label: 'Pagos' },
 ];
 
-type Props = { movimientos: Movimiento[]; cuentas: Pick<Cuenta, 'id' | 'nombre'>[]; hoy: string; titulo?: string; onSeleccionar?: (m: Movimiento) => void; inicial?: number };
+type Props = {
+  movimientos: Movimiento[];
+  cuentas: Pick<Cuenta, 'id' | 'nombre'>[];
+  hoy: string;
+  titulo?: string;
+  onSeleccionar?: (m: Movimiento) => void;
+  inicial?: number;
+  /** Sin chips ni búsqueda: solo la lista (Inicio). */
+  simple?: boolean;
+  /** "Ver todos" lleva a otra pantalla en vez de desplegar aquí. */
+  verTodosHref?: string;
+};
 
-export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de movimientos', onSeleccionar, inicial = 5 }: Props) {
+export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de movimientos', onSeleccionar, inicial = 5, simple = false, verTodosHref }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [busqueda, setBusqueda] = useState('');
   const [buscando, setBuscando] = useState(false);
@@ -57,20 +69,26 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <div className="w-[38px]" />
-        <h2 className="flex-1 text-center font-display text-[16px] font-bold">{titulo}</h2>
-        <button type="button" aria-label="Buscar" onClick={() => setBuscando((v) => !v)} className={cn('flex h-[38px] w-[38px] items-center justify-center rounded-full bg-bg-muted dark:bg-surface-2', buscando && 'bg-ink text-white dark:bg-white dark:text-ink')}>
-          <Search size={17} />
-        </button>
+        {!simple && <div className="w-[38px]" />}
+        <h2 className={cn('flex-1 font-display font-bold', simple ? 'text-[19px] tracking-[-0.3px]' : 'text-center text-[16px]')}>{titulo}</h2>
+        {simple && verTodosHref ? (
+          <Link href={verTodosHref} className="flex items-center gap-0.5 text-[12.5px] font-semibold text-green-dark dark:text-green-light">Ver todos <ChevronRight size={15} /></Link>
+        ) : (
+          <button type="button" aria-label="Buscar" onClick={() => setBuscando((v) => !v)} className={cn('flex h-[38px] w-[38px] items-center justify-center rounded-full bg-bg-muted dark:bg-surface-2', buscando && 'bg-ink text-white dark:bg-white dark:text-ink')}>
+            <Search size={17} />
+          </button>
+        )}
       </div>
-      {buscando && <input autoFocus value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar comercio o categoría" className="input text-[13px]" />}
-      <div className="-mx-3.5 flex gap-1.5 overflow-x-auto px-3.5 md:mx-0 md:px-0">
-        {FILTROS.map((f) => (
-          <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} size="sm">
-            {f.label}
-          </Chip>
-        ))}
-      </div>
+      {buscando && !simple && <input autoFocus value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar comercio, categoría o monto" className="input text-[13px]" />}
+      {!simple && (
+        <div className="-mx-3.5 flex gap-1.5 overflow-x-auto px-3.5 md:mx-0 md:px-0">
+          {FILTROS.map((f) => (
+            <Chip key={f.value} active={filtro === f.value} onClick={() => setFiltro(f.value)} size="sm">
+              {f.label}
+            </Chip>
+          ))}
+        </div>
+      )}
 
       {grupos.length === 0 ? (
         <p className="py-8 text-center text-[12.5px] text-txt-2">No hay movimientos con ese filtro.</p>
@@ -101,7 +119,7 @@ export function Historial({ movimientos, cuentas, hoy, titulo = 'Historial de mo
           </div>
         ))
       )}
-      {!todos && lista.length > inicial && (
+      {!todos && lista.length > inicial && !verTodosHref && (
         <button type="button" onClick={() => setTodos(true)} className="h-11 w-full rounded-card text-[13px] font-bold text-green-dark dark:text-green-light hover:bg-green-50 dark:hover:bg-surface-2">
           Ver todos ({lista.length})
         </button>

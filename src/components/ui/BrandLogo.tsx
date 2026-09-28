@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
-import { colorDeMarca, fuentesLogo, inicialesDeMarca } from '@/lib/brands';
+import { colorDeMarca, fondoMonograma, fuentesLogo, inicialesDeMarca } from '@/lib/brands';
 
 export type BrandLogoProps = {
   /** Dominio del comercio o banco; de ahí sale el logo. */
@@ -43,7 +43,7 @@ export function BrandLogo({ domain, nombre, size = 46, logoPct = 54, className, 
   const monograma = !src;
   useEffect(() => onFuente?.(src ?? null), [src, onFuente]);
 
-  const fondo = bg ?? (monograma ? (color ?? colorDeMarca(nombre, domain)) : undefined);
+  const fondo = bg ?? (monograma ? fondoMonograma(color ?? colorDeMarca(nombre, domain)) : undefined);
   const logo = Math.round((size * logoPct) / 100);
 
   return (

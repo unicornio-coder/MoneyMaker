@@ -17,7 +17,7 @@ const PERIODOS: { value: Periodo; label: string }[] = [
 ];
 
 // Solo las pantallas que leen el periodo global; Gastos y Fijos tienen su propio selector.
-const CON_PERIODO = new Set(['/app', '/app/presupuesto']);
+const CON_PERIODO = new Set(['/app/presupuesto']);
 
 export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: string }) {
   const pathname = usePathname();

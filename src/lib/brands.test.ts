@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colorDeMarca, fuentesLogo, inicialesDeMarca, logoLocal, normalizarDominio } from './brands';
+import { colorDeMarca, fondoMonograma, fuentesLogo, inicialesDeMarca, logoLocal, normalizarDominio } from './brands';
 
 describe('brands', () => {
   it('normaliza dominios', () => {
@@ -21,5 +21,13 @@ describe('brands', () => {
     expect(['#0B1F17', '#16A34A', '#2563EB', '#6366F1']).toContain(c);
     expect(colorDeMarca('Taquería El Güero', 'elguero.mx')).toBe(c);
     expect(inicialesDeMarca('Farmacia San Pablo')).toBe('FS');
+  });
+
+  it('el monograma oscurece colores claros hasta que el blanco se lea (4.5:1)', () => {
+    expect(fondoMonograma('#0B1F17')).toBe('#0B1F17');
+    const amarillo = fondoMonograma('#FFD400');
+    expect(amarillo).toMatch(/^#[0-9a-f]{6}$/);
+    expect(amarillo).not.toBe('#FFD400');
+    expect(fondoMonograma('no-es-color')).toBe('#0B1F17');
   });
 });
