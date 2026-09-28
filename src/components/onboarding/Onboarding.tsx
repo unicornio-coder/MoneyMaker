@@ -162,7 +162,7 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial, tieneCo
               <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[34px]">Conecta tu dinero</h1>
               <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Elige una forma de empezar. Con una basta; después puedes agregar más.</p>
               <div className="mt-6 grid gap-3">
-                <button type="button" onClick={() => setBancos(true)} className="flex items-center gap-4 rounded-card-xl bg-ink p-5 text-left text-white shadow-dark transition-transform hover:-translate-y-0.5">
+                <button type="button" onClick={() => setBancos(true)} className="flex items-center gap-4 rounded-card-xl bg-ink p-5 text-left text-white shadow-dark transition-transform hover:-translate-y-0.5 dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
                   <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-green text-white"><Landmark size={22} /></span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-display text-[18px] font-bold leading-snug">Conectar mi banco</span>

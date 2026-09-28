@@ -48,7 +48,7 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
 
   return (
     <div className="space-y-5">
-      <div className="relative overflow-hidden rounded-card-lg bg-ink p-5 text-white shadow-dark">
+      <div className="relative overflow-hidden rounded-card-lg bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <div className="text-[12px] font-semibold text-green-light">Suscripciones y cargos fijos al mes</div>

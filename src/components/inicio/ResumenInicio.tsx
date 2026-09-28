@@ -16,7 +16,7 @@ export function ResumenInicio({ cuentas }: { cuentas: CuentaVista[] }) {
 
   return (
     <section className="space-y-3">
-      <div className="rounded-card-xl bg-ink p-5 text-white shadow-dark">
+      <div className="rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="text-[12.5px] font-semibold text-white/70">Saldo neto</div>
         <Money value={neto} animate className="mt-1 block text-[38px] font-bold leading-none tracking-[-1.6px] text-white" />
         <div className="mt-2 text-[12px] text-white/60">Lo que tienes en cuentas menos lo que debes en tarjetas.</div>
