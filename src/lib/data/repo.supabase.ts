@@ -260,6 +260,20 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       lanzar('actualizarSolicitud', error);
     },
 
+    async suscripcionesPush(userId) {
+      const { data, error } = await cli().from('push_subscriptions').select('endpoint,p256dh,auth').eq('user_id', userId);
+      lanzar('suscripcionesPush', error);
+      return (data ?? []).map((f) => ({ endpoint: String(f.endpoint), p256dh: String(f.p256dh), auth: String(f.auth) }));
+    },
+    async guardarSuscripcionPush(userId, s) {
+      const { error } = await cli().from('push_subscriptions').upsert({ user_id: userId, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth, agente: s.agente ?? null }, { onConflict: 'endpoint' });
+      lanzar('guardarSuscripcionPush', error);
+    },
+    async eliminarSuscripcionPush(userId, endpoint) {
+      const { error } = await cli().from('push_subscriptions').delete().eq('user_id', userId).eq('endpoint', endpoint);
+      lanzar('eliminarSuscripcionPush', error);
+    },
+
     async presupuesto(userId, periodo, inicio) {
       const { data, error } = await cli().from('budgets').select('*, budget_lines(*)').eq('user_id', userId).eq('periodo', periodo).eq('inicio', inicio).maybeSingle();
       lanzar('presupuesto', error);

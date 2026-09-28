@@ -13,6 +13,8 @@ export type Link = {
   ultimoSync?: string | null;
 };
 
+export type SuscripcionPush = { endpoint: string; p256dh: string; auth: string };
+
 export type NuevoMovimiento = Omit<Movimiento, 'id'>;
 export type NuevoRecurrente = Omit<Recurrente, 'id'>;
 export type NuevoInsight = Omit<Insight, 'id' | 'leido' | 'descartado' | 'createdAt'> & { clave: string };
@@ -61,6 +63,11 @@ export interface Repo {
   eliminarRecurrente(userId: string, id: string): Promise<void>;
   crearSolicitudCancelacion(userId: string, recurrenteId: string, notas?: string, extra?: { tipo?: 'cancelacion' | 'negociacion'; enviadoA?: string | null; seguimiento?: string | null; precioActual?: number | null }): Promise<{ id: string }>;
   actualizarSolicitud(userId: string, id: string, cambios: { estado?: 'pendiente' | 'en_proceso' | 'cancelada' | 'no_posible'; nuevoPrecio?: number | null; ahorroAnual?: number | null; comision?: number | null }): Promise<void>;
+
+  // Avisos push (un registro por dispositivo)
+  suscripcionesPush(userId: string): Promise<SuscripcionPush[]>;
+  guardarSuscripcionPush(userId: string, s: SuscripcionPush & { agente?: string | null }): Promise<void>;
+  eliminarSuscripcionPush(userId: string, endpoint: string): Promise<void>;
 
   // Presupuesto
   presupuesto(userId: string, periodo: Periodo, inicio: string): Promise<Presupuesto | null>;

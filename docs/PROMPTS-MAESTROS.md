@@ -99,6 +99,10 @@ No escribas llaves ni tokens en el chat. No cambies código.
    Vercel → Environment Variables (Production y Preview): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
    STRIPE_PRICE_MENSUAL y STRIPE_PRICE_ANUAL, y lanza redeploy. Verifica que /api/health diga "stripe": true.
    Prueba en modo test con la tarjeta 4242 4242 4242 4242 desde Ajustes → Plan → "Empezar 7 días gratis".
+5e. Avisos push (PWA): en la terminal corre `npx web-push generate-vapid-keys` y guarda en Vercel (Production y
+   Preview) VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT=mailto:hola@tudominio.mx y NEXT_PUBLIC_VAPID_PUBLIC_KEY
+   (la misma pública). Lanza redeploy y verifica que /api/health diga "push": true. Prueba en Android Chrome:
+   Ajustes → Avisos → "Activar avisos aquí".
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →
