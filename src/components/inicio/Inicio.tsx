@@ -31,7 +31,7 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
           <span className="font-semibold text-green-dark dark:text-green-light">Reconectar</span>
         </Link>
       )}
-      {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={{ label: vacio.cta, href: '/app/importar' }} />}
+      {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={{ label: vacio.cta, onClick: () => setAgregarAbierto(true) }} />}
       <CuentasLista cuentas={datos.cuentas} fuentes={datos.fuentes} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
       {hayCuentas && <SuscripcionesProximas recurrentes={datos.recurrentes} hoy={datos.hoy} />}
       {hayCuentas && <Historial movimientos={datos.movimientos} cuentas={datos.cuentas} hoy={datos.hoy} titulo="Movimientos recientes" simple inicial={5} verTodosHref="/app/gastos" />}

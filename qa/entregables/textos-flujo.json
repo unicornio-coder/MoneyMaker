@@ -107,24 +107,24 @@
   },
   "vacios": {
     "inicio": {
-      "titulo": "Aún no hay cuentas",
-      "texto": "Sube tu estado de cuenta y en dos minutos ves qué pagas cada mes y cuánto te sobra.",
-      "cta": "Sube tu estado de cuenta"
+      "titulo": "Conecta tu dinero",
+      "texto": "Conecta tu banco o sube el estado de cuenta que ya te manda. En dos minutos ves tus suscripciones y cuánto te sobra.",
+      "cta": "Conectar banco o subir PDF"
     },
     "gastos": {
       "titulo": "Sin movimientos todavía",
-      "texto": "Cuando subas un estado de cuenta, aquí verás tu gasto por periodo y categoría.",
-      "cta": "Sube tu estado de cuenta"
+      "texto": "Conecta tu banco o sube un estado de cuenta y aquí verás tu gasto por periodo y categoría.",
+      "cta": "Conectar banco o subir PDF"
     },
     "fijos": {
-      "titulo": "Sin gastos fijos detectados",
+      "titulo": "Sin suscripciones detectadas",
       "texto": "Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos.",
-      "cta": "Sube tu estado de cuenta"
+      "cta": "Conectar banco o subir PDF"
     },
     "presupuesto": {
       "titulo": "Tu presupuesto se arma solo",
-      "texto": "Con los movimientos de un estado de cuenta te proponemos un presupuesto por quincena.",
-      "cta": "Sube tu estado de cuenta"
+      "texto": "Con los movimientos de una cuenta te proponemos un presupuesto por quincena. También puedes subir tu Excel.",
+      "cta": "Conectar banco o subir PDF"
     },
     "patrimonio": {
       "titulo": "Sin cuentas todavía",
