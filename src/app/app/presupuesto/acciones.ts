@@ -7,6 +7,7 @@ import type { Periodo } from '@/lib/domain/tipos';
 import { rangoDe } from '@/lib/domain/quincena';
 import { proponerPresupuesto } from '@/lib/domain/presupuesto';
 import { estimarIngresoQuincenal } from '@/lib/services/ingest';
+import { registrar } from '@/lib/services/analytics';
 
 type R = { ok: true } | { ok: false; error: string };
 
@@ -39,6 +40,21 @@ export async function reproponer(periodo: Periodo, inicio: string): Promise<R> {
   const ingresoQ = perfil.ingresoQuincenal ?? estimarIngresoQuincenal(movs);
   const ingreso = periodo === 'q' ? ingresoQ : periodo === 'mes' ? ingresoQ * 2 : ingresoQ * 24;
   await repo.guardarPresupuesto(usuario.id, { periodo, inicio: rango.inicio, fin: rango.fin, ingreso, lineas });
+  revalidatePath('/app/presupuesto');
+  return { ok: true };
+}
+
+/** Presupuesto desde la hoja del usuario: sustituye las líneas del periodo por las de su Excel (ya mapeadas a categorías). */
+export async function importarLineas(periodo: Periodo, inicio: string, lineas: { categoriaId: string; nombre: string | null; limite: number }[]): Promise<R> {
+  const { usuario, repo } = await contexto();
+  const p = await repo.presupuesto(usuario.id, periodo, inicio);
+  if (!p) return { ok: false, error: 'No encontramos el presupuesto.' };
+  const limpias = lineas.filter((l) => typeof l.categoriaId === 'string' && l.limite >= 0).slice(0, 40);
+  if (!limpias.length) return { ok: false, error: 'La hoja no trae categorías con monto.' };
+  const vistas = new Set<string>();
+  const nuevas = limpias.filter((l) => !vistas.has(l.categoriaId) && vistas.add(l.categoriaId)).map((l, i) => ({ categoriaId: l.categoriaId, nombre: l.nombre?.slice(0, 60) ?? null, limite: Math.round(l.limite), orden: i + 1 }));
+  await repo.guardarPresupuesto(usuario.id, { periodo, inicio, fin: p.fin, ingreso: p.ingreso, lineas: nuevas });
+  await registrar(repo, usuario.id, 'presupuesto_editado', { origen: 'excel', lineas: nuevas.length });
   revalidatePath('/app/presupuesto');
   return { ok: true };
 }

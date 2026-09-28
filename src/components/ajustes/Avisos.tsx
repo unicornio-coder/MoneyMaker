@@ -1,23 +1,12 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { BellRing, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { guardarAvisos } from '@/app/app/ajustes/acciones';
 import { AvisoPlus } from '@/components/planes/AvisoPlus';
 import type { Nivel } from '@/lib/domain/plan';
-
-const CLAVE_PUBLICA = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
-
-function aUint8(b64: string): Uint8Array<ArrayBuffer> {
-  const base = (b64 + '='.repeat((4 - (b64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
-  const bin = atob(base);
-  const out = new Uint8Array(new ArrayBuffer(bin.length));
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
-type EstadoPush = 'cargando' | 'no_soportado' | 'no_configurado' | 'bloqueado' | 'inactivo' | 'activo';
+import { usePush } from './usePush';
 
 function Interruptor({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
@@ -34,28 +23,9 @@ function Interruptor({ on, onChange, label }: { on: boolean; onChange: (v: boole
 export function Avisos({ resumenDomingo, avisosCobros, nivel }: { resumenDomingo: boolean; avisosCobros: boolean; nivel: Nivel }) {
   const [resumen, setResumen] = useState(resumenDomingo);
   const [cobros, setCobros] = useState(avisosCobros);
-  const [push, setPush] = useState<EstadoPush>('cargando');
+  const { estado: push, error: errorPush, ocupado, activar, desactivar } = usePush();
   const [error, setError] = useState<string | null>(null);
   const [pendiente, start] = useTransition();
-
-  useEffect(() => {
-    let vivo = true;
-    (async () => {
-      if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) return vivo && setPush('no_soportado');
-      if (!CLAVE_PUBLICA) return vivo && setPush('no_configurado');
-      if (Notification.permission === 'denied') return vivo && setPush('bloqueado');
-      try {
-        const reg = await navigator.serviceWorker.getRegistration('/sw.js');
-        const sub = await reg?.pushManager.getSubscription();
-        if (vivo) setPush(sub ? 'activo' : 'inactivo');
-      } catch {
-        if (vivo) setPush('inactivo');
-      }
-    })();
-    return () => {
-      vivo = false;
-    };
-  }, []);
 
   const guardar = (c: { resumenDomingo?: boolean; avisosCobros?: boolean }) =>
     start(async () => {
@@ -63,39 +33,12 @@ export function Avisos({ resumenDomingo, avisosCobros, nivel }: { resumenDomingo
       if (!r.ok) setError(r.error);
     });
 
-  const activar = () =>
+  const activarAqui = () =>
     start(async () => {
-      setError(null);
-      try {
-        const permiso = await Notification.requestPermission();
-        if (permiso !== 'granted') return setPush('bloqueado');
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: aUint8(CLAVE_PUBLICA) });
-        const res = await fetch('/api/push', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sub.toJSON()) });
-        if (!res.ok) throw new Error('registro');
-        setPush('activo');
-        if (!cobros) {
-          setCobros(true);
-          await guardarAvisos({ avisosCobros: true });
-        }
-      } catch {
-        setError('No pudimos activar los avisos en este dispositivo. Intenta de nuevo.');
-      }
-    });
-
-  const desactivar = () =>
-    start(async () => {
-      try {
-        const reg = await navigator.serviceWorker.getRegistration('/sw.js');
-        const sub = await reg?.pushManager.getSubscription();
-        if (sub) {
-          await fetch('/api/push', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) });
-          await sub.unsubscribe();
-        }
-        setPush('inactivo');
-      } catch {
-        setError('No pudimos quitar este dispositivo. Intenta de nuevo.');
+      const ok = await activar();
+      if (ok && !cobros) {
+        setCobros(true);
+        await guardarAvisos({ avisosCobros: true });
       }
     });
 
@@ -125,10 +68,11 @@ export function Avisos({ resumenDomingo, avisosCobros, nivel }: { resumenDomingo
               {push === 'activo' && 'Activados en este dispositivo.'}
             </p>
             {(push === 'inactivo' || push === 'activo') && (
-              <button type="button" disabled={pendiente} onClick={push === 'activo' ? desactivar : activar} className={cn('mt-3 inline-flex h-10 items-center gap-2 rounded-[11px] px-4 text-[13px] font-bold', push === 'activo' ? 'border border-edge text-fg' : 'bg-ink text-white dark:bg-white dark:text-ink')} data-testid="activar-push">
-                <BellRing size={15} /> {pendiente ? 'Un momento…' : push === 'activo' ? 'Quitar este dispositivo' : 'Activar avisos aquí'}
+              <button type="button" disabled={pendiente || ocupado} onClick={push === 'activo' ? () => void desactivar() : activarAqui} className={cn('mt-3 inline-flex h-10 items-center gap-2 rounded-[11px] px-4 text-[13px] font-bold', push === 'activo' ? 'border border-edge text-fg' : 'bg-ink text-white dark:bg-white dark:text-ink')} data-testid="activar-push">
+                <BellRing size={15} /> {pendiente || ocupado ? 'Un momento…' : push === 'activo' ? 'Quitar este dispositivo' : 'Activar avisos aquí'}
               </button>
             )}
+            {errorPush && <p className="mt-2 text-[12.5px] font-semibold text-negative">{errorPush}</p>}
           </div>
         </div>
       </div>

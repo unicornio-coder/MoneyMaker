@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, ExternalLink, Check, LifeBuoy, Trash2, FileDown } from 'lucide-react';
+import { Bell, ExternalLink, Check, Trash2, FileDown, Phone, Mail, Handshake } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money, fechaCorta } from '@/lib/format';
 import { COMERCIOS } from '@/lib/domain/comercios';
@@ -13,14 +13,13 @@ import type { Recurrente } from '@/lib/domain/tipos';
 import { Panel } from '@/components/ui/Panel';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { crearEvento, eliminarRecurrente, marcarCancelada, marcarNoRecurrente, solicitarCancelacion } from '@/app/app/fijos/acciones';
+import { crearEvento, eliminarRecurrente, marcarCancelada, marcarNoRecurrente } from '@/app/app/fijos/acciones';
+import { categoria } from '@/lib/domain/categorias';
 import { ModalCancelar, urlCarta } from './ModalCancelar';
 import { ModalNegociar } from './ModalNegociar';
 
-const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
-
 export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { recurrente: Recurrente | null; ingresoMensual: number; onClose: () => void }) {
-  const [modo, setModo] = useState<'detalle' | 'guiada' | 'porMi' | 'listo'>('detalle');
+  const [modo, setModo] = useState<'detalle' | 'listo'>('detalle');
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cancelando, setCancelando] = useState(false);
   const [negociando, setNegociando] = useState(false);
@@ -35,6 +34,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
   const pctIngreso = ingresoMensual > 0 ? (mensual / ingresoMensual) * 100 : null;
   const proximo = proximoCobro(r);
   const meses = r.primerCargo ? Math.max(1, Math.round((Date.now() - deISO(r.primerCargo).getTime()) / (30.4 * 86_400_000)) + 1) : r.veces;
+  const diasParaCobro = Math.max(0, Math.round((proximo.getTime() - Date.now()) / 86_400_000));
 
   const recordar = () =>
     start(async () => {
@@ -52,13 +52,6 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
         setModo('listo');
         router.refresh();
       } else setMensaje(res.error);
-    });
-
-  const porMi = () =>
-    start(async () => {
-      const res = await solicitarCancelacion(r.id);
-      setModo(res.ok ? 'listo' : 'detalle');
-      if (!res.ok) setMensaje(res.error);
     });
 
   const borrar = () =>
@@ -89,69 +82,60 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
           )}
           <Button variant="white" className="mt-6" onClick={cerrar}>Cerrar</Button>
         </div>
-      ) : modo === 'guiada' ? (
-        <div className="space-y-4 pb-4">
-          <h3 className="font-display text-[18px] font-bold">Cancelar {r.nombre}</h3>
-          {conocido?.cancelarUrl && (
-            <a href={conocido.cancelarUrl} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center gap-2 rounded-[14px] bg-green-light text-[14px] font-bold text-ink">
-              Ir a la página de cancelación <ExternalLink size={16} />
-            </a>
-          )}
-          <ol className="space-y-2.5">
-            {PASOS_GENERICOS.map((p, i) => (
-              <li key={i} className="flex gap-3 text-[13px] text-white/85"><span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-white/12 text-[11px] font-bold">{i + 1}</span>{p}</li>
-            ))}
-          </ol>
-          <Button variant="white" size="lg" full disabled={pendiente} onClick={yaCancele}><Check size={18} /> Ya la cancelé</Button>
-          <button type="button" onClick={() => setModo('porMi')} className="flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-white/20 text-[13px] font-semibold"><LifeBuoy size={16} /> No puedo, cancélenla por mí</button>
-          <button type="button" onClick={() => setModo('detalle')} className="w-full text-center text-[12px] text-white/60">Volver</button>
-        </div>
-      ) : modo === 'porMi' ? (
-        <div className="space-y-4 pb-4">
-          <h3 className="font-display text-[18px] font-bold">Cancelamos {r.nombre} por ti</h3>
-          <p className="text-[13px] text-white/80">Generamos tu carta de cancelación y la mandamos por correo (con copia a ti). A los 10 días te preguntamos si ya se confirmó y vigilamos que no vuelvan a cobrar.</p>
-          <Button variant="white" size="lg" full disabled={pendiente} onClick={porMi}>{pendiente ? 'Enviando…' : 'Solicitar cancelación'}</Button>
-          <button type="button" onClick={() => setModo('guiada')} className="w-full text-center text-[12px] text-white/60">Volver</button>
-        </div>
       ) : (
         <div className="space-y-4 pb-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <div className="text-[12px] text-white/60">{esMsi ? 'Cuota al mes' : r.frecuencia === 'anual' ? 'Al año' : 'Al mes'}</div>
+              <div className="font-display text-[32px] font-bold leading-none tracking-[-1.2px]">{money(esMsi || r.frecuencia !== 'anual' ? mensual : r.monto)}</div>
+            </div>
+            <span className="rounded-pill bg-green-light px-2.5 py-1 text-[11px] font-bold text-ink">{diasParaCobro === 0 ? 'Se cobra hoy' : diasParaCobro === 1 ? 'Mañana' : `En ${diasParaCobro} días`}</span>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {[
-              [esMsi ? 'Cuotas pagadas' : 'Meses pagando', esMsi ? `${r.msiCuotasPagadas ?? r.veces} de ${r.msiCuotasTotal ?? '?'}` : String(meses)],
-              ['Precio actual', `${money(r.monto)}${r.frecuencia === 'mensual' ? '/mes' : r.frecuencia === 'anual' ? '/año' : ''}`],
-              ['Total pagado', money(totalPagado(r))],
-              ['% del ingreso', pctIngreso != null ? `${pctIngreso.toFixed(1)} %` : '—'],
+              ['Próximo cobro', fechaCorta(proximo)],
+              esMsi ? ['Cuotas', `${r.msiCuotasPagadas ?? r.veces} de ${r.msiCuotasTotal ?? '?'}`] : ['Ciclo', `${r.frecuencia === 'anual' ? 'Cada año' : r.frecuencia === 'semanal' ? 'Cada semana' : r.frecuencia === 'quincenal' ? 'Cada quincena' : 'Cada mes'}${r.primerCargo ? ` · desde ${fechaCorta(r.primerCargo)}` : ''}`],
+              ['Total pagado', `${money(totalPagado(r))} · ${meses} ${meses === 1 ? 'mes' : 'meses'}`],
+              esMsi && r.msiTermina ? ['Termina', fechaCorta(r.msiTermina)] : ['Categoría', categoria(r.categoriaId ?? (esSuscripcion ? 'suscripciones' : 'servicios')).nombre],
             ].map(([l, v]) => (
               <div key={l} className="rounded-card bg-white/8 px-3.5 py-3">
                 <div className="text-[10.5px] font-semibold text-white/60">{l}</div>
-                <div className="font-display text-[18px] font-bold">{v}</div>
+                <div className="mt-0.5 font-display text-[15px] font-bold leading-snug">{v}</div>
               </div>
             ))}
           </div>
-          <div className="rounded-card bg-white/8 px-3.5 py-3 text-[12.5px]">
-            <div className="flex justify-between"><span className="text-white/60">Próximo cobro</span><span className="font-bold">{fechaCorta(proximo)}</span></div>
-            {esMsi && r.msiTermina && <div className="mt-1 flex justify-between"><span className="text-white/60">Termina</span><span className="font-bold">{fechaCorta(r.msiTermina)}</span></div>}
-            {r.ultimoCargo && <div className="mt-1 flex justify-between"><span className="text-white/60">Último cargo</span><span className="font-bold">{fechaCorta(r.ultimoCargo)}</span></div>}
-            <div className="mt-1 flex justify-between"><span className="text-white/60">Al año</span><span className="font-bold">{money(mensual * 12)}</span></div>
-          </div>
+          {pctIngreso != null && <p className="text-[12px] text-white/60">{money(mensual * 12)} al año · {pctIngreso.toFixed(1)} % de tu ingreso mensual.</p>}
+          <button type="button" onClick={recordar} disabled={pendiente} className="flex h-12 w-full items-center gap-3 rounded-[14px] bg-white/8 px-3.5 text-left text-[13px] font-semibold hover:bg-white/12">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-green-light"><Bell size={16} /></span>
+            <span className="flex-1">Avisarme 3 días antes del cobro</span>
+            <span className="text-[11.5px] text-white/60">{fechaCorta(aISO(new Date(proximo.getTime() - 3 * 86_400_000)))}</span>
+          </button>
           {mensaje && <p className="text-[12.5px] font-semibold text-green-light">{mensaje}</p>}
+
           {esSuscripcion && !r.canceladoAt && (
-            <button type="button" onClick={() => setCancelando(true)} className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-green font-display text-[16px] font-bold text-white shadow-green transition-colors hover:bg-green-dark">
-              Cancelar suscripción
-            </button>
+            <div className="space-y-2 pt-1">
+              <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-white/60">Cancelar {r.nombre}</div>
+              {conocido?.cancelarUrl && (
+                <a href={conocido.cancelarUrl} target="_blank" rel="noreferrer" className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-green-light font-display text-[15px] font-bold text-ink hover:bg-white">
+                  {conocido.requiereLlamada ? <Phone size={17} /> : <ExternalLink size={17} />} {conocido.requiereLlamada ? `Llamar a ${r.nombre}` : `Cancelar en ${r.nombre}`}
+                </a>
+              )}
+              <button type="button" onClick={() => setCancelando(true)} className={cn('flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] font-display text-[15px] font-bold', conocido?.cancelarUrl ? 'border border-white/25 text-white hover:bg-white/8' : 'bg-green-light text-ink hover:bg-white')}>
+                <Mail size={17} /> Mandar carta por correo
+              </button>
+              <button type="button" onClick={yaCancele} disabled={pendiente} className="flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-white/25 text-[13px] font-semibold hover:bg-white/8"><Check size={16} /> Ya la cancelé</button>
+              {conocido?.truco && <p className="text-[11.5px] leading-relaxed text-white/60">{conocido.truco}</p>}
+            </div>
           )}
           {r.tipo === 'servicio' && !r.canceladoAt && (
-            <button type="button" onClick={() => setNegociando(true)} className="flex h-[54px] w-full items-center justify-center rounded-[14px] bg-green font-display text-[16px] font-bold text-white shadow-green transition-colors hover:bg-green-dark">
-              Negociar mi tarifa
+            <button type="button" onClick={() => setNegociando(true)} className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-green-light font-display text-[15px] font-bold text-ink hover:bg-white">
+              <Handshake size={17} /> Negociar mi tarifa
             </button>
           )}
-          <div className="flex gap-2">
-            <button type="button" onClick={recordar} disabled={pendiente} className={cn('flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] border border-white/20 text-[13px] font-semibold hover:bg-white/8')}><Bell size={16} /> Recordarme</button>
-            <button type="button" onClick={borrar} disabled={pendiente} className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] border border-white/20 px-3 text-[12.5px] font-semibold hover:bg-white/8"><Trash2 size={15} /> {r.origen === 'detectado' ? 'No es recurrente' : 'Quitar'}</button>
-          </div>
+          <button type="button" onClick={borrar} disabled={pendiente} className="flex h-10 w-full items-center justify-center gap-1.5 text-[12.5px] font-semibold text-white/60 hover:text-white"><Trash2 size={14} /> {r.origen === 'detectado' ? 'No es recurrente' : 'Quitar'}</button>
         </div>
       )}
-      {cancelando && <ModalCancelar open onClose={() => { setCancelando(false); router.refresh(); }} recurrentes={[r]} inicial={r} />}
+      {cancelando && <ModalCancelar open onClose={() => { setCancelando(false); router.refresh(); }} recurrentes={[r]} inicial={r} pasoInicial="formulario" />}
       {negociando && <ModalNegociar recurrente={r} onClose={() => { setNegociando(false); router.refresh(); }} />}
     </Panel>
   );

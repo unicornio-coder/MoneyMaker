@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function PresupuestoPage() {
   const { usuario, repo, diasPago, perfil } = await contexto();
   const hoy = hoyMX();
-  const [movimientos, recurrentes] = await Promise.all([repo.movimientos(usuario.id, { desde: aISO(sumarMeses(hoy, -13)) }), repo.recurrentes(usuario.id)]);
+  const [movimientos, recurrentes, cuentas] = await Promise.all([repo.movimientos(usuario.id, { desde: aISO(sumarMeses(hoy, -13)) }), repo.recurrentes(usuario.id), repo.cuentas(usuario.id)]);
   const ingresoQ = perfil.ingresoQuincenal ?? estimarIngresoQuincenal(movimientos);
 
   // Asegura un presupuesto para el periodo actual de cada vista; si no existe, lo proponemos con los datos.
@@ -31,5 +31,5 @@ export default async function PresupuestoPage() {
     presupuestos[periodo] = p;
   }
 
-  return <Presupuesto presupuestos={presupuestos} rangos={rangos} movimientos={movimientos} diasPago={diasPago} hoy={aISO(hoy)} />;
+  return <Presupuesto presupuestos={presupuestos} rangos={rangos} movimientos={movimientos} cuentas={cuentas.map((c) => ({ id: c.id, nombre: c.nombre }))} diasPago={diasPago} hoy={aISO(hoy)} />;
 }

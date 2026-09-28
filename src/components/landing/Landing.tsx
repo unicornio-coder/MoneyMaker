@@ -3,12 +3,11 @@ import { ArrowRight, Check, ChevronRight, FileText, Lock, ShieldCheck } from 'lu
 import { Logo } from '@/components/shell/Logo';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { EscenaConexion } from './EscenaConexion';
-import { ProductoHero } from './ProductoHero';
 import { FormCorreo } from './FormCorreo';
 import { SiempreClaro } from './SiempreClaro';
 import { Revelar } from './Revelar';
 
-// Landing al estilo Apple × Stori: una idea por pantalla, tipografía grande, producto al centro, casi sin texto.
+// Landing al estilo Apple × Stori: una idea por pantalla, tipografía grande, el producto real (capturas) al centro, casi sin texto.
 // Cada bloque tiene un titular de una línea, una frase de apoyo y un visual del producto. Nada inventado: sin testimonios.
 
 const MARCAS = [
@@ -81,7 +80,13 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
           </div>
           <p className="mt-3 text-[12.5px] text-txt-2 animate-rise [animation-delay:300ms]">7 días gratis · Cancela cuando quieras</p>
           <div className="relative mt-14 animate-rise [animation-delay:380ms] md:mt-20">
-            <ProductoHero />
+            <div className="relative mx-auto w-[300px] md:w-[340px]">
+              <div className="pointer-events-none absolute -inset-10 rounded-full bg-green/25 blur-[70px]" aria-hidden />
+              <div className="relative rounded-[46px] border-[8px] border-[#0f1412] bg-[#0f1412] p-2 shadow-[0_40px_90px_rgba(11,31,23,0.45)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/landing/inicio.png" alt="Inicio de MoneyMaker: saldo neto, cuentas y suscripciones" width={786} height={1702} className="block w-full rounded-[36px] bg-canvas" />
+              </div>
+            </div>
             <span className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-surface to-transparent" aria-hidden />
           </div>
         </div>
@@ -103,10 +108,37 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       {/* 3. Conecta todo */}
       <Seccion id="conecta" className="bg-bg-page py-24 md:py-32">
         <Revelar>
-          <Titular sub="Sube el estado de cuenta que ya te manda tu banco. Dos minutos después, cada movimiento tiene nombre, categoría y detalle.">Todo tu dinero, en un lugar.</Titular>
+          <Titular sub="Conecta tu banco o sube tu estado de cuenta. Dos minutos después, cada movimiento tiene nombre y categoría.">Todo tu dinero, en un lugar.</Titular>
         </Revelar>
         <Revelar delay={150} className="mt-14">
           <EscenaConexion tono="claro" />
+        </Revelar>
+      </Seccion>
+
+      {/* 4. Así se ve: tres pantallas reales */}
+      <Seccion className="py-24 md:py-32">
+        <Revelar>
+          <Titular sub="Saldo neto, gastos por categoría y suscripciones. Sin gráficas que nadie entiende.">Así se ve.</Titular>
+        </Revelar>
+        <Revelar delay={150} className="mt-14">
+          <div className="mx-auto grid max-w-[980px] grid-cols-1 gap-8 md:grid-cols-3 md:gap-6">
+            {[
+              ['inicio', 'Inicio', 'Cuánto tienes y cuánto debes, en un vistazo.'],
+              ['gastos', 'Gastos', 'Cada peso con su categoría.'],
+              ['suscripciones', 'Suscripciones', 'Qué se cobra y cuándo. Cancela en un toque.'],
+            ].map(([f, t, d], i) => (
+              <figure key={f} className={`text-center ${i === 1 ? 'md:-mt-8' : ''}`}>
+                <div className="mx-auto w-[250px] rounded-[38px] border-[7px] border-[#0f1412] bg-[#0f1412] p-1.5 shadow-[0_30px_70px_rgba(11,31,23,0.35)]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/landing/${f}.png`} alt={`Pantalla de ${t} de MoneyMaker`} width={786} height={1702} className="block w-full rounded-[30px] bg-canvas" loading="lazy" />
+                </div>
+                <figcaption className="mt-5">
+                  <div className="font-display text-[18px] font-bold">{t}</div>
+                  <div className="mt-1 text-[13.5px] text-txt-2 dark:text-fg-2">{d}</div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </Revelar>
       </Seccion>
 
@@ -114,7 +146,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       <Seccion className="bg-bg-page py-24 dark:bg-canvas md:py-32">
         <div className="grid items-center gap-12 md:grid-cols-2">
           <Revelar>
-            <Titular align="left" sub="Cuánto llevas pagando cada una, desde cuándo y cuáles no usas. Cancelas en dos toques, con el enlace directo a la página de cancelación.">Cancela lo que no usas.</Titular>
+            <Titular align="left" sub="Cuáles pagas, desde cuándo y cuáles no usas. Cancelas en un toque, o mandamos la carta por ti.">Cancela lo que no usas.</Titular>
             <Link href="/registro" className="mt-8 inline-flex items-center gap-1.5 text-[15px] font-bold text-green-dark dark:text-green-light">Ver mis suscripciones <ChevronRight size={18} /></Link>
           </Revelar>
           <Revelar delay={150}>
@@ -153,7 +185,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
             </div>
           </Revelar>
           <Revelar className="order-1 md:order-2">
-            <Titular align="left" sub="Tu banco dice “AMAZON MX”. Nosotros te decimos qué compraste, a cuántos meses y cuándo llega. Con Uber, de dónde a dónde.">Cada cargo, con detalle.</Titular>
+            <Titular align="left" sub="Tu banco dice “AMAZON MX”. Nosotros te decimos qué compraste y a cuántos meses.">Cada cargo, con detalle.</Titular>
           </Revelar>
         </div>
       </Seccion>

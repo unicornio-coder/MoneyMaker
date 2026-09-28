@@ -5,14 +5,17 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { categoria } from '@/lib/domain/categorias';
+import { iconoCategoria } from '@/lib/domain/categoriaIconos';
 import type { LineaVsActual } from '@/lib/domain/presupuesto';
 import { actualizarLimite } from '@/app/app/presupuesto/acciones';
 
-function Fila({ presupuestoId, l }: { presupuestoId: string; l: LineaVsActual }) {
+/** Una categoría: icono, nombre, barra de avance, gastado y límite editable. */
+function Fila({ presupuestoId, l, i }: { presupuestoId: string; l: LineaVsActual; i: number }) {
   const [valor, setValor] = useState(String(Math.round(l.limite)));
   const [pendiente, start] = useTransition();
   const router = useRouter();
   const cat = categoria(l.categoriaId);
+  const Icon = iconoCategoria(l.categoriaId);
   const guardar = () => {
     const n = Number(valor);
     if (!(n >= 0) || n === l.limite) return;
@@ -21,45 +24,48 @@ function Fila({ presupuestoId, l }: { presupuestoId: string; l: LineaVsActual })
       router.refresh();
     });
   };
-  const pctBarra = Math.min(100, l.pct);
+  const restante = l.limite - l.actual;
   return (
-    <div className={cn('rounded-card px-3.5 py-3 transition-all duration-[250ms]', l.excedido ? 'bg-ink text-white shadow-exceeded' : 'card')}>
-      <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_34px] items-center gap-1.5 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] sm:gap-2 text-[12.5px]">
-        <div className="flex min-w-0 items-center gap-2 font-bold">
-          <span className="h-2 w-2 flex-none rounded-full ring-1 ring-black/10 dark:ring-white/30" style={{ background: l.excedido ? '#4ADE80' : cat.color }} />
-          <span className="line-clamp-2 leading-tight sm:truncate">{l.nombre ?? cat.nombre}</span>
+    <li className={cn('px-4 py-3.5 animate-rise', l.excedido && 'bg-negative-50/60 dark:bg-surface-2')} style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}>
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-white" style={{ background: cat.color }}><Icon size={18} /></span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="truncate text-[14px] font-bold">{l.nombre ?? cat.nombre}</span>
+            <span className={cn('flex-none text-[12px] font-semibold', l.excedido ? 'text-negative' : 'text-txt-2 dark:text-fg-2')}>{l.excedido ? `${money(-restante)} de más` : `${money(restante)} libres`}</span>
+          </div>
+          <div className="mt-1.5 h-1.5 w-full rounded-pill bg-line dark:bg-surface-2">
+            <div className={cn('h-1.5 rounded-pill transition-[width] duration-[550ms] ease-bounce', l.excedido ? 'bg-negative' : l.pct >= 80 ? 'bg-ink dark:bg-white' : 'bg-green')} style={{ width: `${Math.min(100, l.pct)}%` }} />
+          </div>
+          <div className="mt-1.5 flex items-center justify-between gap-2 text-[12px] text-txt-2 dark:text-fg-2">
+            <span><b className="font-display text-[13px] text-fg">{money(l.actual)}</b> gastado</span>
+            <label className="flex items-center gap-1.5">
+              <span>de</span>
+              <span className="relative">
+                <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 font-display text-[13px] font-bold text-fg">$</span>
+                <input
+                  value={valor}
+                  onChange={(e) => setValor(e.target.value.replace(/[^\d]/g, ''))}
+                  onBlur={guardar}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                  inputMode="numeric"
+                  aria-label={`Presupuesto de ${cat.nombre}`}
+                  className={cn('h-8 w-[92px] rounded-[8px] border border-line-input bg-bg-input pl-5 pr-2 text-right font-display text-[13px] font-bold text-fg outline-none focus:border-green dark:border-edge dark:bg-surface-2', pendiente && 'opacity-60')}
+                />
+              </span>
+            </label>
+          </div>
         </div>
-        <div>
-          <input
-            value={valor}
-            onChange={(e) => setValor(e.target.value.replace(/[^\d]/g, ''))}
-            onBlur={guardar}
-            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-            inputMode="numeric"
-            aria-label={`Presupuesto de ${cat.nombre}`}
-            className={cn('h-8 w-full rounded-[8px] border px-2 text-right font-display text-[13px] font-bold outline-none', l.excedido ? 'border-white/20 bg-white/10 text-white focus:border-green-light' : 'border-line-input bg-bg-input focus:border-green dark:border-edge dark:bg-surface-2', pendiente && 'opacity-60')}
-          />
-        </div>
-        <div className={cn('rounded-[8px] px-2 py-1.5 text-right font-display text-[13px] font-bold', l.excedido ? 'bg-white/10' : 'bg-[rgba(127,140,134,0.12)]')}>{money(l.actual)}</div>
-        <div className={cn('text-right font-display text-[13px] font-bold', l.excedido ? 'text-green-light' : l.diferencia >= 0 ? 'text-green-dark dark:text-green-light' : 'text-negative')}>{l.diferencia >= 0 ? '' : '-'}{money(Math.abs(l.diferencia))}</div>
-        <div className={cn('text-right text-[12px] font-bold', l.excedido ? 'text-white' : 'text-txt-2 dark:text-fg-2')}>{Math.round(l.pct)}%</div>
       </div>
-      <div className={cn('mt-2 h-1.5 w-full rounded-pill', l.excedido ? 'bg-white/12' : 'bg-line dark:bg-surface-2')}>
-        <div className={cn('h-1.5 rounded-pill transition-[width] duration-[550ms] ease-bounce', l.excedido ? 'bg-green-light' : 'bg-green')} style={{ width: `${pctBarra}%` }} />
-      </div>
-    </div>
+    </li>
   );
 }
 
 export function TablaPresupuesto({ presupuestoId, lineas }: { presupuestoId: string; lineas: LineaVsActual[] }) {
+  if (!lineas.length) return <p className="card px-4 py-8 text-center text-[12.5px] text-txt-2">Sin categorías todavía. Agrega una o sube tu Excel.</p>;
   return (
-    <section className="space-y-2">
-      <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_minmax(0,0.95fr)_34px] gap-1.5 px-3.5 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_44px] sm:gap-2 text-[9px] font-bold uppercase tracking-[0.3px] text-txt-2 dark:text-fg-2 md:text-[10.3px] md:tracking-[0.9px]">
-        <span>Categoría</span><span className="text-right">Presup.</span><span className="text-right">Actual</span><span className="text-right">Difer.</span><span className="text-right">%</span>
-      </div>
-      {lineas.length === 0 && <p className="card px-4 py-8 text-center text-[12.5px] text-txt-2">Sin líneas todavía. Crea una con &quot;Nuevo presupuesto&quot;.</p>}
-      {lineas.map((l) => <Fila key={l.categoriaId} presupuestoId={presupuestoId} l={l} />)}
-      <p className="px-1 pt-1 text-[11px] text-txt-3">Edita el monto de Presupuesto y presiona Enter. La fila se pone oscura cuando el gasto real supera el límite.</p>
-    </section>
+    <ul className="card divide-y divide-edge overflow-hidden p-0">
+      {lineas.map((l, i) => <Fila key={l.categoriaId} presupuestoId={presupuestoId} l={l} i={i} />)}
+    </ul>
   );
 }
