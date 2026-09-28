@@ -9,51 +9,44 @@ test.beforeAll(async ({ request }) => {
   await request.post('/api/qa/reset');
 });
 
-test('onboarding: metas, quincena, plan y primer PDF', async ({ page }) => {
+test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await page.goto('/onboarding');
+  await expect(page.getByRole('heading', { name: 'Bienvenido a MoneyMaker' })).toBeVisible();
+  await expect(page.getByText('Paso 1 de 3')).toBeVisible();
+  const nombre = page.getByLabel('Tu nombre');
+  await nombre.fill('');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByText('Escribe tu nombre.')).toBeVisible();
+  await nombre.fill('Juan Carlos Ostos');
+  // La contraseña es opcional, pero si se escribe debe tener 8 caracteres.
+  await page.getByLabel('Contraseña (opcional)').fill('corta');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByText('La contraseña necesita al menos 8 caracteres.')).toBeVisible();
+  await page.getByLabel('Contraseña (opcional)').fill('');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+
   await expect(page.getByRole('heading', { name: '¿Qué quieres lograr?' })).toBeVisible();
-  await expect(page.getByText('Paso 1 de 4')).toBeVisible();
-  // Sin meta no se puede continuar.
+  await expect(page.getByText('Paso 2 de 3')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Elige al menos una meta' })).toBeDisabled();
-  // El nombre solo se pide cuando no lo tenemos (en demo ya viene).
-  const nombre = page.getByLabel('¿Cómo te llamas?');
-  if (await nombre.isVisible()) await nombre.fill('Juan Carlos Ostos');
   await page.getByRole('button', { name: /Ahorrar cada quincena/ }).click();
   await page.getByRole('button', { name: /Controlar suscripciones/ }).click();
   await expect(page.getByRole('button', { name: /Ahorrar cada quincena/ })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByRole('heading', { name: '¿Cuándo te pagan?' })).toBeVisible();
-  await expect(page.getByText('Paso 2 de 4')).toBeVisible();
-  // Días por defecto 5 y 20; los cambiamos a 15 y 30.
-  await expect(page.getByText('Tu quincena empieza los días 5 y 20.')).toBeVisible();
-  await page.getByRole('button', { name: '5', exact: true }).click();
-  await page.getByRole('button', { name: '20', exact: true }).click();
-  await expect(page.getByText('Elige al menos un día.')).toBeVisible();
-  await page.getByRole('button', { name: '15', exact: true }).click();
-  await page.getByRole('button', { name: '30', exact: true }).click();
-  await expect(page.getByText('Tu quincena empieza los días 15 y 30.')).toBeVisible();
-  await page.getByLabel(/¿Cuánto recibes cada quincena/).fill('14500');
-  await page.getByRole('button', { name: 'Continuar' }).click();
-
-  await expect(page.getByRole('heading', { name: '7 días de Plus gratis. Sin tarjeta.' })).toBeVisible();
-  await expect(page.getByText('Menos de $5 al día. Una suscripción olvidada cuesta más.')).toBeVisible();
-  await page.getByRole('button', { name: 'Empezar 7 días gratis' }).click();
-
-  await expect(page.getByRole('heading', { name: 'Sube tu primer estado de cuenta' })).toBeVisible();
-  await expect(page.getByText('Paso 4 de 4')).toBeVisible();
-  // "Atrás" regresa al plan y vuelve a avanzar.
-  await page.getByRole('button', { name: 'Atrás' }).click();
-  await expect(page.getByRole('heading', { name: '7 días de Plus gratis. Sin tarjeta.' })).toBeVisible();
-  await page.getByRole('button', { name: 'Empezar 7 días gratis' }).click();
-  await page.getByRole('button', { name: 'Subir estado de cuenta' }).click();
+  await expect(page.getByRole('heading', { name: 'Conecta tu dinero' })).toBeVisible();
+  await expect(page.getByText('Paso 3 de 3')).toBeVisible();
+  // Sin "saltar": las dos únicas salidas son conectar un banco o subir un PDF.
+  await expect(page.getByRole('button', { name: /Ver mi panel/ })).toHaveCount(0);
+  await page.getByRole('button', { name: /Conectar mi banco/ }).click();
+  await expect(page.getByRole('dialog').filter({ hasText: 'Vincular banco' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: /Subir estado de cuenta/ }).click();
   await expect(page).toHaveURL(/\/app\/importar/);
 
-  // Lo guardado se refleja en Ajustes: días de pago e ingreso.
+  // El nombre quedó guardado en Ajustes.
   await page.goto('/app/ajustes');
-  await page.getByRole('button', { name: /^Perfil/ }).click();
-  await expect(page.getByRole('button', { name: '15', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('button', { name: '5', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByText('Juan Carlos Ostos').first()).toBeVisible();
 });
 
 test('cancelar una suscripción: guiada y por mí', async ({ page, request }, testInfo) => {
@@ -64,7 +57,7 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
   }
 
   await page.goto('/app/fijos');
-  await expect(page.getByText('Cargos fijos al mes')).toBeVisible();
+  await expect(page.getByText('Suscripciones y cargos fijos al mes')).toBeVisible();
   await page.getByRole('button', { name: 'Cancelar una suscripción' }).click();
   const modal = page.getByRole('dialog');
   await expect(modal.getByText('¿Qué quieres cancelar?')).toBeVisible();
@@ -72,7 +65,7 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
 
   // Guiada: Netflix tiene enlace directo y pasos; "Ya la cancelé" la deja de contar.
   await modal.getByRole('button', { name: /Netflix/ }).click();
-  await expect(modal.getByText('Podemos cancelarla por ti')).toBeVisible();
+  await expect(modal.getByText('Mandamos la carta por ti')).toBeVisible();
   const enlace = modal.getByRole('link', { name: /Ir directo a cancelar/ });
   await expect(enlace).toHaveAttribute('href', /netflix\.com/);
   await expect(enlace).toHaveAttribute('target', '_blank');
@@ -83,23 +76,20 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('li', { hasText: 'Netflix' })).toHaveCount(0);
 
-  // Por mí: el formulario exige nombre, correo y autorización.
+  // Por mí: solo pide el correo del servicio (opcional) y la autorización.
   await page.getByRole('button', { name: 'Cancelar una suscripción' }).click();
   await page.getByRole('dialog').getByRole('button', { name: /Spotify/ }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Cancelar por mí' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Mandar carta por correo' }).click();
   await expect(page.getByRole('dialog').getByText('Cancelar Spotify por ti')).toBeVisible();
-  await page.getByRole('dialog').getByRole('button', { name: 'Enviar solicitud' }).click();
-  await expect(page.getByRole('dialog').getByText('Escribe el nombre y el correo')).toBeVisible();
-  await page.getByRole('dialog').getByLabel('Nombre en la cuenta').fill('Juan Carlos');
-  await page.getByRole('dialog').getByLabel('Correo de la cuenta').fill('jc@billup.mx');
-  await page.getByRole('dialog').getByRole('button', { name: 'Enviar solicitud' }).click();
-  await expect(page.getByRole('dialog').getByText('Necesitamos tu autorización')).toBeVisible();
+  await expect(page.getByRole('dialog').getByLabel('Nombre en la cuenta')).toHaveCount(0);
+  await page.getByRole('dialog').getByRole('button', { name: 'Mandar carta' }).click();
+  await expect(page.getByRole('dialog').getByText('Marca la autorización')).toBeVisible();
   await page.getByRole('dialog').getByRole('checkbox').check();
-  await page.getByRole('dialog').getByRole('button', { name: 'Enviar solicitud' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Mandar carta' }).click();
   await expect(page.getByRole('dialog').getByRole('heading', { name: 'Solicitud recibida' })).toBeVisible();
-  // La carta de cancelación se descarga como PDF con los datos del formulario.
+  // La carta de cancelación se descarga como PDF con los datos del perfil.
   const carta = page.getByRole('dialog').getByRole('link', { name: /Descargar carta de cancelación/ });
-  await expect(carta).toHaveAttribute('href', /\/api\/cancelacion\/carta\?recurrente=.+&nombre=Juan\+Carlos&correo=jc%40billup\.mx/);
+  await expect(carta).toHaveAttribute('href', /\/api\/cancelacion\/carta\?recurrente=.+/);
   const pdf = await request.get((await carta.getAttribute('href'))!);
   expect(pdf.status()).toBe(200);
   expect(pdf.headers()['content-type']).toBe('application/pdf');

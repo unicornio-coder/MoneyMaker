@@ -6,7 +6,6 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { iniciarSesion, type AuthResult } from '@/lib/auth/actions';
 import { Input } from '@/components/ui/Input';
-import { GoogleButton } from './GoogleButton';
 
 function Submit() {
   const { pending } = useFormStatus();
@@ -40,8 +39,6 @@ export function LoginForm({ next, errorInicial }: { next?: string; errorInicial?
         <Submit />
         <p className="text-center text-[13px]"><Link href="/recuperar" className="font-semibold text-txt-2 underline-offset-4 hover:text-fg hover:underline dark:text-fg-2">Olvidé mi contraseña</Link></p>
       </form>
-      <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.9px] text-txt-3"><span className="h-px flex-1 bg-line-2 dark:bg-edge" />o<span className="h-px flex-1 bg-line-2 dark:bg-edge" /></div>
-      <GoogleButton next={next} />
     </div>
   );
 }

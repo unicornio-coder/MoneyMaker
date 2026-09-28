@@ -69,11 +69,10 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
 
   const enviar = () => {
     if (!r) return;
-    if (!form.nombre.trim() || !form.correo.trim()) return setError('Escribe el nombre y el correo con los que está registrada la suscripción.');
-    if (!form.autorizo) return setError('Necesitamos tu autorización para hablar con el proveedor en tu nombre.');
-    const notas = [`Nombre en la cuenta: ${form.nombre.trim()}`, `Correo de la cuenta: ${form.correo.trim()}`, form.ultimos4 ? `Tarjeta termina en: ${form.ultimos4}` : null, form.notas.trim() ? `Notas: ${form.notas.trim()}` : null].filter(Boolean).join('\n');
+    if (!form.autorizo) return setError('Marca la autorización para mandar la carta en tu nombre.');
+    const notas = form.ultimos4 ? `Tarjeta termina en: ${form.ultimos4}` : undefined;
     start(async () => {
-      const res = await solicitarCancelacion(r.id, notas, { nombre: form.nombre, correo: form.correo, ultimos4: form.ultimos4 || null, correoProveedor: form.correoProveedor || null });
+      const res = await solicitarCancelacion(r.id, notas, { nombre: null, correo: null, ultimos4: form.ultimos4 || null, correoProveedor: form.correoProveedor || null });
       if (res.ok) { setEnvio(res); setModoListo('porMi'); setPaso('listo'); router.refresh(); } else { setDePlan(!!res.plan); setError(res.error); }
     });
   };
@@ -129,10 +128,9 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
           )}
           {r && (
             <div className="relative overflow-hidden rounded-card-lg p-5 text-white" style={{ background: 'linear-gradient(135deg, #0B1F17 0%, #15803D 70%, #16A34A 100%)' }}>
-              <span className="inline-flex items-center gap-1 rounded-pill bg-white/15 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.6px]">Incluido en tu plan</span>
-              <h3 className="mt-2.5 font-display text-[18px] font-bold tracking-[-0.3px]">Podemos cancelarla por ti</h3>
-              <p className="mt-1 text-[12.5px] text-white/80">Nuestro equipo habla con {sel.nombre} en tu nombre. Te confirmamos por correo en menos de 24 horas.</p>
-              <Button variant="white" className="mt-4" onClick={() => setPaso('formulario')}>Cancelar por mí <ChevronRight size={16} /></Button>
+              <h3 className="font-display text-[18px] font-bold tracking-[-0.3px]">Mandamos la carta por ti</h3>
+              <p className="mt-1 text-[12.5px] text-white/80">Una carta de cancelación a {sel.nombre}, por correo y con copia a ti. A los 10 días te preguntamos si ya se confirmó.</p>
+              <Button variant="white" className="mt-4" onClick={() => setPaso('formulario')}>Mandar carta por correo <ChevronRight size={16} /></Button>
               <span className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/10" />
             </div>
           )}
@@ -161,21 +159,16 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
 
       {paso === 'formulario' && sel && r && (
         <div className="space-y-3 pb-2">
-          <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Con estos datos contactamos a {sel.nombre}. Nunca te pedimos tu contraseña.</p>
-          <Campo label="Nombre en la cuenta" value={form.nombre} onChange={(v) => setForm({ ...form, nombre: v })} placeholder="Como aparece en el servicio" />
-          <Campo label="Correo de la cuenta" value={form.correo} onChange={(v) => setForm({ ...form, correo: v })} placeholder="tu@correo.com" type="email" />
+          <p className="text-[12.5px] text-txt-2 dark:text-fg-2">La carta va con tu nombre y tu correo de MoneyMaker. Solo necesitamos a dónde mandarla.</p>
+          <Campo label={`Correo de atención de ${sel.nombre}`} value={form.correoProveedor} onChange={(v) => setForm({ ...form, correoProveedor: v })} placeholder="cancelaciones@servicio.com" type="email" />
+          <p className="text-[11.5px] text-txt-3">Si no lo sabes, déjalo vacío: te mandamos la carta lista a tu correo para que la reenvíes.</p>
           <Campo label="Últimos 4 dígitos de la tarjeta (opcional)" value={form.ultimos4} onChange={(v) => setForm({ ...form, ultimos4: v.replace(/\D/g, '').slice(0, 4) })} placeholder="1234" inputMode="numeric" />
-          <Campo label="Correo de atención del servicio (si lo tienes)" value={form.correoProveedor} onChange={(v) => setForm({ ...form, correoProveedor: v })} placeholder="cancelaciones@servicio.com" type="email" />
-          <label className="block">
-            <span className="mb-1 block text-[12px] font-semibold text-txt-2 dark:text-fg-2">Notas (opcional)</span>
-            <textarea value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} rows={3} placeholder="Algo que debamos saber: plan, fecha de corte, si ya intentaste cancelar…" className="input resize-none text-[13.5px]" />
-          </label>
           <label className="flex items-start gap-3 rounded-card bg-bg-muted p-3.5 text-[12.5px] leading-relaxed dark:bg-surface-2">
             <input type="checkbox" checked={form.autorizo} onChange={(e) => setForm({ ...form, autorizo: e.target.checked })} className="mt-0.5 h-4 w-4 flex-none accent-green" />
-            <span>Autorizo a MoneyMaker a enviar en mi nombre la carta de cancelación a {sel.nombre}. No se comparten contraseñas y puedo retirar la solicitud cuando quiera.</span>
+            <span>Autorizo a MoneyMaker a mandar la carta de cancelación de {sel.nombre} en mi nombre.</span>
           </label>
           {error && (dePlan ? <AvisoPlus texto={error} /> : <p className="text-[12.5px] font-semibold text-negative">{error}</p>)}
-          <Button variant="green" size="lg" full disabled={pendiente} onClick={enviar}>{pendiente ? 'Enviando…' : 'Enviar solicitud'}</Button>
+          <Button variant="green" size="lg" full disabled={pendiente} onClick={enviar}>{pendiente ? 'Mandando…' : 'Mandar carta'}</Button>
           <p className="flex items-center justify-center gap-1.5 text-[11px] text-txt-3"><ShieldCheck size={13} /> La carta sale al instante, con copia a tu correo. Sin costo extra.</p>
         </div>
       )}

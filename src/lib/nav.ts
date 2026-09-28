@@ -17,24 +17,24 @@ export type Tab = {
 
 export const TABS: Tab[] = [
   { href: '/app', label: 'Inicio', titulo: 'Inicio', icon: Home, grupo: 1, tabbar: 'Inicio' },
-  { href: '/app/fijos', label: 'Gastos fijos', titulo: 'Gastos fijos', icon: Repeat, grupo: 1, tabbar: 'Fijos' },
+  { href: '/app/fijos', label: 'Suscripciones', titulo: 'Suscripciones', icon: Repeat, grupo: 1, tabbar: 'Suscripciones' },
   { href: '/app/gastos', label: 'Gastos', titulo: 'Gastos', icon: PieChart, grupo: 1, tabbar: 'Gastos' },
   { href: '/app/presupuesto', label: 'Presupuesto', titulo: 'Presupuesto', icon: Wallet, grupo: 1, tabbar: 'Plan' },
-  { href: '/app/patrimonio', label: 'Patrimonio', titulo: 'Patrimonio', icon: BarChart3, grupo: 2, tabbar: null },
+  { href: '/app/patrimonio', label: 'Patrimonio', titulo: 'Patrimonio', icon: BarChart3, grupo: null, tabbar: null },
   { href: '/app/inversiones', label: 'Inversiones', titulo: 'Inversiones', icon: TrendingUp, grupo: 2, tabbar: null },
-  { href: '/app/objetivos', label: 'Objetivos', titulo: 'Objetivos', icon: Flag, grupo: 2, tabbar: null },
-  { href: '/app/insights', label: 'Insights', titulo: 'Insights', icon: Bell, grupo: null, tabbar: null },
+  { href: '/app/objetivos', label: 'Metas', titulo: 'Metas', icon: Flag, grupo: null, tabbar: null },
+  { href: '/app/insights', label: 'Avisos', titulo: 'Avisos', icon: Bell, grupo: null, tabbar: null },
   { href: '/app/importar', label: 'Importar', titulo: 'Importar estado de cuenta', icon: Upload, grupo: null, tabbar: null },
   { href: '/app/ajustes', label: 'Ajustes', titulo: 'Ajustes', icon: Settings, grupo: 'abajo', tabbar: null },
   { href: '/app/planes', label: 'Planes', titulo: 'Planes', icon: Crown, grupo: null, tabbar: null },
 ];
 
 /** Orden de la hoja "Más" en móvil. */
-export const MAS_ITEMS = ['/app/patrimonio', '/app/inversiones', '/app/objetivos', '/app/insights', '/app/importar', '/app/ajustes']
+export const MAS_ITEMS = ['/app/inversiones', '/app/insights', '/app/importar', '/app/ajustes']
   .map((h) => TABS.find((t) => t.href === h)!)
   .filter(Boolean);
 
-/** Orden de la tab bar móvil: Inicio, Gastos, [+], Plan, Fijos. */
+/** Orden de la tab bar móvil: Inicio, Gastos, [+], Plan, Suscripciones. */
 export const TABBAR_IZQ = ['/app', '/app/gastos'].map((h) => TABS.find((t) => t.href === h)!);
 export const TABBAR_DER = ['/app/presupuesto', '/app/fijos'].map((h) => TABS.find((t) => t.href === h)!);
 

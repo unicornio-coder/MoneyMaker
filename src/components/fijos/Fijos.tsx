@@ -51,7 +51,7 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
       <div className="relative overflow-hidden rounded-card-lg bg-ink p-5 text-white shadow-dark">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <div className="text-[12px] font-semibold text-green-light">Cargos fijos al mes</div>
+            <div className="text-[12px] font-semibold text-green-light">Suscripciones y cargos fijos al mes</div>
             <div className="mt-1 font-display text-[34px] font-bold leading-none tracking-[-1px]">{money(totales.total)}</div>
             {totales.suscripciones > 0 && <p className="mt-2 text-[12.5px] text-white/70">{money(totales.suscripciones)} son suscripciones.</p>}
           </div>

@@ -10,12 +10,12 @@ const GRUPOS: { id: Objetivo['grupo']; label: string; icon: typeof PiggyBank; bg
   { id: 'inversion', label: 'Inversión', icon: TrendingUp, bg: 'bg-invest-soft text-invest' },
 ];
 
-export function ObjetivosBloque({ objetivos, compacto = true }: { objetivos: Objetivo[]; compacto?: boolean }) {
+export function ObjetivosBloque({ objetivos, compacto = true, titulo = 'Objetivos' }: { objetivos: Objetivo[]; compacto?: boolean; titulo?: string }) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-[18px] font-bold">Objetivos</h2>
-        <Link href="/app/objetivos" className="text-[12px] font-semibold text-green-dark dark:text-green-light">Ver todos</Link>
+        <h2 className="font-display text-[18px] font-bold">{titulo}</h2>
+        <Link href="/app/objetivos" className="text-[12px] font-semibold text-green-dark dark:text-green-light">{objetivos.length ? 'Ver todas' : 'Crear una meta'}</Link>
       </div>
       {GRUPOS.map((g) => {
         const lista = objetivos.filter((o) => o.grupo === g.id).slice(0, compacto ? 2 : undefined);

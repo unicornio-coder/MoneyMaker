@@ -59,7 +59,18 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, sa
   if (!cuentas.length) {
     return (
       <>
-        <EmptyState icon={TrendingUp} titulo="Conecta una cuenta de inversión" texto="GBM+, Bitso, CetesDirecto o Kuspit. También puedes subir su estado de cuenta." cta={{ label: 'Conectar', onClick: () => setBancos(true) }} />
+        <div className="mx-auto max-w-[520px] space-y-6 pt-6 text-center">
+          <div className="flex items-center justify-center gap-3">
+            {[['gbm.com', 'GBM+'], ['bitso.com', 'Bitso'], ['cetesdirecto.com', 'CetesDirecto']].map(([d, n]) => (
+              <span key={d} className="flex h-14 w-14 items-center justify-center rounded-full bg-surface shadow-card"><Avatar domain={d} nombre={n} size={34} logoPct={70} bg="transparent" /></span>
+            ))}
+          </div>
+          <div>
+            <h2 className="font-display text-[24px] font-bold tracking-[-0.6px]">Tus inversiones, en un solo lugar</h2>
+            <p className="mt-2 text-[14px] leading-relaxed text-txt-2 dark:text-fg-2">Conecta GBM+, Bitso o CetesDirecto, o sube su estado de cuenta, y aquí ves cuánto has aportado y cuánto ha crecido.</p>
+          </div>
+          <button type="button" onClick={() => setBancos(true)} className="btn-primary mx-auto flex h-12 items-center justify-center px-8 text-[15px]">Conectar inversión</button>
+        </div>
         <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
       </>
     );

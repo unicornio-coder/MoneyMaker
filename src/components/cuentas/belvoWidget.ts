@@ -64,6 +64,8 @@ export async function abrirWidgetBelvo({ institucion, onSuccess, onError, onExit
     const config: Record<string, unknown> = {
       locale: 'es',
       country_codes: ['MX'],
+      // Solo bancos: nada fiscal (SAT) ni de empleo (IMSS). Con llaves de producción aparecen los bancos reales.
+      institution_types: ['retail', 'business'],
       callback: (link: string, institution: string) => onSuccess(link, institution),
       onExit: () => onExit?.(),
       onEvent: (data: { eventName?: string; meta_data?: { error_message?: string; error_code?: string } }) => {

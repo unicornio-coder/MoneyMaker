@@ -10,5 +10,12 @@ export async function GET(req: NextRequest) {
     const { error } = await supabaseServer().auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, url.origin));
   }
+  // Enlace de correo abierto en otro navegador (sin PKCE): Supabase manda token_hash + type.
+  const tokenHash = url.searchParams.get('token_hash');
+  const type = url.searchParams.get('type');
+  if (tokenHash && (type === 'magiclink' || type === 'email' || type === 'signup' || type === 'recovery')) {
+    const { error } = await supabaseServer().auth.verifyOtp({ token_hash: tokenHash, type });
+    if (!error) return NextResponse.redirect(new URL(next, url.origin));
+  }
   return NextResponse.redirect(new URL('/login?error=callback', url.origin));
 }

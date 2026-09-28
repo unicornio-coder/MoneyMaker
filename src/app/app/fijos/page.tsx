@@ -2,7 +2,7 @@ import { contexto } from '@/lib/data/contexto';
 import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Fijos } from '@/components/fijos/Fijos';
 
-export const metadata = { title: 'Gastos fijos · MoneyMaker' };
+export const metadata = { title: 'Suscripciones · MoneyMaker' };
 export const dynamic = 'force-dynamic';
 
 export default async function FijosPage({ searchParams }: { searchParams: { r?: string; sec?: string; vista?: string; pago?: string } }) {

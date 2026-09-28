@@ -12,9 +12,9 @@ import { ConectandoBanco, type EstadoConexion } from './ConectandoBanco';
 import type { DatosInicio } from '@/components/inicio/tipos';
 import { abrirWidgetBelvo } from './belvoWidget';
 
-type Props = { open: boolean; onClose: () => void; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; sandbox?: boolean };
+type Props = { open: boolean; onClose: () => void; instituciones: DatosInicio['instituciones']; agregador: 'belvo' | 'mock'; sandbox?: boolean; /** Se conectó una cuenta (o se eligió subir PDF / Bitso): el onboarding lo usa para dar por terminado el paso. */ onConectado?: () => void };
 
-export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }: Props) {
+export function ModalBancos({ open, onClose, instituciones, agregador, sandbox, onConectado }: Props) {
   const [q, setQ] = useState('');
   const [sel, setSel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,11 +33,13 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
     if (!inst) return;
     setError(null);
     if (inst.id === 'bitso') {
+      onConectado?.();
       router.push('/app/ajustes?sec=fuentes');
       onClose();
       return;
     }
     if (!inst.automatica) {
+      onConectado?.();
       router.push(`/app/importar?banco=${encodeURIComponent(inst.nombre)}`);
       onClose();
       return;
@@ -70,6 +72,7 @@ export function ModalBancos({ open, onClose, instituciones, agregador, sandbox }
 
   const terminar = () => {
     setConexion(null);
+    onConectado?.();
     onClose();
     router.refresh();
   };
