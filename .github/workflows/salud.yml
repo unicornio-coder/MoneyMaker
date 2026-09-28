@@ -28,6 +28,7 @@ jobs:
           echo "salud: $salud"
           echo "$salud" | grep -q '"ok":true' || fallos="$fallos\n- /api/health no responde ok"
           echo "$salud" | grep -q '"modelo":true' || fallos="$fallos\n- ANTHROPIC_API_KEY no está en producción (integraciones.modelo=false)"
+          echo "$salud" | grep -q '"db":true' || fallos="$fallos\n- La base de datos no responde (db=false): ¿Supabase pausado?"
           for ruta in / /login /registro; do
             code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "$URL$ruta" || echo 000)
             [ "$code" = "200" ] || fallos="$fallos\n- $ruta responde $code"

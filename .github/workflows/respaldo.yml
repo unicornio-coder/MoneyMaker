@@ -1,0 +1,42 @@
+name: Respaldo
+
+# Respaldo diario de la base (pg_dump) guardado como artefacto del workflow durante 30 días. Necesita el secreto
+# SUPABASE_DB_URL (cadena de conexión de Supabase). Sin el secreto, el job termina sin hacer nada y lo dice.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 8 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  respaldar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Verificar secreto
+        id: secreto
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then echo "Falta el secreto SUPABASE_DB_URL: no hay respaldo (ver docs/PROMPTS-MAESTROS.md, paso 5g)."; echo "hay=no" >> "$GITHUB_OUTPUT"; else echo "hay=si" >> "$GITHUB_OUTPUT"; fi
+      - name: Instalar cliente de Postgres
+        if: steps.secreto.outputs.hay == 'si'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Volcar la base
+        if: steps.secreto.outputs.hay == 'si'
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          fecha=$(date -u +%Y%m%d-%H%M)
+          pg_dump "$DB_URL" --schema=public --no-owner --no-privileges --format=custom --file="moneymaker-$fecha.dump"
+          ls -la moneymaker-*.dump
+      - name: Guardar 30 días
+        if: steps.secreto.outputs.hay == 'si'
+        uses: actions/upload-artifact@v4
+        with:
+          name: respaldo-${{ github.run_id }}
+          path: moneymaker-*.dump
+          retention-days: 30

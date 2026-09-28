@@ -7,6 +7,8 @@ import { PDF_MAX_BYTES } from '@/lib/services/ingestion/pdf';
 import { enSegundoPlano } from '@/lib/server/segundo-plano';
 import { importacionesDelMes, nivelPlan, puedeImportarPdf, TEXTO_LIMITE } from '@/lib/domain/plan';
 import { hoyMX, aISO } from '@/lib/domain/fechas';
+import { limitarPeticion, LIMITES, respuesta429 } from '@/lib/server/ratelimit';
+import { registrarExcepcion } from '@/lib/server/errores';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,6 +21,8 @@ export const maxDuration = 300;
  */
 export async function POST(req: Request) {
   const { usuario, repo, perfil } = await contexto();
+  const lim = limitarPeticion(`imports:${usuario.id}`, LIMITES.imports);
+  if (!lim.ok) return respuesta429(lim);
   const nivel = nivelPlan(perfil);
   if (nivel === 'gratis') {
     const previas = importacionesDelMes(await repo.importaciones(usuario.id), aISO(hoyMX()));
@@ -52,7 +56,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ importacion: r.importacion, codigo: r.codigo }, { status });
   } catch (e) {
     const codigo = esErrorImportacion(e) ? e.codigo : 'servidor';
-    if (!esErrorImportacion(e)) console.error('[api/imports]', e instanceof Error ? e.name : 'error');
+    if (!esErrorImportacion(e)) await registrarExcepcion('api/imports', e, { userId: usuario.id, ruta: '/api/imports' });
     await registrar(repo, usuario.id, 'import_error', { codigo, kb: Math.round(archivo.size / 1024) });
     return NextResponse.json({ codigo }, { status: codigo === 'muy_grande' ? 413 : codigo === 'no_pdf' ? 400 : 500 });
   }

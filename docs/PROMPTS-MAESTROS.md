@@ -103,6 +103,13 @@ No escribas llaves ni tokens en el chat. No cambies código.
    Preview) VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT=mailto:hola@tudominio.mx y NEXT_PUBLIC_VAPID_PUBLIC_KEY
    (la misma pública). Lanza redeploy y verifica que /api/health diga "push": true. Prueba en Android Chrome:
    Ajustes → Avisos → "Activar avisos aquí".
+5f. Reportes de problema → issues: en GitHub → Settings → Developer settings → Fine-grained tokens crea un token con
+   acceso solo al repo MoneyMaker y permiso Issues: Read and write. Guarda GITHUB_ISSUES_TOKEN y
+   GITHUB_REPO=unicornio-coder/MoneyMaker en Vercel (Production y Preview) y lanza redeploy. Prueba: Ayuda →
+   Reportar un problema; debe aparecer un issue con etiqueta "reporte".
+5g. Respaldo diario: en Supabase → Project Settings → Database copia la cadena de conexión (URI, con tu contraseña) y
+   guárdala como secreto del repo en GitHub (Settings → Secrets → Actions) con el nombre SUPABASE_DB_URL. El workflow
+   "Respaldo" guarda un volcado cifrado cada noche durante 30 días.
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →

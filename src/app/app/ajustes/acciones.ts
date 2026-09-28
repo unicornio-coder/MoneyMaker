@@ -9,12 +9,16 @@ import { reiniciarMemoria } from '@/lib/data/repo.memoria';
 import { getAggregator } from '@/lib/services/aggregator';
 import { recalcular } from '@/lib/services/ingest';
 import { registrar } from '@/lib/services/analytics';
+import { enviarBienvenida } from '@/lib/services/correosAuto';
+import { correoConfigurado } from '@/lib/services/correo';
+import { enSegundoPlano } from '@/lib/server/segundo-plano';
 
 type R = { ok: true } | { ok: false; error: string };
 
 export async function actualizarPerfil(datos: { nombre?: string; diasPago?: number[]; ingresoQuincenal?: number | null; metas?: string[]; onboardingCompleto?: boolean }): Promise<R> {
-  const { usuario, repo } = await contexto();
+  const { usuario, repo, perfil } = await contexto();
   const cambios: typeof datos = { ...datos };
+  const primeraVez = !!cambios.onboardingCompleto && !perfil.onboardingCompleto;
   if (cambios.diasPago) {
     cambios.diasPago = Array.from(new Set(cambios.diasPago.map((d) => Math.max(1, Math.min(31, Math.round(d)))))).sort((a, b) => a - b);
     if (!cambios.diasPago.length) return { ok: false, error: 'Elige al menos un día de pago.' };
@@ -22,6 +26,14 @@ export async function actualizarPerfil(datos: { nombre?: string; diasPago?: numb
   if (cambios.nombre !== undefined && !cambios.nombre.trim()) return { ok: false, error: 'Escribe tu nombre.' };
   await repo.guardarPerfil(usuario.id, cambios);
   if (cambios.onboardingCompleto) await registrar(repo, usuario.id, 'onboarding_completo', { metas: cambios.metas ?? [] });
+  if (primeraVez && correoConfigurado()) {
+    const urlApp = process.env.NEXT_PUBLIC_APP_URL || 'https://money-maker-tawny.vercel.app';
+    enSegundoPlano(
+      enviarBienvenida({ email: usuario.email, nombre: cambios.nombre ?? perfil.nombre ?? null }, urlApp).then(async (r) => {
+        if (r.ok) await registrar(repo, usuario.id, 'correo_bienvenida');
+      }),
+    );
+  }
   if (cambios.diasPago || cambios.ingresoQuincenal !== undefined) await recalcular(repo, usuario.id);
   for (const p of ['/app', '/app/ajustes', '/app/presupuesto', '/app/insights', '/onboarding']) revalidatePath(p);
   return { ok: true };

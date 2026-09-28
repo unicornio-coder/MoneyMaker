@@ -89,9 +89,20 @@ del tratamiento, consentimiento explícito al conectar (ya está en la hoja) y b
   `/api/push`, cron diario 7:00 CDMX, migración 0011). Ajustes → Avisos con los dos interruptores y "Activar avisos aquí".
   Sin `RESEND_API_KEY` / llaves VAPID los crons responden sin hacer nada.
 
-### Bloque 5: Operación sin humanos (día 6)
-- Centro de ayuda, reporte de problema que abre issue, correos automáticos de bienvenida y de "conecta tu banco".
-- Salud con alerta, registro de errores, respaldo diario, rate limit, E2E del viaje completo.
+### Bloque 5: Operación sin humanos (día 6) — **hecho en código**; issues reales con `GITHUB_ISSUES_TOKEN`, respaldo con `SUPABASE_DB_URL`
+- [x] Centro de ayuda (`/app/ayuda`: 10 preguntas y "Reportar un problema"); el reporte abre un issue con etiqueta
+  `reporte` si hay token, si no manda correo a soporte con Resend, y si no queda como evento. Sin correo del usuario en
+  el issue. Límite de 3 reportes por hora.
+- [x] Correos automáticos: bienvenida al terminar el onboarding (una vez) y "conecta tu banco" a los 2 días sin fuentes
+  (cron diario `/api/cron/diario`, que también manda los avisos push, para caber en los 2 crons del plan Hobby).
+- [x] Salud con alerta: `/api/health` reporta `db` (Supabase pausado o caído) y el bot de guardia abre issue si falla.
+- [x] Registro de errores: tabla `app_errors` (migración 0012) con `registrarError` en servidor y `/api/errores` desde
+  las pantallas de error; sin correos ni números largos.
+- [x] Respaldo diario: workflow `respaldo.yml` (pg_dump como artefacto 30 días) detrás del secreto `SUPABASE_DB_URL`.
+- [x] Rate limit por usuario/correo/IP/dispositivo en subir PDF, enlace de acceso, reportes, errores, push y
+  notificaciones (`server/ratelimit.ts`, en memoria por instancia).
+- [x] E2E: onboarding → importar → Inicio → Gastos → Suscripciones → cancelar → Presupuesto → Ayuda (specs
+  `flujos`, `importar`, `capturas`, `accesibilidad`).
 
 ### Bloque 6: Lanzamiento (día 7)
 - Revisión pantalla por pantalla, textos, accesibilidad, legales, precios en la landing, README de operación.
