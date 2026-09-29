@@ -3,6 +3,7 @@
 
 import type { MovimientoCrudo, TipoCuenta } from '@/lib/domain/tipos';
 import { infoBanco } from '@/lib/domain/comercios';
+import { diagnosticarInstituciones, esBanco, type DiagnosticoInstituciones } from '@/lib/domain/instituciones';
 import type { Aggregator, CuentaExterna, Institucion, ResultadoSync } from './aggregator';
 import { INSTITUCIONES_MX } from './aggregator.mock';
 
@@ -46,6 +47,15 @@ async function todas<T>(path: string): Promise<T[]> {
 }
 
 type BelvoInstitution = { name: string; display_name: string; type: string; website: string | null; country_codes: string[]; status: string; resources: string[] };
+
+// Lista de instituciones de la cuenta, cacheada 5 minutos: la usan el widget (para saber si hay bancos) y Ajustes.
+let cacheInstituciones: { en: number; lista: BelvoInstitution[] } | null = null;
+async function instituciones(): Promise<BelvoInstitution[]> {
+  if (cacheInstituciones && Date.now() - cacheInstituciones.en < 5 * 60_000) return cacheInstituciones.lista;
+  const lista = await todas<BelvoInstitution>('/api/institutions/?country_code=MX&page_size=100');
+  cacheInstituciones = { en: Date.now(), lista };
+  return lista;
+}
 type BelvoAccount = {
   id: string;
   institution: { name: string; type: string };
@@ -91,9 +101,9 @@ export const belvo: Aggregator = {
     // Lista de Belvo + catálogo fijo de respaldo: si Belvo falla o trae pocas (sandbox), el usuario siempre ve bancos.
     let deBelvo: Institucion[] = [];
     try {
-      const lista = await todas<BelvoInstitution>('/api/institutions/?country_code=MX&page_size=100');
+      const lista = await instituciones();
       deBelvo = lista
-        .filter((i) => i.type === 'bank' || i.type === 'fintech')
+        .filter(esBanco)
         .map((i) => {
           const info = nombreVisible(i.name);
           const dominio = info.dominio || (i.website ? i.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, '') : '');
@@ -105,6 +115,11 @@ export const belvo: Aggregator = {
     const vistos = new Set(deBelvo.map((i) => i.nombre.toLowerCase()));
     const respaldo = INSTITUCIONES_MX.filter((i) => !vistos.has(i.nombre.toLowerCase())).map((i) => ({ ...i, origen: 'catalogo' as const }));
     return [...deBelvo, ...respaldo];
+  },
+
+  async diagnostico(): Promise<DiagnosticoInstituciones & { entorno: 'sandbox' | 'production' }> {
+    const entorno = process.env.BELVO_ENV === 'production' ? 'production' : 'sandbox';
+    return { entorno, ...diagnosticarInstituciones(await instituciones(), entorno) };
   },
 
   async tokenWidget(userId, opciones) {

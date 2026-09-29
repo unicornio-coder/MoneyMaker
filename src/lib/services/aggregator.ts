@@ -2,6 +2,7 @@
 // Las pantallas nunca llaman a esto: lo usa el pipeline de ingesta (services/ingest.ts).
 
 import type { MovimientoCrudo, TipoCuenta } from '@/lib/domain/tipos';
+import type { DiagnosticoInstituciones } from '@/lib/domain/instituciones';
 import { belvo } from './belvo';
 import { mockAggregator } from './aggregator.mock';
 
@@ -41,6 +42,8 @@ export interface Aggregator {
   /** Entorno del proveedor: en 'sandbox' las credenciales son de prueba (bnk100 / full). */
   readonly entorno: 'sandbox' | 'production' | 'mock';
   listarInstituciones(): Promise<Institucion[]>;
+  /** Qué instituciones tiene habilitadas la cuenta del proveedor (bancos, fiscal, empleo). Con Belvo pega a la API; se cachea unos minutos. */
+  diagnostico(): Promise<DiagnosticoInstituciones & { entorno: 'sandbox' | 'production' | 'mock' }>;
   /** Token de un solo uso para abrir el widget en el cliente. */
   tokenWidget(userId: string, opciones?: { linkId?: string }): Promise<{ access: string; refresh?: string }>;
   /** Descarga cuentas y movimientos de un link ya creado por el widget. */

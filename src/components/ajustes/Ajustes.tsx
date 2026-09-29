@@ -20,6 +20,9 @@ import { actualizarPerfil, eliminarFuente, borrarCuenta } from '@/app/app/ajuste
 import { guardarLlavesBitso, sincronizarConector, desconectarConector, generarTokenDispositivo, obtenerCorreoReenvio, actualizarFuente } from '@/app/app/ajustes/conectores';
 import { Mail, Bitcoin, RefreshCw, Smartphone, Forward, Copy } from 'lucide-react';
 
+/** Diagnóstico de la cuenta de Belvo (solo con llaves reales): qué instituciones tiene habilitadas. */
+export type DiagBelvo = { entorno: 'sandbox' | 'production' | 'mock'; hayBancos: boolean; bancos: string[]; porTipo: Record<string, number>; mensaje: string } | { error: string } | null;
+
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.1.0';
 const BUILD = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
 
@@ -35,7 +38,7 @@ const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon
   { id: 'exportar', label: 'Exportar datos', sub: 'Descarga tus movimientos en CSV', icon: Download },
 ];
 
-export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, outlookConfigurado, aviso, nivel = 'plus' }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; nivel?: Nivel }) {
+export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, outlookConfigurado, aviso, nivel = 'plus', belvo = null }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; nivel?: Nivel; belvo?: DiagBelvo }) {
   const [sec, setSec] = useState<Sec>((seccionInicial as Sec) ?? null);
   const router = useRouter();
 
@@ -44,7 +47,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
       <div className="mx-auto max-w-settings animate-screen space-y-4">
         <button type="button" onClick={() => setSec(null)} className="flex items-center gap-1 text-[13px] font-semibold text-green-dark dark:text-green-light"><ChevronLeft size={16} /> Ajustes</button>
         {sec === 'perfil' && <SecPerfil perfil={perfil} usuario={usuario} />}
-        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} />}
+        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} belvo={belvo} />}
         {sec === 'seguridad' && <SecSeguridad usuario={usuario} modoMock={modoMock} />}
         {sec === 'notificaciones' && <Avisos resumenDomingo={perfil.resumenDomingo !== false} avisosCobros={perfil.avisosCobros !== false} nivel={nivel} />}
         {sec === 'familia' && <div className="card p-5 text-[13px] text-txt-2 dark:text-fg-2">Familia llega después de la beta: integrantes, cuentas compartidas y gastos por hijo.</div>}
@@ -148,7 +151,39 @@ function SecPerfil({ perfil, usuario }: { perfil: Perfil; usuario: UsuarioSesion
   );
 }
 
-function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso }: { links: Fuente[]; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null }) {
+/** Qué puede conectar hoy la cuenta de Belvo. Si no hay bancos, dice exactamente qué falta y quién lo resuelve. */
+function EstadoBelvo({ belvo }: { belvo: NonNullable<DiagBelvo> }) {
+  const tipos = 'error' in belvo ? [] : Object.entries(belvo.porTipo);
+  const ETIQUETA: Record<string, string> = { bank: 'Bancos', fintech: 'Fintech', business: 'Banca empresarial', fiscal: 'Fiscal (SAT)', employment: 'Empleo (IMSS)' };
+  return (
+    <div className="mt-6 border-t border-edge pt-5" data-testid="estado-belvo">
+      <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><Link2 size={16} /> Conexión con Belvo</h3>
+      {'error' in belvo ? (
+        <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">Belvo no respondió: {belvo.error}</p>
+      ) : (
+        <>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className={cn('rounded-pill px-2.5 py-1 text-[11.5px] font-bold', belvo.entorno === 'production' ? 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light' : 'bg-bg-muted text-txt-2 dark:bg-surface-2 dark:text-fg-2')}>{belvo.entorno === 'production' ? 'Producción' : belvo.entorno === 'sandbox' ? 'Sandbox (pruebas)' : 'Simulado'}</span>
+            {tipos.map(([t, n]) => (
+              <span key={t} className={cn('rounded-pill px-2.5 py-1 text-[11.5px] font-bold', t === 'bank' || t === 'fintech' ? 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light' : 'bg-bg-muted text-txt-2 dark:bg-surface-2 dark:text-fg-2')}>{ETIQUETA[t] ?? t} · {n}</span>
+            ))}
+          </div>
+          <p className={cn('mt-2 text-[12.5px]', belvo.hayBancos ? 'text-txt-2 dark:text-fg-2' : 'font-semibold text-fg')}>{belvo.mensaje}</p>
+          {belvo.hayBancos && belvo.bancos.length > 0 && <p className="mt-1 text-[11.5px] text-txt-3">{belvo.bancos.slice(0, 12).join(' · ')}{belvo.bancos.length > 12 ? ` y ${belvo.bancos.length - 12} más` : ''}</p>}
+          {!belvo.hayBancos && (
+            <ol className="mt-3 list-decimal space-y-1 pl-5 text-[12.5px] text-txt-2 dark:text-fg-2">
+              <li>Entra a dashboard.belvo.com y revisa en Productos que «Banking» (agregación bancaria México) esté habilitado para este entorno.</li>
+              <li>Si no aparece o no se puede activar, escribe a Belvo (soporte o tu ejecutivo) pidiendo habilitar bancos en {belvo.entorno === 'production' ? 'producción' : 'sandbox y producción'}. El texto listo está en docs/PROMPTS-MAESTROS.md, paso 5h.</li>
+              <li>Cuando lo activen, esta sección mostrará «Bancos · N» sin cambiar nada del código y el widget abrirá con la lista de bancos.</li>
+            </ol>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo }: { links: Fuente[]; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; belvo?: DiagBelvo }) {
   const [pendiente, start] = useTransition();
   const router = useRouter();
   const [bitsoKey, setBitsoKey] = useState('');
@@ -193,6 +228,8 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso }: { li
       <Link href="/app/importar" className="btn-primary mt-3 inline-flex h-10 items-center px-4 text-[12.5px]">Agregar cuenta</Link>
 
       {msg && <p className="mt-4 rounded-input bg-green-50 px-3 py-2 text-[12.5px] font-semibold text-green-dark dark:text-green-light dark:bg-surface-2">{msg}</p>}
+
+      {belvo && <EstadoBelvo belvo={belvo} />}
 
       <div className="mt-6 border-t border-edge pt-5">
         <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><Mail size={16} /> Alertas de tu correo</h3>
