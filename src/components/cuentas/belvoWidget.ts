@@ -74,8 +74,8 @@ export async function abrirWidgetBelvo({ institucion, instituciones, onSuccess, 
       },
     };
     if (institucion) config.institution = institucion;
-    // Solo bancos y fintech: la lista viene de nuestra API (tipo bank/fintech), así el widget no ofrece SAT ni IMSS.
-    // Sin lista (p. ej. si la API no respondió) el widget muestra la suya completa, que siempre funciona.
+    // Lista permitida (solo si quien llama la manda). Hoy no se manda: con `institutions` el widget de sandbox saltó
+    // directo a IMSS con CURP, y con `institution_types` quedó vacío. Sin filtros muestra su lista completa y funciona.
     if (instituciones && instituciones.length) config.institutions = instituciones;
     window.belvoSDK.createWidget(cuerpo.access, config).build();
     onEstado?.('');

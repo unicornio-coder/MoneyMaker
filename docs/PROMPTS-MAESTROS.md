@@ -110,6 +110,11 @@ No escribas llaves ni tokens en el chat. No cambies código.
 5g. Respaldo diario: en Supabase → Project Settings → Database copia la cadena de conexión (URI, con tu contraseña) y
    guárdala como secreto del repo en GitHub (Settings → Secrets → Actions) con el nombre SUPABASE_DB_URL. El workflow
    "Respaldo" guarda un volcado cifrado cada noche durante 30 días.
+5h. Widget de Belvo: mientras esté en sandbox, la lista muestra instituciones de prueba (Erebor, Gringotts…, más IMSS y
+   SAT). Para conectar una cuenta de prueba elige un banco de prueba y usa usuario `bnk100` y contraseña `full`. En
+   dashboard.belvo.com → Widget puedes acotar qué instituciones se muestran (deja solo bancos); es la forma segura de
+   ocultar IMSS y SAT. Con llaves de producción la lista son los bancos reales de México y el usuario escribe en la
+   ventana de Belvo el usuario y la contraseña de su banca en línea (nunca en MoneyMaker).
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →
