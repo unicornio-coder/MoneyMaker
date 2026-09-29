@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Home, AlertTriangle } from 'lucide-react';
 import type { DatosInicio } from './tipos';
 import { ResumenInicio } from './ResumenInicio';
-import { CuentasLista } from './CuentasLista';
+import { Cuentas } from './Cuentas';
 import { SuscripcionesProximas } from './SuscripcionesProximas';
 import { DrawerCuenta } from './DrawerCuenta';
 import { Historial } from '@/components/movimientos/Historial';
@@ -13,7 +13,7 @@ import { HojaAgregarCuenta } from '@/components/cuentas/HojaAgregarCuenta';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TEXTOS } from '@/lib/textos';
 
-/** Inicio: saldo neto, cuentas vinculadas, suscripciones próximas y movimientos recientes. Nada más. */
+/** Inicio: saldo neto, tarjetas de cuentas (plásticos), suscripciones próximas y movimientos recientes. */
 export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaInicial?: string | null }) {
   const [cuentaSel, setCuentaSel] = useState<string | null>(cuentaInicial && datos.cuentas.some((c) => c.id === cuentaInicial) ? cuentaInicial : null);
   const [agregarAbierto, setAgregarAbierto] = useState(false);
@@ -32,7 +32,7 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
         </Link>
       )}
       {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={{ label: vacio.cta, onClick: () => setAgregarAbierto(true) }} />}
-      <CuentasLista cuentas={datos.cuentas} fuentes={datos.fuentes} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
+      <Cuentas cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
       {hayCuentas && <SuscripcionesProximas recurrentes={datos.recurrentes} hoy={datos.hoy} />}
       {hayCuentas && <Historial movimientos={datos.movimientos} cuentas={datos.cuentas} hoy={datos.hoy} titulo="Movimientos recientes" simple inicial={5} verTodosHref="/app/gastos" />}
 
