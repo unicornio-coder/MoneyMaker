@@ -7,11 +7,14 @@ app de recordatorios de suscripciones, pantalla "Get notified", toasts).
 
 ## 0. Respuestas honestas
 
-**¿La gente sí puede conectar su banco real?** Sí, pero solo con las llaves de producción de Belvo. Hoy corre en sandbox:
-por eso el widget muestra IMSS, SAT y bancos de prueba. Con producción, Belvo pide usuario y contraseña del banco (nunca
-CURP ni RFC para bancos). Lo que hacemos en código: el widget solo muestra bancos (`institution_types: retail y business`),
-nada fiscal ni de empleo. Lo que solo puedes hacer tú: pedir producción en dashboard.belvo.com (sección 0 del ROADMAP).
-Nada más lo destraba. Sin eso, la única entrada real de datos es el PDF, el correo y el teléfono Android.
+**¿La gente sí puede conectar su banco real?** Todavía no, y ya sabemos exactamente por qué (29 sep): la cuenta de Belvo
+solo tiene habilitados SAT (fiscal) e IMSS (empleo); no tiene el producto de banca. Por eso el widget muestra "Empleo" y
+"Fiscal" y ningún banco, con o sin filtros. Lo que hace el código: detecta la situación (Ajustes → Cuentas conectadas →
+"Conexión con Belvo"), avisa en el modal de conectar y manda al PDF, y cuando Belvo habilite bancos el widget abrirá
+solo con bancos (`institution_types: retail y business`), nada fiscal ni de empleo. Lo que solo puedes hacer tú: pedirle
+a Belvo que habilite banca en sandbox y producción (texto listo en `docs/PROMPTS-MAESTROS.md`, paso 5h). Con producción,
+Belvo pide usuario y contraseña de la banca en línea y el token del banco, en su ventana (nunca CURP ni RFC para bancos).
+Sin eso, la entrada real de datos es el PDF, el correo y el teléfono Android.
 
 **Google "se traba".** El botón de Google necesita un cliente OAuth configurado en Supabase (Authentication → Providers
 → Google) con tu Google Cloud. No está. Decisión: entrar con el correo. Escribes tu correo, te llega un enlace de

@@ -5,6 +5,11 @@ van **al final**; primero la app tiene que funcionar igual con datos reales.
 
 ## 0. Cómo conectar con Belvo (esto es lo primero y solo lo puedes hacer tú)
 
+**Estado al 29 sep**: las llaves actuales de Belvo (sandbox) no tienen habilitado el producto de banca: el widget solo
+muestra SAT e IMSS. La app lo detecta y lo muestra en Ajustes → Cuentas conectadas → "Conexión con Belvo"; el paso 5h de
+`docs/PROMPTS-MAESTROS.md` tiene el texto para pedirle a Belvo que lo habilite. Hasta entonces las cuentas entran por PDF,
+correo o la app Android.
+
 Belvo es el "Plaid" de México: el usuario mete sus credenciales del banco en el widget de Belvo (no en el nuestro),
 Belvo entra al banco y nos devuelve cuentas y movimientos por API. Nuestro código ya lo usa (widget, cuentas,
 movimientos, webhook, refresco). Lo que falta es tu cuenta de producción.

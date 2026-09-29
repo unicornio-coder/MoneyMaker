@@ -110,11 +110,29 @@ No escribas llaves ni tokens en el chat. No cambies código.
 5g. Respaldo diario: en Supabase → Project Settings → Database copia la cadena de conexión (URI, con tu contraseña) y
    guárdala como secreto del repo en GitHub (Settings → Secrets → Actions) con el nombre SUPABASE_DB_URL. El workflow
    "Respaldo" guarda un volcado cifrado cada noche durante 30 días.
-5h. Widget de Belvo: mientras esté en sandbox, la lista muestra instituciones de prueba (Erebor, Gringotts…, más IMSS y
-   SAT). Para conectar una cuenta de prueba elige un banco de prueba y usa usuario `bnk100` y contraseña `full`. En
-   dashboard.belvo.com → Widget puedes acotar qué instituciones se muestran (deja solo bancos); es la forma segura de
-   ocultar IMSS y SAT. Con llaves de producción la lista son los bancos reales de México y el usuario escribe en la
-   ventana de Belvo el usuario y la contraseña de su banca en línea (nunca en MoneyMaker).
+5h. Belvo no muestra bancos (solo "Empleo" y "Fiscal"). Diagnóstico hecho el 29 sep con tus tres capturas: con filtro de
+   bancos el widget dijo "No hay resultados", sin filtro solo mostró las pestañas Empleo y Fiscal (Tatooine Fiscal), y con
+   una lista de bancos saltó a IMSS. Las tres cosas significan lo mismo: la cuenta de Belvo con la que están hechas las
+   llaves no tiene habilitado el producto de banca (agregación bancaria de México); solo tiene SAT (fiscal) e IMSS
+   (empleo). Eso no se arregla con código: lo habilita Belvo. La app ya lo detecta sola: en Ajustes → Cuentas conectadas
+   → "Conexión con Belvo" verás el entorno y cuántas instituciones hay por tipo; mientras diga que no hay bancos, el
+   botón de conectar banco avisa y manda al PDF en vez de abrir un widget inútil. Qué hacer:
+   1. Entra a dashboard.belvo.com → Productos (o "Products") y busca "Banking" / "Agregación bancaria" para México.
+      Si se puede activar, actívalo en sandbox y en producción.
+   2. Si no aparece, escribe a soporte de Belvo (desde el chat del dashboard o a support@belvo.com) con este texto:
+      "Hola. Somos MoneyMaker (app de finanzas personales, México). Nuestra cuenta solo muestra instituciones fiscal
+      (SAT) y de empleo (IMSS) en el widget y en /api/institutions/. Necesitamos habilitar el producto de Banking
+      (agregación de cuentas y movimientos bancarios) para México, primero en sandbox (Erebor / Gringotts) y después en
+      producción. Usamos el widget con institution_types retail y business y fetch_resources ACCOUNTS, TRANSACTIONS y
+      OWNERS. ¿Qué necesitan de nosotros para activarlo y cuál es el precio por link?"
+   3. Cuando lo activen, en Ajustes → Conexión con Belvo aparecerá "Bancos · N" y el widget abrirá con la lista de
+      bancos. En sandbox el banco de prueba es Erebor y entras con usuario `bnk100` y contraseña `full`; con llaves de
+      producción son los bancos reales y el usuario escribe en la ventana de Belvo el usuario y la contraseña de su banca
+      en línea, más el token o código que le pida su banco (nunca en MoneyMaker).
+   4. Si Belvo no lo habilita o el precio no cuadra: Finerio Connect (finerioconnect.com, mexicana, mismo modelo de
+      widget + API) o Syncfy (syncfy.com, de Paybook). Nuestro código habla con Belvo detrás de la interfaz `Aggregator`
+      (`src/lib/services/aggregator.ts`): cambiar de proveedor es una implementación nueva de esa interfaz, no reescribir
+      la app.
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →

@@ -54,7 +54,8 @@ export async function abrirWidgetBelvo({ institucion, instituciones, onSuccess, 
   try {
     onEstado?.('Pidiendo acceso a Belvo…');
     const res = await fetch('/api/belvo/token', { method: 'POST' });
-    const cuerpo = (await res.json().catch(() => ({}))) as { access?: string; error?: string };
+    const cuerpo = (await res.json().catch(() => ({}))) as { access?: string; error?: string; sinBancos?: boolean; bancos?: number | null };
+    if (cuerpo.sinBancos) throw new Error('Todavía no se pueden conectar bancos: la cuenta de Belvo de MoneyMaker no tiene habilitada la banca. Mientras tanto sube tu estado de cuenta en PDF.');
     if (!res.ok || !cuerpo.access) throw new Error(cuerpo.error ? `Belvo no dio acceso: ${cuerpo.error}` : 'No pudimos iniciar la conexión con Belvo. Intenta de nuevo.');
 
     onEstado?.('Cargando el widget…');
@@ -74,8 +75,10 @@ export async function abrirWidgetBelvo({ institucion, instituciones, onSuccess, 
       },
     };
     if (institucion) config.institution = institucion;
-    // Lista permitida (solo si quien llama la manda). Hoy no se manda: con `institutions` el widget de sandbox saltó
-    // directo a IMSS con CURP, y con `institution_types` quedó vacío. Sin filtros muestra su lista completa y funciona.
+    // Solo bancos (retail y empresarial): fuera SAT e IMSS. Los valores son los documentados por Belvo
+    // (institution_types: retail | business | fiscal | employment). Se manda únicamente cuando el servidor confirmó
+    // que la cuenta tiene bancos; si no pudo confirmarlo, el widget muestra lo que Belvo permita.
+    if (cuerpo.bancos && cuerpo.bancos > 0) config.institution_types = ['retail', 'business'];
     if (instituciones && instituciones.length) config.institutions = instituciones;
     window.belvoSDK.createWidget(cuerpo.access, config).build();
     onEstado?.('');

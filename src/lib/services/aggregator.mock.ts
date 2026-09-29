@@ -3,6 +3,7 @@
 import type { Aggregator, Institucion, ResultadoSync } from './aggregator';
 import { BANCOS } from '@/lib/domain/comercios';
 import { cuentasMock, movimientosCrudosMock } from '@/lib/mock/cuentas';
+import { diagnosticarInstituciones } from '@/lib/domain/instituciones';
 
 /** Catálogo fijo de instituciones mexicanas: lo usa el simulado y sirve de respaldo cuando Belvo no responde. */
 export const INSTITUCIONES_MX: Institucion[] = [
@@ -16,6 +17,9 @@ export const mockAggregator: Aggregator = {
   entorno: 'mock',
   async listarInstituciones() {
     return INSTITUCIONES_MX;
+  },
+  async diagnostico() {
+    return { entorno: 'mock' as const, ...diagnosticarInstituciones(INSTITUCIONES_MX.filter((i) => i.tipo !== 'inversion').map((i) => ({ name: i.id, display_name: i.nombre, type: i.tipo === 'banco' ? 'bank' : 'fintech' })), 'mock') };
   },
   async tokenWidget() {
     return { access: 'mock-widget-token' };

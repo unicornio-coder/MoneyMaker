@@ -15,12 +15,12 @@ import { TEXTOS } from '@/lib/textos';
 import { Historial } from '@/components/movimientos/Historial';
 import { DetalleMovimiento } from '@/components/movimientos/DetalleMovimiento';
 import { SelectorPeriodo, type ModoPeriodo } from './SelectorPeriodo';
-import { TilesCategorias } from './TilesCategorias';
+import { GraficaCategorias } from './GraficaCategorias';
 import { AgregarEfectivo } from './AgregarEfectivo';
 
 type Props = { cuentas: Cuenta[]; movimientos: Movimiento[]; hoy: string; cuentaInicial?: string; categoriaInicial?: string; busquedaInicial?: string };
 
-/** Gastos: periodo, total, categorías como tiles y la tabla de movimientos filtrada por categoría y cuenta. */
+/** Gastos: periodo, total, pastel por categoría con su lista y la tabla de movimientos filtrada por categoría y cuenta. */
 export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInicial }: Props) {
   const h = deISO(hoy);
   const [modo, setModo] = useState<ModoPeriodo>('mes');
@@ -77,7 +77,7 @@ export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInic
         )}
       </section>
 
-      <TilesCategorias porCategoria={porCategoria} total={total} seleccion={categoriaSel} onSeleccion={setCategoriaSel} />
+      <GraficaCategorias porCategoria={porCategoria} total={total} seleccion={categoriaSel} onSeleccion={setCategoriaSel} />
 
       <div className="space-y-3">
         {categoriaSel && (
