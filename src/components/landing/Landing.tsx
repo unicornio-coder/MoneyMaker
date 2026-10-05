@@ -6,6 +6,7 @@ import { EscenaConexion } from './EscenaConexion';
 import { FormCorreo } from './FormCorreo';
 import { SiempreClaro } from './SiempreClaro';
 import { Revelar } from './Revelar';
+import { PREGUNTAS } from '@/lib/ayudaPreguntas';
 
 // Landing al estilo Apple × Stori: una idea por pantalla, tipografía grande, el producto real (capturas) al centro, casi sin texto.
 // Cada bloque tiene un titular de una línea, una frase de apoyo y un visual del producto. Nada inventado: sin testimonios.
@@ -105,6 +106,24 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </div>
       </section>
 
+      {/* 2b. Cómo funciona, en tres pasos */}
+      <Seccion className="py-16 md:py-20">
+        <Revelar>
+          <ol className="grid gap-4 md:grid-cols-3">
+            {[
+              ['Conecta o sube tu PDF', 'Tu banco vía Belvo o el estado de cuenta que ya te manda. Dos minutos.'],
+              ['Vemos cada cargo', 'Suscripciones, meses sin intereses y gasto por categoría, con nombre y logo.'],
+              ['Cancelas y ahorras', 'Lo que no usas se cancela en un toque o con una carta que mandamos por ti.'],
+            ].map(([t, d], i) => (
+              <li key={t} className="card flex gap-4 p-5">
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-ink font-display text-[15px] font-bold text-white dark:bg-white dark:text-ink">{i + 1}</span>
+                <span className="min-w-0"><span className="block font-display text-[16px] font-bold">{t}</span><span className="mt-1 block text-[13.5px] leading-relaxed text-txt-2 dark:text-fg-2">{d}</span></span>
+              </li>
+            ))}
+          </ol>
+        </Revelar>
+      </Seccion>
+
       {/* 3. Conecta todo */}
       <Seccion id="conecta" className="bg-bg-page py-24 md:py-32">
         <Revelar>
@@ -154,7 +173,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
               {SUSCRIPCIONES.map(([n, d, m, s], i) => (
                 <div key={String(n)} className={`flex items-center gap-3 rounded-card px-3 py-3 ${i >= 2 ? 'bg-green-50 dark:bg-surface-2' : ''}`}>
                   <BrandLogo domain={String(d)} nombre={String(n)} size={40} />
-                  <span className="min-w-0 flex-1"><span className="block text-[14px] font-bold">{n}</span><span className={`block text-[11.5px] ${i >= 2 ? 'font-semibold text-green-dark dark:text-green-light' : 'text-txt-2 dark:text-fg-2'}`}>{s}</span></span>
+                  <span className="min-w-0 flex-1"><span className="block text-[14px] font-bold">{n}</span><span className={`block whitespace-nowrap text-[11.5px] ${i >= 2 ? 'font-semibold text-green-dark dark:text-green-light' : 'text-txt-2 dark:text-fg-2'}`}>{s}</span></span>
                   <span className="font-display text-[14px] font-bold">{m}<span className="text-[11px] font-semibold text-txt-3">/mes</span></span>
                   {i >= 2 && <span className="btn-primary flex h-8 items-center px-3 text-[11px]">Cancelar</span>}
                 </div>
@@ -208,6 +227,29 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </Revelar>
       </Seccion>
 
+      {/* 7b. Preguntas que todos hacen */}
+      <Seccion id="preguntas" className="bg-bg-page py-20 md:py-24">
+        <Revelar>
+          <Titular>Preguntas que todos hacen.</Titular>
+        </Revelar>
+        <Revelar delay={120} className="mx-auto mt-10 max-w-[720px]">
+          <ul className="card divide-y divide-edge p-0">
+            {PREGUNTAS.slice(0, 4).map((p) => (
+              <li key={p.q}>
+                <details className="group">
+                  <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4 text-left text-[15px] font-bold [&::-webkit-details-marker]:hidden">
+                    <span className="flex-1">{p.q}</span>
+                    <ChevronRight size={18} className="flex-none text-txt-3 transition-transform group-open:rotate-90" />
+                  </summary>
+                  <p className="px-5 pb-5 text-[14px] leading-relaxed text-txt-2 dark:text-fg-2">{p.a}</p>
+                </details>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-center text-[13px] text-txt-2 dark:text-fg-2">Más respuestas en el centro de ayuda, dentro de la app.</p>
+        </Revelar>
+      </Seccion>
+
       {/* 8. Precio, una vez */}
       <Seccion id="precio" className="py-24 md:py-32">
         <Revelar>
@@ -215,7 +257,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </Revelar>
         <Revelar delay={120} className="mx-auto mt-10 max-w-[520px]">
           <ul className="grid gap-2.5 text-[14.5px] sm:grid-cols-2">
-            {['Bancos y estados de cuenta ilimitados', 'Presupuesto por quincena', 'Cancelamos y negociamos por ti', 'Resumen del domingo y avisos', 'Patrimonio y objetivos', 'Garantía de 30 días'].map((b) => (
+            {['Bancos y estados de cuenta ilimitados', 'Presupuesto por quincena', 'Cancelamos y negociamos por ti', 'Resumen del domingo y avisos', 'Inversiones y metas', 'Garantía de 30 días'].map((b) => (
               <li key={b} className="flex items-center gap-2.5"><Check size={17} className="flex-none text-green-dark dark:text-green-light" /> {b}</li>
             ))}
           </ul>

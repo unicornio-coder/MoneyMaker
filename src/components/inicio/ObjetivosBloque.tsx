@@ -17,6 +17,11 @@ export function ObjetivosBloque({ objetivos, compacto = true, titulo = 'Objetivo
         <h2 className="font-display text-[18px] font-bold">{titulo}</h2>
         <Link href="/app/objetivos" className="text-[12px] font-semibold text-green-dark dark:text-green-light">{objetivos.length ? 'Ver todas' : 'Crear una meta'}</Link>
       </div>
+      {objetivos.length === 0 && (
+        <Link href="/app/objetivos" className="block rounded-card border border-dashed border-line-dashed px-4 py-4 text-center text-[12.5px] text-txt-2 transition-colors hover:border-green dark:text-fg-2">
+          Sin metas todavía. Crea una de ahorro, deuda o inversión y aquí ves tu avance cada quincena.
+        </Link>
+      )}
       {GRUPOS.map((g) => {
         const lista = objetivos.filter((o) => o.grupo === g.id).slice(0, compacto ? 2 : undefined);
         if (!lista.length) return null;

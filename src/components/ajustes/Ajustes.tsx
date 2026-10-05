@@ -15,7 +15,7 @@ import type { Link as Fuente } from '@/lib/data/repo';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
-import { cerrarSesion } from '@/lib/auth/actions';
+import { cerrarSesion, crearContraseña } from '@/lib/auth/actions';
 import { actualizarPerfil, eliminarFuente, borrarCuenta } from '@/app/app/ajustes/acciones';
 import { guardarLlavesBitso, sincronizarConector, desconectarConector, generarTokenDispositivo, obtenerCorreoReenvio, actualizarFuente } from '@/app/app/ajustes/conectores';
 import { Mail, Bitcoin, RefreshCw, Smartphone, Forward, Copy } from 'lucide-react';
@@ -306,12 +306,24 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo 
 function SecSeguridad({ usuario, modoMock }: { usuario: UsuarioSesion; modoMock: boolean }) {
   const [confirmar, setConfirmar] = useState('');
   const [pendiente, start] = useTransition();
+  const [clave, setClave] = useState('');
+  const [claveMsg, setClaveMsg] = useState<{ ok: boolean; texto: string } | null>(null);
+  const guardarClave = () => start(async () => {
+    const r = await crearContraseña(clave);
+    setClaveMsg(r.error ? { ok: false, texto: r.error } : { ok: true, texto: 'Contraseña guardada. Ya puedes entrar con ella o con el enlace al correo.' });
+    if (!r.error) setClave('');
+  });
   return (
     <div className="space-y-4">
       <div className="card space-y-3 p-5">
         <h2 className="font-display text-[18px] font-bold">Cuenta y seguridad</h2>
         <div className="text-[13px]"><span className="text-txt-2 dark:text-fg-2">Correo:</span> <b>{usuario.email}</b></div>
-        <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Para cambiar tu contraseña, cierra sesión y usa &quot;¿Olvidaste tu contraseña?&quot; en el inicio de sesión. Nunca guardamos claves bancarias; Belvo maneja la conexión con tu banco.</p>
+        <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Entras con el enlace que mandamos a tu correo. Si prefieres, crea una contraseña y úsala desde &quot;Tengo contraseña&quot; al entrar. Nunca guardamos claves bancarias; Belvo maneja la conexión con tu banco.</p>
+        <Input label="Contraseña nueva" type="password" value={clave} onChange={(e) => setClave(e.target.value)} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="primary" disabled={clave.length < 8 || pendiente} onClick={guardarClave}>{pendiente ? 'Guardando…' : 'Guardar contraseña'}</Button>
+          {claveMsg && <span className={cn('text-[12.5px] font-semibold', claveMsg.ok ? 'text-green-dark dark:text-green-light' : 'text-negative')} role="status">{claveMsg.texto}</span>}
+        </div>
       </div>
       <div className="card space-y-3 border border-negative/30 p-5">
         <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><AlertTriangle size={16} className="text-negative" /> Borrar mi cuenta</h3>

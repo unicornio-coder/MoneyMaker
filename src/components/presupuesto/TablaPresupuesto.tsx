@@ -44,13 +44,13 @@ function Fila({ presupuestoId, l, i }: { presupuestoId: string; l: LineaVsActual
               <span className="relative">
                 <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 font-display text-[13px] font-bold text-fg">$</span>
                 <input
-                  value={valor}
+                  value={valor ? Number(valor).toLocaleString('es-MX') : ''}
                   onChange={(e) => setValor(e.target.value.replace(/[^\d]/g, ''))}
                   onBlur={guardar}
                   onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
                   inputMode="numeric"
                   aria-label={`Presupuesto de ${cat.nombre}`}
-                  className={cn('h-8 w-[92px] rounded-[8px] border border-line-input bg-bg-input pl-5 pr-2 text-right font-display text-[13px] font-bold text-fg outline-none focus:border-green dark:border-edge dark:bg-surface-2', pendiente && 'opacity-60')}
+                  className={cn('h-8 w-[100px] rounded-[8px] border border-line-input bg-bg-input pl-5 pr-2 text-right font-display text-[13px] font-bold text-fg outline-none focus:border-green dark:border-edge dark:bg-surface-2', pendiente && 'opacity-60')}
                 />
               </span>
             </label>

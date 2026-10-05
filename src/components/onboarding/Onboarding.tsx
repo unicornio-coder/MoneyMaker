@@ -111,7 +111,7 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial, tieneCo
         <main className="mx-auto w-full max-w-[640px] flex-1 animate-screen px-5 pb-8 pt-7 md:pt-9" key={paso}>
           {paso === 0 && (
             <>
-              <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[34px]">Bienvenido a MoneyMaker</h1>
+              <h1 className="font-display text-[28px] font-bold leading-[1.1] tracking-[-0.9px] md:text-[34px]">Te damos la bienvenida a MoneyMaker</h1>
               <p className="mt-2 text-[14.5px] leading-relaxed text-txt-2 dark:text-fg-2">Dinos cómo te llamas. La contraseña es opcional: sin ella entras siempre con el enlace que te mandamos al correo.</p>
               <div className="mt-6 space-y-4">
                 <Input label="Tu nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Como quieres que te llamemos" autoComplete="given-name" className="bg-surface" autoFocus />

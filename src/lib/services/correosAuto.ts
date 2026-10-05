@@ -29,7 +29,7 @@ export function correoBienvenida(perfil: Pick<Perfil, 'email' | 'nombre'>, urlAp
     'Si algo no cuadra, responde a este correo. Lo leemos.',
   ];
   return {
-    asunto: 'Bienvenido a MoneyMaker',
+    asunto: 'Te damos la bienvenida a MoneyMaker',
     texto: `${parrafos.join('\n\n')}\n\nIr a mi panel: ${urlApp}/app`,
     html: plantilla('Tu dinero, claro.', parrafos, { texto: 'Ir a mi panel', url: `${urlApp}/app` }, urlApp),
   };

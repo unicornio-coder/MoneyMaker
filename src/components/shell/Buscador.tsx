@@ -52,7 +52,7 @@ export function Buscador({ open, onClose }: { open: boolean; onClose: () => void
 
   const resultados = useMemo<Resultado[]>(() => {
     const n = q.trim().toLowerCase();
-    const paginas = TABS.filter((t) => t.href !== '/app/planes' && (!n || t.label.toLowerCase().includes(n) || t.titulo.toLowerCase().includes(n))).slice(0, n ? 4 : 6).map((t) => ({ tipo: 'pagina' as const, href: t.href, label: t.label, icon: t.icon }));
+    const paginas = TABS.filter((t) => t.href !== '/app/planes' && t.href !== '/app/patrimonio' && (!n || t.label.toLowerCase().includes(n) || t.titulo.toLowerCase().includes(n))).slice(0, n ? 4 : 6).map((t) => ({ tipo: 'pagina' as const, href: t.href, label: t.label, icon: t.icon }));
     return [...paginas, ...movs.map((mov) => ({ tipo: 'movimiento' as const, mov }))];
   }, [q, movs]);
 

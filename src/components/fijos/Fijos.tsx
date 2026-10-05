@@ -9,6 +9,7 @@ import type { EventoCalendario, Recurrente } from '@/lib/domain/tipos';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TEXTOS } from '@/lib/textos';
 import { TablasRecurrentes } from './TablasRecurrentes';
+import { ProximosCobros } from './ProximosCobros';
 import { DrawerRecurrente } from './DrawerRecurrente';
 import { Calendario } from './Calendario';
 import { ModalNuevoRecurrente } from './ModalNuevoRecurrente';
@@ -71,7 +72,10 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
       </div>
 
       {vista === 'tablas' ? (
-        <TablasRecurrentes recurrentes={activos} onAbrir={setSel} seccionInicial={inicial.seccion} />
+        <>
+          <TablasRecurrentes recurrentes={activos} onAbrir={setSel} seccionInicial={inicial.seccion} />
+          <ProximosCobros recurrentes={activos} hoy={hoy} onAbrir={setSel} />
+        </>
       ) : (
         <Calendario recurrentes={activos} eventos={eventos} cuentas={cuentas} hoy={hoy} onAbrir={setSel} pagoCuentaId={inicial.pagoCuentaId} />
       )}

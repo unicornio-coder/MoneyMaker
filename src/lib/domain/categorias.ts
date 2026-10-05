@@ -3,7 +3,7 @@
 import type { Categoria } from './tipos';
 
 export const CATEGORIAS: Categoria[] = [
-  { id: 'fijos', nombre: 'Fijos', color: '#0B1F17', tipo: 'gasto', orden: 1 },
+  { id: 'fijos', nombre: 'Cargos fijos', color: '#0B1F17', tipo: 'gasto', orden: 1 },
   { id: 'comida', nombre: 'Comida', color: '#16A34A', tipo: 'gasto', orden: 2 },
   { id: 'super', nombre: 'Súper', color: '#16A34A', tipo: 'gasto', orden: 3 },
   { id: 'transporte', nombre: 'Transporte', color: '#2563EB', tipo: 'gasto', orden: 4 },

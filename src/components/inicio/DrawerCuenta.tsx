@@ -43,7 +43,7 @@ export function DrawerCuenta({ cuenta, movimientos, cuentas, onClose }: Props) {
   const gastadoMes = movs.filter((m) => m.tipo === 'gasto').slice(0, 30).reduce((s, m) => s + m.monto, 0);
 
   const tiles: [string, string, boolean][] = esCredito
-    ? [['Sin intereses', money(cuenta.saldo), true], ['Mínimo', money(cuenta.pagoMinimo ?? 0), false], ['Límite', cuenta.limite ? money(cuenta.limite) : '—', false]]
+    ? [['Pago sin intereses', money(cuenta.saldo), true], ['Mínimo', money(cuenta.pagoMinimo ?? 0), false], ['Límite', cuenta.limite ? money(cuenta.limite) : '—', false]]
     : esInversion
       ? [['Rendimiento', cuenta.inversion?.rendimiento || '—', true], ['Posiciones', String(cuenta.inversion?.posiciones.length ?? 0), false], ['Aportado', money(cuenta.inversion?.aportado ?? 0), false]]
       : [['Ingresos', money(ingresosMes), true], ['Gastado', money(gastadoMes), false], ['Libre', money(Math.max(0, cuenta.saldo)), false]];

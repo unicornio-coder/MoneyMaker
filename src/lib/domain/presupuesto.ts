@@ -46,7 +46,7 @@ export function proponerPresupuesto(movs: Movimiento[], recurrentes: Recurrente[
 
   const lineas: Omit<LineaPresupuesto, 'id'>[] = [];
   let orden = 1;
-  if (fijos > 0) lineas.push({ categoriaId: 'fijos', nombre: 'Fijos', limite: redondear(fijos), orden: orden++ });
+  if (fijos > 0) lineas.push({ categoriaId: 'fijos', nombre: 'Cargos fijos', limite: redondear(fijos), orden: orden++ });
   if (suscripciones > 0) lineas.push({ categoriaId: 'suscripciones', nombre: 'Suscripciones', limite: redondear(suscripciones), orden: orden++ });
   if (msi > 0) lineas.push({ categoriaId: 'msi', nombre: 'Meses sin intereses', limite: redondear(msi), orden: orden++ });
 

@@ -4,7 +4,7 @@ import { correoBienvenida, correoConectaBanco } from './correosAuto';
 describe('correos automáticos', () => {
   it('bienvenida con nombre, enlace al panel y sin rojo', () => {
     const c = correoBienvenida({ email: 'a@b.mx', nombre: 'Juan Carlos' }, 'https://app.test');
-    expect(c.asunto).toBe('Bienvenido a MoneyMaker');
+    expect(c.asunto).toBe('Te damos la bienvenida a MoneyMaker');
     expect(c.texto).toContain('Hola Juan.');
     expect(c.texto).toContain('https://app.test/app');
     expect(c.html).toContain('Ir a mi panel');

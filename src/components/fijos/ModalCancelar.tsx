@@ -100,7 +100,7 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial, pasoInicial
               <>
                 <div className="section-label mb-1.5 mt-1">Tus suscripciones</div>
                 <ul className="divide-y divide-edge">
-                  {listaPropias.map((sv, i) => <Fila key={sv.id} sv={sv} sub={`${money(sv.recurrente!.tipo === 'msi' ? sv.recurrente!.monto : costoMensual(sv.recurrente!))}/mes · desde hace ${sv.recurrente!.veces} cobros`} onClick={() => elegir(sv)} delay={i * 30} />)}
+                  {listaPropias.map((sv, i) => <Fila key={sv.id} sv={sv} sub={`${money(sv.recurrente!.tipo === 'msi' ? sv.recurrente!.monto : costoMensual(sv.recurrente!))}/mes · desde hace ${sv.recurrente!.veces} ${sv.recurrente!.veces === 1 ? 'cobro' : 'cobros'}`} onClick={() => elegir(sv)} delay={i * 30} />)}
                 </ul>
               </>
             )}
