@@ -3,6 +3,7 @@
 import { deISO, diasEntre, sumarDias, aISO } from './fechas';
 import { costoMensual, proximoCobro } from './recurrentes';
 import { enRango, type Rango } from './quincena';
+import { fechaCorta } from '@/lib/format';
 import type { Insight, Movimiento, Recurrente } from './tipos';
 
 export type InsightCandidato = Omit<Insight, 'id' | 'leido' | 'descartado' | 'createdAt'> & { clave: string };
@@ -148,7 +149,7 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
       texto: proximos
         .sort((a, b) => a.f.getTime() - b.f.getTime())
         .slice(0, 4)
-        .map(({ r, f }) => `${r.nombre} ${fmt(r.monto)} el ${f.getDate()}`)
+        .map(({ r, f }) => `${r.nombre} ${fmt(r.monto)} el ${fechaCorta(f)}`)
         .join(' · '),
       monto: total,
       ctaLabel: 'Ver calendario',
@@ -216,7 +217,7 @@ export function generarInsights(args: { movs: Movimiento[]; recurrentes: Recurre
 }
 
 function nombreCategoria(id: string): string {
-  return id === 'fijos' ? 'Fijos' : id === 'msi' ? 'Meses sin intereses' : id.charAt(0).toUpperCase() + id.slice(1);
+  return id === 'fijos' ? 'Cargos fijos' : id === 'msi' ? 'Meses sin intereses' : id.charAt(0).toUpperCase() + id.slice(1);
 }
 
 function normalizarNombre(s: string): string {

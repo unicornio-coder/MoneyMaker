@@ -29,7 +29,7 @@ export function Objetivos({ objetivos, cuentas }: { objetivos: Objetivo[]; cuent
   return (
     <div className="mx-auto max-w-[720px] space-y-5">
       <div className="flex items-center justify-between">
-        <p className="text-[13px] text-txt-2 dark:text-fg-2">{objetivos.filter((o) => o.completado).length} de {objetivos.length} completadas</p>
+        <p className="text-[13px] text-txt-2 dark:text-fg-2">{objetivos.length ? `${objetivos.filter((o) => o.completado).length} de ${objetivos.length} completadas` : 'Ahorro, deuda o inversión, con fecha.'}</p>
         <button type="button" onClick={() => setNuevo(true)} className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[12px]"><Plus size={15} /> Nueva meta</button>
       </div>
       {objetivos.length === 0 && <EmptyState icon={Flag} titulo="Sin metas todavía" texto="Crea una meta de ahorro, deuda o inversión y sigue tu avance cada quincena." cta={{ label: 'Nueva meta', onClick: () => setNuevo(true) }} />}

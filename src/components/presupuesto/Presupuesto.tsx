@@ -53,7 +53,7 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
     <div className="mx-auto max-w-[760px] space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <ChipGroup label="Periodo" value={periodo} onChange={setPeriodo} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }, { value: 'anio', label: 'Año' }]} size="sm" className="md:hidden" />
-        <div className="hidden font-display text-[17px] font-bold md:block">{rango.etiqueta[0].toUpperCase() + rango.etiqueta.slice(1)}</div>
+        <div className="hidden md:block" />
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setExcel(true)} className="flex h-9 items-center gap-1.5 rounded-pill border border-line-2 px-3.5 text-[12px] font-semibold hover:bg-bg-hover dark:border-edge dark:hover:bg-surface-2"><FileSpreadsheet size={14} /> Subir mi Excel</button>
           <button type="button" onClick={() => setNuevo(true)} className="btn-primary flex h-9 items-center gap-1.5 px-3.5 text-[12px]"><Plus size={15} /> Categoría</button>
@@ -62,9 +62,10 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
 
       <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="flex items-baseline justify-between gap-3">
-          <div className="text-[12.5px] font-semibold text-white/70">Gastado · {rango.etiqueta}{!r.actual ? ' (último periodo con datos)' : ''}</div>
-          <div className="text-[12px] text-white/60">de {money(resumen.limiteTotal)}</div>
+          <div className="min-w-0 text-[12.5px] font-semibold text-white/70">Gastado · {rango.etiqueta[0].toUpperCase() + rango.etiqueta.slice(1)}</div>
+          <div className="flex-none text-[12px] text-white/60">de {money(resumen.limiteTotal)}</div>
         </div>
+        {!r.actual && <div className="text-[11.5px] text-white/50">Último periodo con datos</div>}
         <Money value={resumen.gastado} animate className="mt-1 block text-[38px] font-bold leading-none tracking-[-1.6px] text-white" />
         <div className="mt-4 h-2 w-full rounded-pill bg-white/15">
           <div className={cn('h-2 rounded-pill transition-[width] duration-[600ms] ease-bounce', excedido ? 'bg-white' : 'bg-green-light')} style={{ width: `${pct}%` }} />

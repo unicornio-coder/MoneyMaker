@@ -4,7 +4,7 @@ import { MODO_MOCK } from '@/lib/supabase/env';
 import { supabaseServer } from '@/lib/supabase/server';
 import { Onboarding } from '@/components/onboarding/Onboarding';
 
-export const metadata = { title: 'Bienvenido · MoneyMaker' };
+export const metadata = { title: 'Bienvenida · MoneyMaker' };
 export const dynamic = 'force-dynamic';
 
 /** ¿Entró con contraseña (o Google)? Entonces no se la pedimos. Con enlace de correo no tiene una. */

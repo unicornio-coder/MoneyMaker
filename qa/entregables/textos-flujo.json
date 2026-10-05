@@ -19,11 +19,11 @@
     }
   },
   "carga": {
-    "titulo": "Sube tus estados de cuenta",
+    "titulo": "Tus estados de cuenta en PDF",
     "subtitulo": "PDF de cualquier banco o tarjeta. Hasta 10 archivos de 10 MB.",
     "ayuda": "Arrastra los archivos aquí o elige desde tu celular o computadora.",
     "boton": "Elegir archivos",
-    "boton_movil": "Abrir desde Archivos o Correo"
+    "boton_movil": "Elegir PDF"
   },
   "multiple": {
     "titulo": "Tus archivos",

@@ -43,8 +43,8 @@ export function Cuentas({ cuentas, onAbrir, onAgregar }: { cuentas: CuentaVista[
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-green text-white">
             <Plus size={22} strokeWidth={2.5} />
           </span>
-          <span className="text-[14px] font-bold">Agregar tarjeta</span>
-          <span className="text-[11px] text-txt-2 dark:text-fg-2">Crédito, débito o inversión</span>
+          <span className="text-[14px] font-bold">Agregar cuenta</span>
+          <span className="text-[11px] text-txt-2 dark:text-fg-2">Banco, tarjeta o PDF</span>
         </button>
         {cuentas.map((c, i) => {
           const esCredito = c.tipo === 'credito';

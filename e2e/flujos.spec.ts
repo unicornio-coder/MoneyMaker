@@ -11,7 +11,7 @@ test.beforeAll(async ({ request }) => {
 
 test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await page.goto('/onboarding');
-  await expect(page.getByRole('heading', { name: 'Bienvenido a MoneyMaker' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Te damos la bienvenida a MoneyMaker' })).toBeVisible();
   await expect(page.getByText('Paso 1 de 3')).toBeVisible();
   const nombre = page.getByLabel('Tu nombre');
   await nombre.fill('');

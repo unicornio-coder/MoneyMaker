@@ -24,7 +24,7 @@ export const TABS: Tab[] = [
   { href: '/app/inversiones', label: 'Inversiones', titulo: 'Inversiones', icon: TrendingUp, grupo: 2, tabbar: null },
   { href: '/app/objetivos', label: 'Metas', titulo: 'Metas', icon: Flag, grupo: null, tabbar: null },
   { href: '/app/insights', label: 'Avisos', titulo: 'Avisos', icon: Bell, grupo: null, tabbar: null },
-  { href: '/app/importar', label: 'Importar', titulo: 'Importar estado de cuenta', icon: Upload, grupo: null, tabbar: null },
+  { href: '/app/importar', label: 'Importar', titulo: 'Importar', icon: Upload, grupo: null, tabbar: null },
   { href: '/app/ayuda', label: 'Ayuda', titulo: 'Ayuda', icon: LifeBuoy, grupo: 'abajo', tabbar: null },
   { href: '/app/ajustes', label: 'Ajustes', titulo: 'Ajustes', icon: Settings, grupo: 'abajo', tabbar: null },
   { href: '/app/planes', label: 'Planes', titulo: 'Planes', icon: Crown, grupo: null, tabbar: null },
