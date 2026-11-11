@@ -75,7 +75,9 @@ export async function enlaceTelegram() {
   const codigo = crearCodigoVinculo(usuario.id);
   if (!codigo) return { ok: false as const, error: 'El bot solo funciona con una cuenta real, no en el modo de demostración.' };
   const h = headers();
-  const urlApp = process.env.NEXT_PUBLIC_APP_URL || `https://${h.get('x-forwarded-host') ?? h.get('host') ?? ''}`;
+  // El webhook apunta al dominio por el que entró el usuario (siempre existe); la variable es solo respaldo.
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  const urlApp = host ? `https://${host}` : (process.env.NEXT_PUBLIC_APP_URL ?? '');
   const bot = await prepararBot(urlApp);
   if (!bot) return { ok: false as const, error: 'Telegram no reconoció el token del bot. Revisa TELEGRAM_BOT_TOKEN.' };
   return { ok: true as const, url: `https://t.me/${bot.usuario}?start=${codigo}` };
