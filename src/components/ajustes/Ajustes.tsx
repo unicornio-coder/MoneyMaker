@@ -17,8 +17,8 @@ import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
 import { cerrarSesion, crearContraseña } from '@/lib/auth/actions';
 import { actualizarPerfil, eliminarFuente, borrarCuenta } from '@/app/app/ajustes/acciones';
-import { guardarLlavesBitso, sincronizarConector, desconectarConector, generarTokenDispositivo, obtenerCorreoReenvio, actualizarFuente } from '@/app/app/ajustes/conectores';
-import { Mail, Bitcoin, RefreshCw, Smartphone, Forward, Copy } from 'lucide-react';
+import { guardarLlavesBitso, sincronizarConector, desconectarConector, generarTokenDispositivo, obtenerCorreoReenvio, actualizarFuente, enlaceTelegram, desconectarTelegram } from '@/app/app/ajustes/conectores';
+import { Mail, Bitcoin, RefreshCw, Smartphone, Forward, Copy, Send } from 'lucide-react';
 
 /** Diagnóstico de la cuenta de Belvo (solo con llaves reales): qué instituciones tiene habilitadas. */
 export type DiagBelvo = { entorno: 'sandbox' | 'production' | 'mock'; hayBancos: boolean; bancos: string[]; porTipo: Record<string, number>; mensaje: string } | { error: string } | null;
@@ -38,7 +38,9 @@ const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon
   { id: 'exportar', label: 'Exportar datos', sub: 'Descarga tus movimientos en CSV', icon: Download },
 ];
 
-export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, outlookConfigurado, aviso, nivel = 'plus', belvo = null }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; nivel?: Nivel; belvo?: DiagBelvo }) {
+export type EstadoTelegram = { configurado: boolean; vinculado: boolean };
+
+export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmailConfigurado, outlookConfigurado, aviso, nivel = 'plus', belvo = null, telegram = { configurado: false, vinculado: false } }: { usuario: UsuarioSesion; perfil: Perfil; links: Fuente[]; seccionInicial?: string; modoMock: boolean; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; nivel?: Nivel; belvo?: DiagBelvo; telegram?: EstadoTelegram }) {
   const [sec, setSec] = useState<Sec>((seccionInicial as Sec) ?? null);
   const router = useRouter();
 
@@ -47,7 +49,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
       <div className="mx-auto max-w-settings animate-screen space-y-4">
         <button type="button" onClick={() => setSec(null)} className="flex items-center gap-1 text-[13px] font-semibold text-green-dark dark:text-green-light"><ChevronLeft size={16} /> Ajustes</button>
         {sec === 'perfil' && <SecPerfil perfil={perfil} usuario={usuario} />}
-        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} belvo={belvo} />}
+        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} belvo={belvo} telegram={telegram} />}
         {sec === 'seguridad' && <SecSeguridad usuario={usuario} modoMock={modoMock} />}
         {sec === 'notificaciones' && <Avisos resumenDomingo={perfil.resumenDomingo !== false} avisosCobros={perfil.avisosCobros !== false} nivel={nivel} />}
         {sec === 'familia' && <div className="card p-5 text-[13px] text-txt-2 dark:text-fg-2">Familia llega después de la beta: integrantes, cuentas compartidas y gastos por hijo.</div>}
@@ -183,7 +185,7 @@ function EstadoBelvo({ belvo }: { belvo: NonNullable<DiagBelvo> }) {
   );
 }
 
-function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo }: { links: Fuente[]; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; belvo?: DiagBelvo }) {
+function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo, telegram }: { links: Fuente[]; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; belvo?: DiagBelvo; telegram: EstadoTelegram }) {
   const [pendiente, start] = useTransition();
   const router = useRouter();
   const [bitsoKey, setBitsoKey] = useState('');
@@ -195,6 +197,7 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo 
   const dispositivo = links.find((l) => l.proveedor === 'dispositivo');
   const [token, setToken] = useState<string | null>(null);
   const [reenvio, setReenvio] = useState<{ direccion: string; activo: boolean } | null>(null);
+  const [enlaceBot, setEnlaceBot] = useState<string | null>(null);
   const copiar = (t: string) => { try { void navigator.clipboard.writeText(t); setMsg('Copiado.'); } catch { setMsg(t); } };
   const sync = (p: 'gmail' | 'outlook' | 'bitso') => start(async () => { const r = await sincronizarConector(p); setMsg(r.ok ? `Listo: ${r.insertados} movimientos nuevos.` : r.error ?? 'No se pudo sincronizar.'); router.refresh(); });
   const desconectar = (p: 'gmail' | 'outlook' | 'bitso', nombre: string) => confirm(`¿Desconectar ${nombre}?`) && start(async () => { await desconectarConector(p); router.refresh(); });
@@ -249,6 +252,25 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo 
             )}
           </div>
         ))}
+      </div>
+
+      <div className="mt-6 border-t border-edge pt-5">
+        <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><Send size={16} /> Telegram: pregúntale a tu bot</h3>
+        <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">Conecta tu chat y pregunta desde Telegram cuánto te queda de la quincena, cuánto pagas de suscripciones o qué cobros vienen. El bot contesta con las mismas cifras que ves aquí; no guarda tus mensajes.</p>
+        {!telegram.configurado ? (
+          <p className="mt-3 text-[12px] text-txt-3">Disponible cuando se configure el bot en el servidor (TELEGRAM_BOT_TOKEN).</p>
+        ) : (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {telegram.vinculado && <span className="rounded-pill bg-green-50 px-2.5 py-1 text-[11.5px] font-bold text-green-dark dark:text-green-light dark:bg-surface-2">Conectado</span>}
+            {enlaceBot ? (
+              <a href={enlaceBot} target="_blank" rel="noreferrer" className="btn-primary inline-flex h-10 items-center gap-2 px-4 text-[12.5px]"><Send size={15} /> Abrir Telegram y tocar Iniciar</a>
+            ) : (
+              <button type="button" disabled={pendiente} onClick={() => start(async () => { const r = await enlaceTelegram(); if (r.ok) setEnlaceBot(r.url); else setMsg(r.error); })} className={cn('inline-flex h-10 items-center gap-2 px-4 text-[12.5px]', telegram.vinculado ? 'rounded-pill border border-line-2 font-semibold dark:border-edge' : 'btn-primary')}><Send size={15} /> {telegram.vinculado ? 'Conectar otro chat' : 'Conectar Telegram'}</button>
+            )}
+            {telegram.vinculado && <button type="button" disabled={pendiente} onClick={() => confirm('¿Desconectar Telegram?') && start(async () => { await desconectarTelegram(); setEnlaceBot(null); router.refresh(); })} className="h-9 rounded-pill px-3 text-[12px] font-semibold text-txt-2">Desconectar</button>}
+            {enlaceBot && <span className="basis-full text-[11.5px] text-txt-3">El enlace vale 15 minutos. Cuando el bot te salude, vuelve y actualiza esta página.</span>}
+          </div>
+        )}
       </div>
 
       <div className="mt-6 border-t border-edge pt-5">

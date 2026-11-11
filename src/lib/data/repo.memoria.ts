@@ -28,8 +28,10 @@ type EstadoUsuario = {
   eventos_producto: { nombre: string; props: Record<string, unknown>; at: string }[];
 };
 
-const g = globalThis as unknown as { __mmMemoria?: Map<string, EstadoUsuario> };
+const g = globalThis as unknown as { __mmMemoria?: Map<string, EstadoUsuario>; __mmTelegram?: Map<string, string> };
 const estados = (g.__mmMemoria ??= new Map());
+/** chat de Telegram → usuario */
+const telegram: Map<string, string> = (g.__mmTelegram ??= new Map());
 
 let contador = 0;
 const nuevoId = () => `m-${Date.now().toString(36)}-${(++contador).toString(36)}`;
@@ -358,6 +360,21 @@ export const repoMemoria: Repo = {
         ex.categoriaLlm = d.categoriaLlm ?? ex.categoriaLlm;
       } else e.descriptores.push({ descriptor: d.descriptor, veces: 1, comercioLlm: d.comercioLlm ?? null, categoriaLlm: d.categoriaLlm ?? null });
     }
+  },
+
+  async usuarioDeTelegram(chatId) {
+    return telegram.get(chatId) ?? null;
+  },
+  async chatDeTelegram(userId) {
+    for (const [chat, usuario] of telegram) if (usuario === userId) return chat;
+    return null;
+  },
+  async vincularTelegram(userId, chatId) {
+    for (const [chat, usuario] of telegram) if (usuario === userId) telegram.delete(chat);
+    telegram.set(chatId, userId);
+  },
+  async desvincularTelegram(userId) {
+    for (const [chat, usuario] of telegram) if (usuario === userId) telegram.delete(chat);
   },
 
   async registrarEstadoDeCuenta(userId) {

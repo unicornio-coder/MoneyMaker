@@ -31,7 +31,7 @@ export async function GET() {
       build: (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7) || null,
       modo: MODO_MOCK ? 'mock' : 'supabase',
       db,
-      integraciones: { modelo: hayLLM(), stripe: !!process.env.STRIPE_SECRET_KEY, belvo: !!process.env.BELVO_SECRET_ID, gmail: !!process.env.GOOGLE_CLIENT_ID, outlook: !!process.env.MS_CLIENT_ID, correo: !!process.env.RESEND_API_KEY, push: !!process.env.VAPID_PRIVATE_KEY },
+      integraciones: { modelo: hayLLM(), stripe: !!process.env.STRIPE_SECRET_KEY, belvo: !!process.env.BELVO_SECRET_ID, gmail: !!process.env.GOOGLE_CLIENT_ID, outlook: !!process.env.MS_CLIENT_ID, correo: !!process.env.RESEND_API_KEY, push: !!process.env.VAPID_PRIVATE_KEY, telegram: !!process.env.TELEGRAM_BOT_TOKEN },
       hora: new Date().toISOString(),
     },
     { headers: { 'cache-control': 'no-store' } },
