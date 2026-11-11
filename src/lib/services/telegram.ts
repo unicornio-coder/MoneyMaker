@@ -5,10 +5,10 @@
 
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import type { Repo } from '@/lib/data/repo';
-import { hoyMX } from '@/lib/domain/fechas';
+import { aISO, deISO, hoyMX, sumarMeses } from '@/lib/domain/fechas';
 import { estimarIngresoQuincenal } from '@/lib/domain/nomina';
 import { presupuestoVsActual, proponerPresupuesto } from '@/lib/domain/presupuesto';
-import { quincenaDe } from '@/lib/domain/quincena';
+import { ultimoRangoConDatos } from '@/lib/domain/series';
 import { armarDatosBot, cifrasInventadas, intencionDe, respuestaDeReglas, type DatosBot, type Intencion } from '@/lib/domain/telegram';
 import { formatMXN } from '@/lib/format';
 import { hayLLM, redactarRespuestaBot } from './llm';
@@ -87,16 +87,19 @@ export async function prepararBot(urlApp: string): Promise<{ usuario: string } |
   return { usuario: yo.username };
 }
 
-/** Las cifras del usuario para el bot: la misma quincena, el mismo presupuesto y los mismos recurrentes que ve en la app. */
+/**
+ * Las cifras del usuario para el bot, calculadas igual que la pantalla de Presupuesto: misma ventana de movimientos,
+ * mismo periodo (la quincena en curso o, si no tiene movimientos, el último periodo con datos) y mismo presupuesto.
+ */
 export async function datosDelBot(repo: Repo, userId: string, hoy = hoyMX()): Promise<DatosBot> {
-  const [perfil, movs, recurrentes] = await Promise.all([repo.perfil(userId), repo.movimientos(userId), repo.recurrentes(userId)]);
+  const [perfil, movs, recurrentes] = await Promise.all([repo.perfil(userId), repo.movimientos(userId, { desde: aISO(sumarMeses(hoy, -13)) }), repo.recurrentes(userId)]);
   const diasPago = perfil?.diasPago ?? [5, 20];
-  const rango = quincenaDe(hoy, diasPago);
+  const { rango, actual } = ultimoRangoConDatos(movs, 'q', hoy, diasPago);
   const ingreso = perfil?.ingresoQuincenal ?? estimarIngresoQuincenal(movs, hoy);
   const guardado = await repo.presupuesto(userId, 'q', rango.inicio).catch(() => null);
-  const lineas = guardado?.lineas ?? proponerPresupuesto(movs, recurrentes, 'q', hoy, diasPago);
+  const lineas = guardado?.lineas ?? proponerPresupuesto(movs, recurrentes, 'q', actual ? hoy : deISO(rango.fin), diasPago);
   const vs = presupuestoVsActual(lineas, movs, rango, ingreso, hoy);
-  return armarDatosBot({ rango, vs, recurrentes, movimientos: movs.length, hoy, diasPago });
+  return armarDatosBot({ rango, periodoActual: actual, vs, recurrentes, movimientos: movs.length, hoy, diasPago });
 }
 
 export type RespuestaBot = { texto: string; origen: 'modelo' | 'reglas'; intencion: Intencion; descartada: number[] };

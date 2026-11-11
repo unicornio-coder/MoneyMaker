@@ -46,7 +46,7 @@ describe('vinculación del chat de Telegram', () => {
   });
 
   it('sin modelo contesta con la redacción fija y las cifras de la app', async () => {
-    const datos: DatosBot = { hayDatos: true, periodo: '1 – 15 nov', diasRestantes: 4, proximoPago: '2026-11-15', limite: 9000, gastado: 6150, teQueda: 2850, porDia: 713, suscripciones: [{ nombre: 'Netflix', mensual: 249 }], totalSuscripciones: 249, totalSuscripcionesAnual: 2988, proximosCobros: [], totalProximosCobros: 0 };
+    const datos: DatosBot = { hayDatos: true, periodoActual: true, periodo: '1 – 15 nov', diasRestantes: 4, proximoPago: '2026-11-15', limite: 9000, gastado: 6150, teQueda: 2850, porDia: 713, suscripciones: [{ nombre: 'Netflix', mensual: 249 }], totalSuscripciones: 249, totalSuscripcionesAnual: 2988, proximosCobros: [], totalProximosCobros: 0 };
     const r = await responderPregunta('¿Cuánto me queda?', datos);
     expect(r.origen).toBe('reglas');
     expect(r.intencion).toBe('queda');

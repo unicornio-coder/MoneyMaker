@@ -19,5 +19,6 @@ export type DatosInicio = {
   /** true cuando Belvo está en sandbox: credenciales de prueba bnk100 / full. */
   sandbox?: boolean;
   /** Conexiones y su estado, para avisar cuando un banco pide reconectar. */
-  fuentes: { id: string; proveedor: string; institucion: string; estado: 'ok' | 'mfa' | 'roto' | 'pendiente' }[];
+  fuentes: { id: string; proveedor: string; institucion: string; estado: 'ok' | 'mfa' | 'roto' | 'pendiente' }[];  /** La cifra de Presupuesto para la quincena (la misma que da el bot de Telegram). null si aún no hay presupuesto. */
+  quincena?: { teQueda: number; diasRestantes: number; periodoActual: boolean; periodo: string } | null;
 };

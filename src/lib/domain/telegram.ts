@@ -9,6 +9,8 @@ import type { Recurrente } from './tipos';
 /** Las únicas cifras que el bot puede mencionar. Todas salen de los cálculos que ya usa Presupuesto y Suscripciones. */
 export type DatosBot = {
   hayDatos: boolean;
+  /** false cuando la quincena en curso no tiene movimientos y las cifras son del último periodo con datos (igual que Presupuesto). */
+  periodoActual: boolean;
   periodo: string;
   diasRestantes: number;
   proximoPago: string;
@@ -28,7 +30,7 @@ export type Intencion = 'queda' | 'suscripciones' | 'cobros' | 'ayuda';
 
 type VsPresupuesto = { limiteTotal: number; gastado: number; libres: number; porDia: number; diasRestantes: number };
 
-export function armarDatosBot(args: { rango: Rango; vs: VsPresupuesto; recurrentes: Recurrente[]; movimientos: number; hoy: Date; diasPago?: number[] }): DatosBot {
+export function armarDatosBot(args: { rango: Rango; periodoActual?: boolean; vs: VsPresupuesto; recurrentes: Recurrente[]; movimientos: number; hoy: Date; diasPago?: number[] }): DatosBot {
   const { rango, vs, recurrentes, hoy } = args;
   const activos = recurrentes.filter((r) => r.activo && !r.canceladoAt && !r.ignorado);
   const suscripciones = activos
@@ -40,6 +42,7 @@ export function armarDatosBot(args: { rango: Rango; vs: VsPresupuesto; recurrent
   const proximosCobros = proximos.lista.slice(0, 8).map((c) => ({ nombre: c.recurrente.nombre, monto: Math.round(c.monto), fecha: c.fecha }));
   return {
     hayDatos: args.movimientos > 0,
+    periodoActual: args.periodoActual ?? true,
     periodo: rango.etiqueta,
     diasRestantes: vs.diasRestantes,
     proximoPago: aISO(proximoDiaDePago(hoy, args.diasPago ?? [5, 20])),
@@ -81,6 +84,10 @@ export function respuestaDeReglas(intencion: Intencion, d: DatosBot, mxn: (n: nu
     return `En los próximos 7 días te cobran ${mxn(d.totalProximosCobros)}: ${d.proximosCobros.map((c) => `${c.nombre} ${mxn(c.monto)}`).join(', ')}.`;
   }
   if (intencion === 'ayuda') return 'Puedes preguntarme cuánto te queda de la quincena, cuánto pagas de suscripciones o qué cobros vienen esta semana.';
+  if (!d.periodoActual) {
+    const cierre = d.limite <= 0 ? `gastaste ${mxn(d.gastado)}` : d.teQueda < 0 ? `te pasaste por ${mxn(-d.teQueda)}: gastaste ${mxn(d.gastado)} de ${mxn(d.limite)}` : `te quedaron ${mxn(d.teQueda)}: gastaste ${mxn(d.gastado)} de ${mxn(d.limite)}`;
+    return `No tengo movimientos de tu quincena actual. En tu último periodo con datos (${d.periodo}) ${cierre}. Sube un estado de cuenta más reciente para ver cuánto te queda hoy.`;
+  }
   if (d.limite <= 0) return `Llevas ${mxn(d.gastado)} gastados en ${d.periodo} y faltan ${dias(d.diasRestantes)} para que termine. Aún no tienes presupuesto para calcular cuánto te queda.`;
   if (d.teQueda < 0) return `Ya te pasaste por ${mxn(-d.teQueda)}: llevas ${mxn(d.gastado)} de ${mxn(d.limite)} y faltan ${dias(d.diasRestantes)} para que termine tu quincena.`;
   return `Te quedan ${mxn(d.teQueda)} para ${dias(d.diasRestantes)}: llevas ${mxn(d.gastado)} de ${mxn(d.limite)}. Son ${mxn(d.porDia)} por día.`;
