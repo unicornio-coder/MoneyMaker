@@ -29,7 +29,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build
+      # next/font baja las fuentes de Google al compilar y a veces falla en el runner: un reintento basta.
+      - run: npm run build || (sleep 10 && npm run build)
 
   e2e:
     name: E2E (Playwright, móvil y escritorio)
@@ -50,7 +51,8 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       # El E2E corre contra `next start` (ver playwright.config.ts): sin compilación en frío por ruta.
-      - run: npm run build
+      # next/font baja las fuentes de Google al compilar y a veces falla en el runner: un reintento basta.
+      - run: npm run build || (sleep 10 && npm run build)
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
