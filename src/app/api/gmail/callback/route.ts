@@ -10,7 +10,14 @@ export async function GET(req: Request) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const esperado = cookies().get('mm-gmail-state')?.value;
-  if (!code || !state || state !== esperado) return volver('gmail=error');
+  // Cada salida lleva el motivo para que Ajustes diga qué pasó y qué hacer, en vez de un "intenta de nuevo" genérico.
+  const fallo = (motivo: string) => {
+    console.warn('[gmail] callback', motivo);
+    return volver(`gmail=error&motivo=${motivo}`);
+  };
+  const errorGoogle = url.searchParams.get('error');
+  if (errorGoogle) return fallo(errorGoogle === 'access_denied' ? 'denegado' : 'google');
+  if (!code || !state || state !== esperado) return fallo('sesion');
   try {
     const { usuario, repo } = await contexto();
     const t = await intercambiarCodigo(code);
@@ -19,7 +26,8 @@ export async function GET(req: Request) {
     await registrar(repo, usuario.id, 'fuente_conectada', { proveedor: 'gmail' });
     const r = await sincronizarGmail(repo, usuario.id, 30);
     return volver(`gmail=ok&nuevos=${r.insertados}`);
-  } catch {
-    return volver('gmail=error');
+  } catch (e) {
+    const m = e instanceof Error ? e.message : '';
+    return fallo(m.includes('refresh_token') ? 'sin_refresh' : m.startsWith('Google token') ? 'intercambio' : 'lectura');
   }
 }

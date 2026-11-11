@@ -39,6 +39,16 @@ describe('bot de Telegram: datos y respuestas', () => {
     expect(respuestaDeReglas('queda', pasado, mxn)).toContain('Ya te pasaste por $400');
   });
 
+  it('si la quincena actual no tiene movimientos, habla del último periodo con datos y no de hoy', () => {
+    const agosto = quincenaDe(new Date(2026, 7, 20), [15, 30]);
+    const viejo = armarDatosBot({ rango: agosto, periodoActual: false, vs: { limiteTotal: 9000, gastado: 6150, libres: 2850, porDia: 0, diasRestantes: 0 }, recurrentes: [], movimientos: 26, hoy: HOY });
+    const texto = respuestaDeReglas('queda', viejo, mxn);
+    expect(texto).toContain('No tengo movimientos de tu quincena actual');
+    expect(texto).toContain(agosto.etiqueta);
+    expect(texto).toContain('te quedaron $2,850: gastaste $6,150 de $9,000');
+    expect(cifrasInventadas(texto, viejo)).toEqual([]);
+  });
+
   it('sin movimientos no dice ninguna cifra', () => {
     const vacio = armarDatosBot({ rango, vs: { limiteTotal: 0, gastado: 0, libres: 0, porDia: 0, diasRestantes: 4 }, recurrentes: [], movimientos: 0, hoy: HOY });
     expect(cifrasEnTexto(respuestaDeReglas('queda', vacio, mxn))).toEqual([]);

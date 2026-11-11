@@ -11,10 +11,30 @@ import type { DiagBelvo } from '@/components/ajustes/Ajustes';
 export const metadata = { title: 'Ajustes · MoneyMaker' };
 export const dynamic = 'force-dynamic';
 
-export default async function AjustesPage({ searchParams }: { searchParams: { sec?: string; gmail?: string; outlook?: string; nuevos?: string } }) {
+/** Qué pasó al conectar el correo y qué puede hacer el usuario. Los motivos los pone /api/gmail/callback. */
+function motivoDeError(motivo?: string): string {
+  switch (motivo) {
+    case 'denegado':
+      return 'Cancelaste el permiso en Google, o tu correo no está en la lista de usuarios de prueba de la app.';
+    case 'sesion':
+      return 'La solicitud venció o se abrió en otro navegador. Vuelve a tocar Conectar desde aquí.';
+    case 'dominio':
+      return `Abre MoneyMaker desde ${process.env.NEXT_PUBLIC_APP_URL ?? 'la dirección principal'} y conéctalo ahí.`;
+    case 'sin_refresh':
+      return 'Google ya tenía un permiso anterior. Quita MoneyMaker en myaccount.google.com/permissions y vuelve a conectar.';
+    case 'intercambio':
+      return 'Google rechazó la respuesta. Revisa que la URL de retorno autorizada en Google Cloud sea la de esta app.';
+    case 'lectura':
+      return 'El permiso se dio, pero no pudimos leer el buzón. Intenta de nuevo en unos minutos.';
+    default:
+      return 'Intenta de nuevo.';
+  }
+}
+
+export default async function AjustesPage({ searchParams }: { searchParams: { sec?: string; gmail?: string; outlook?: string; nuevos?: string; motivo?: string } }) {
   const { usuario, repo, perfil } = await contexto();
   const links = await repo.links(usuario.id);
-  const avisoDe = (nombre: string, estado?: string) => (estado === 'ok' ? `${nombre} conectado. Leímos ${searchParams.nuevos ?? 0} movimientos de tus alertas.` : estado === 'error' ? `No pudimos conectar ${nombre}. Intenta de nuevo.` : estado === 'noconfig' ? `Falta configurar el acceso de ${nombre}.` : null);
+  const avisoDe = (nombre: string, estado?: string) => (estado === 'ok' ? `${nombre} conectado. Leímos ${searchParams.nuevos ?? 0} movimientos de tus alertas.` : estado === 'error' ? `No pudimos conectar ${nombre}. ${motivoDeError(searchParams.motivo)}` : estado === 'noconfig' ? `Falta configurar el acceso de ${nombre}.` : null);
   const aviso = avisoDe('Gmail', searchParams.gmail) ?? avisoDe('Outlook', searchParams.outlook);
   const telegramVinculado = telegramConfigurado() ? !!(await repo.chatDeTelegram(usuario.id).catch(() => null)) : false;
   const agg = getAggregator();

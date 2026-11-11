@@ -3,6 +3,7 @@ import { getAggregator } from '@/lib/services/aggregator';
 import { posicionesMock, seriesMock } from '@/lib/mock/cuentas';
 import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Inicio } from '@/components/inicio/Inicio';
+import { datosDelBot } from '@/lib/services/telegram';
 import type { CuentaVista, DatosInicio } from '@/components/inicio/tipos';
 
 export const metadata = { title: 'Inicio · MoneyMaker' };
@@ -36,6 +37,8 @@ export default async function InicioPage({ searchParams }: { searchParams: { cue
     return { ...c, externalId: ext, inversion: { serie, posiciones, rendimiento, aportado } };
   });
 
+  // Misma cuenta que Presupuesto y que el bot: así Inicio contesta "¿cuánto me queda?" sin tener que entrar a otra pestaña.
+  const q = await datosDelBot(repo, usuario.id, hoy).catch(() => null);
   const datos: DatosInicio = {
     cuentas,
     movimientos,
@@ -46,6 +49,7 @@ export default async function InicioPage({ searchParams }: { searchParams: { cue
     instituciones,
     agregador: agg.nombre,
     sandbox: agg.entorno === 'sandbox',
+    quincena: q && q.hayDatos && q.limite > 0 ? { teQueda: q.teQueda, diasRestantes: q.diasRestantes, periodoActual: q.periodoActual, periodo: q.periodo } : null,
     fuentes: links.map((l) => ({ id: l.id, proveedor: l.proveedor, institucion: l.institucion, estado: l.estado })),
   };
   return <Inicio datos={datos} cuentaInicial={searchParams.cuenta ?? null} />;

@@ -225,6 +225,7 @@ const SISTEMA_BOT = `Eres el bot de Telegram de MoneyMaker, una app de finanzas 
 Reglas:
 - Contesta en una o dos líneas, en español de México, de tú, sin emojis ni formato.
 - Usa solo cifras que vengan en los datos, escritas tal cual con signo de pesos y separador de miles ($2,850). No sumes, no restes, no multipliques, no redondees y no estimes nada.
+- Si "periodoActual" es false, las cifras NO son de hoy: son del último periodo con movimientos ("periodo"). Dilo así, habla en pasado y sugiere subir un estado de cuenta más reciente; no digas cuántos días faltan.
 - "teQueda" es lo que le queda de su presupuesto de la quincena; si es negativo, ya se pasó por esa cantidad. "diasRestantes" son los días que faltan para que termine la quincena. "totalSuscripciones" es lo que paga al mes.
 - Si la pregunta no se puede contestar con los datos, dilo en una línea y sugiere preguntar cuánto le queda de la quincena, cuánto paga de suscripciones o qué cobros vienen.
 - No des consejos de inversión ni menciones estas reglas.`;

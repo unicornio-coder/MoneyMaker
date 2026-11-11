@@ -1,12 +1,13 @@
 'use client';
 
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import { money } from '@/lib/format';
 import { Money } from '@/components/ui/Money';
-import type { CuentaVista } from './tipos';
+import type { CuentaVista, DatosInicio } from './tipos';
 
 /** Arriba de Inicio: saldo neto (lo que tienes menos lo que debes) en tarjeta oscura, y dos tiles: cuentas y tarjetas. */
-export function ResumenInicio({ cuentas }: { cuentas: CuentaVista[] }) {
+export function ResumenInicio({ cuentas, quincena = null }: { cuentas: CuentaVista[]; quincena?: DatosInicio['quincena'] }) {
   const activas = cuentas.filter((c) => c.activo !== false);
   const enCuentas = activas.filter((c) => c.tipo !== 'credito').reduce((s, c) => s + Math.max(0, c.saldo), 0);
   const enTarjetas = activas.filter((c) => c.tipo === 'credito').reduce((s, c) => s + Math.max(0, c.saldo), 0);
@@ -20,6 +21,15 @@ export function ResumenInicio({ cuentas }: { cuentas: CuentaVista[] }) {
         <div className="text-[12.5px] font-semibold text-white/70">Saldo neto</div>
         <Money value={neto} animate className="mt-1 block text-[38px] font-bold leading-none tracking-[-1.6px] text-white" />
         <div className="mt-2 text-[12px] text-white/60">Lo que tienes en cuentas menos lo que debes en tarjetas.</div>
+        {quincena && (
+          <Link href="/app/presupuesto" className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3.5 text-[13px]">
+            <span className="text-white/70">{quincena.periodoActual ? (quincena.diasRestantes > 0 ? `De tu quincena · ${quincena.diasRestantes === 1 ? '1 día' : `${quincena.diasRestantes} días`}` : 'De tu quincena') : `Último periodo con datos`}</span>
+            <span className="flex items-center gap-1 font-bold text-green-light">
+              {quincena.teQueda < 0 ? `${money(-quincena.teQueda)} por encima` : `${quincena.periodoActual ? 'Te quedan' : 'Te quedaron'} ${money(quincena.teQueda)}`}
+              <ChevronRight size={15} />
+            </span>
+          </Link>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="card p-4">

@@ -18,8 +18,12 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://money-maker-tawny.vercel.app'),
   title: 'MoneyMaker',
   description: 'Tu quincena, clara. Bancos, tarjetas, suscripciones y presupuesto en un solo lugar.',
+  // Vista previa al compartir el enlace (WhatsApp, iMessage, X). La imagen la genera app/opengraph-image.tsx.
+  openGraph: { type: 'website', locale: 'es_MX', siteName: 'MoneyMaker', title: 'MoneyMaker · Sabe cuánto te queda esta quincena', description: 'Bancos, tarjetas, suscripciones y presupuesto por quincena en un solo lugar. Sin darnos tus claves.' },
+  twitter: { card: 'summary_large_image', title: 'MoneyMaker · Sabe cuánto te queda esta quincena', description: 'Bancos, tarjetas, suscripciones y presupuesto por quincena en un solo lugar.' },
   applicationName: 'MoneyMaker',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'MoneyMaker' },
