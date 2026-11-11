@@ -69,6 +69,13 @@ export interface Repo {
   guardarSuscripcionPush(userId: string, s: SuscripcionPush & { agente?: string | null }): Promise<void>;
   eliminarSuscripcionPush(userId: string, endpoint: string): Promise<void>;
 
+  // Bot de Telegram (un chat privado por usuario)
+  /** Dueño de un chat de Telegram. Requiere cliente de servicio en Supabase. */
+  usuarioDeTelegram(chatId: string): Promise<string | null>;
+  chatDeTelegram(userId: string): Promise<string | null>;
+  vincularTelegram(userId: string, chatId: string): Promise<void>;
+  desvincularTelegram(userId: string): Promise<void>;
+
   // Presupuesto
   presupuesto(userId: string, periodo: Periodo, inicio: string): Promise<Presupuesto | null>;
   guardarPresupuesto(userId: string, p: { periodo: Periodo; inicio: string; fin: string; ingreso: number; lineas: Omit<LineaPresupuesto, 'id'>[] }): Promise<Presupuesto>;

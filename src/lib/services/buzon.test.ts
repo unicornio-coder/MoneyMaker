@@ -1,13 +1,20 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { repoMemoria, reiniciarMemoria } from '@/lib/data/repo.memoria';
 import { ingerirCorreos, limpiarHtml, remitenteRelevante } from './buzon';
 
 const U = 'user-buzon';
 
 describe('buzón (Gmail y Outlook comparten la ingesta)', () => {
+  // Los correos de ejemplo son de septiembre de 2026 y los recibos solo casan con cargos de los últimos 60 días:
+  // se fija el reloj para que la prueba no dependa del día en que corre.
   beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-09-12T18:00:00.000Z'));
     reiniciarMemoria();
     await repoMemoria.guardarPerfil(U, { email: 'e@billup.mx' });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('solo descarga remitentes de bancos y comercios con recibo', () => {

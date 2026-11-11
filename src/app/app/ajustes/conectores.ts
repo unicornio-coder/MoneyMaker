@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { contexto } from '@/lib/data/contexto';
 import { conectarBitso, desconectarBitso, sincronizarBitso } from '@/lib/services/bitso';
 import { desconectarGmail, sincronizarGmail } from '@/lib/services/gmail';
@@ -8,6 +9,7 @@ import { desconectarOutlook, sincronizarOutlook } from '@/lib/services/outlook';
 import { registrar } from '@/lib/services/analytics';
 import { aliasCorreo, crearTokenDispositivo, dominioCorreoEntrante } from '@/lib/services/entrada';
 import { sincronizarLink } from '@/lib/services/conectar';
+import { crearCodigoVinculo, prepararBot, telegramConfigurado } from '@/lib/services/telegram';
 
 const rev = () => ['/app', '/app/ajustes', '/app/inversiones', '/app/gastos'].forEach((p) => revalidatePath(p));
 
@@ -61,4 +63,27 @@ export async function actualizarFuente(linkId: string) {
   const r = await sincronizarLink(repo, usuario.id, link.id, link.externalId, link.proveedor === 'belvo' ? 'belvo' : 'manual', 3);
   rev();
   return r.ok ? { ok: true as const, insertados: r.insertados } : { ok: false as const, error: r.error ?? 'No se pudo actualizar. Si el banco pide un código, vuelve a conectar.' };
+}
+
+/**
+ * Enlace para abrir el bot de Telegram ya con el código de vinculación del usuario (vale 15 minutos).
+ * De paso deja el webhook del bot apuntando a esta app.
+ */
+export async function enlaceTelegram() {
+  const { usuario } = await contexto();
+  if (!telegramConfigurado()) return { ok: false as const, error: 'El bot de Telegram todavía no está configurado en el servidor.' };
+  const codigo = crearCodigoVinculo(usuario.id);
+  if (!codigo) return { ok: false as const, error: 'El bot solo funciona con una cuenta real, no en el modo de demostración.' };
+  const h = headers();
+  const urlApp = process.env.NEXT_PUBLIC_APP_URL || `https://${h.get('x-forwarded-host') ?? h.get('host') ?? ''}`;
+  const bot = await prepararBot(urlApp);
+  if (!bot) return { ok: false as const, error: 'Telegram no reconoció el token del bot. Revisa TELEGRAM_BOT_TOKEN.' };
+  return { ok: true as const, url: `https://t.me/${bot.usuario}?start=${codigo}` };
+}
+
+export async function desconectarTelegram() {
+  const { usuario, repo } = await contexto();
+  await repo.desvincularTelegram(usuario.id);
+  revalidatePath('/app/ajustes');
+  return { ok: true as const };
 }

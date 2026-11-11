@@ -274,6 +274,28 @@ export function repoSupabaseCon(cli: () => Cli): Repo {
       lanzar('eliminarSuscripcionPush', error);
     },
 
+    async usuarioDeTelegram(chatId) {
+      const { data, error } = await cli().from('telegram_chats').select('user_id').eq('chat_id', chatId).maybeSingle();
+      lanzar('usuarioDeTelegram', error);
+      return data ? String(data.user_id) : null;
+    },
+    async chatDeTelegram(userId) {
+      const { data, error } = await cli().from('telegram_chats').select('chat_id').eq('user_id', userId).maybeSingle();
+      lanzar('chatDeTelegram', error);
+      return data ? String(data.chat_id) : null;
+    },
+    async vincularTelegram(userId, chatId) {
+      // Un chat por usuario y un usuario por chat: se borra cualquier vínculo previo de los dos lados.
+      const previo = await cli().from('telegram_chats').delete().or(`user_id.eq.${userId},chat_id.eq.${chatId}`);
+      lanzar('vincularTelegram', previo.error);
+      const { error } = await cli().from('telegram_chats').insert({ user_id: userId, chat_id: chatId });
+      lanzar('vincularTelegram', error);
+    },
+    async desvincularTelegram(userId) {
+      const { error } = await cli().from('telegram_chats').delete().eq('user_id', userId);
+      lanzar('desvincularTelegram', error);
+    },
+
     async presupuesto(userId, periodo, inicio) {
       const { data, error } = await cli().from('budgets').select('*, budget_lines(*)').eq('user_id', userId).eq('periodo', periodo).eq('inicio', inicio).maybeSingle();
       lanzar('presupuesto', error);
