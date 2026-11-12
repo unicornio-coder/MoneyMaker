@@ -1,5 +1,6 @@
 'use client';
 
+import { tomarArchivosPendientes } from '@/lib/archivosPendientes';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, Check, AlertCircle, X, RotateCcw, Lock, Pencil, ChevronRight, Trash2 } from 'lucide-react';
@@ -66,7 +67,7 @@ type Resultado = {
 const MAX_ARCHIVOS = 10;
 const MAX_BYTES = 10 * 1024 * 1024;
 const PARALELO = 3;
-const EXT_OK = /\.(pdf|csv|txt|xlsx|xls)$/i;
+const EXT_OK = /\.(pdf|csv|txt|xlsx|xls|docx)$/i;
 
 let contador = 0;
 const nuevaKey = () => `a${Date.now().toString(36)}${(++contador).toString(36)}`;
@@ -181,6 +182,16 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
     if (libres <= 0) return;
     for (const it of items.filter((i) => i.estado === 'en_cola' && i.file && !enCurso.current.has(i.key)).slice(0, libres)) void procesar(it, null);
   }, [items, procesar]);
+
+  // Archivos elegidos en el onboarding: llegan ya seleccionados y se empiezan a leer al abrir esta pantalla.
+  const recogidos = useRef(false);
+  useEffect(() => {
+    if (recogidos.current) return;
+    recogidos.current = true;
+    const pendientes = tomarArchivosPendientes();
+    if (pendientes.length) agregar(pendientes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const agregar = (lista: FileList | File[]) => {
     setAviso(null);
@@ -374,9 +385,9 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
-        className={cn('flex cursor-pointer flex-col items-center justify-center rounded-card-xl border-2 border-dashed px-6 py-10 text-center transition-colors', arrastrando ? 'border-green bg-green-50 dark:bg-surface-2' : 'border-line-dashed bg-surface hover:bg-bg-hover dark:border-edge-2 dark:hover:bg-surface-2')}
+        className={cn('cursor-pointer flex-col items-center justify-center rounded-card-xl border-2 border-dashed px-6 py-10 text-center transition-colors', leyendo ? 'hidden' : 'flex', arrastrando ? 'border-green bg-green-50 dark:bg-surface-2' : 'border-line-dashed bg-surface hover:bg-bg-hover dark:border-edge-2 dark:hover:bg-surface-2')}
       >
-        <input ref={inputRef} type="file" multiple accept=".pdf,.csv,.txt,.xlsx,.xls,application/pdf" className="hidden" onChange={(e) => e.target.files && agregar(e.target.files)} data-testid="input-archivos" />
+        <input ref={inputRef} type="file" multiple accept=".pdf,.csv,.txt,.xlsx,.xls,.docx,application/pdf" className="hidden" onChange={(e) => e.target.files && agregar(e.target.files)} data-testid="input-archivos" />
         <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light"><Upload size={26} /></span>
         <div className="font-display text-[17px] font-bold">{TEXTOS.carga.titulo}</div>
         <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">{TEXTOS.carga.subtitulo}</p>
@@ -390,7 +401,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
       {leyendo && (
         <section className="rounded-card-xl bg-ink p-5 text-white animate-rise md:p-7" data-testid="escena-conexion">
           <div className="mb-4 text-center">
-            <div className="font-display text-[18px] font-bold tracking-[-0.3px]">Conectando {bancoLeyendo?.dominio ? bancoLeyendo.nombre : 'tu banco'}</div>
+            <div className="font-display text-[18px] font-bold tracking-[-0.3px]">Leyendo tu estado de cuenta{bancoLeyendo?.dominio ? ` de ${bancoLeyendo.nombre}` : ''}</div>
             <div className="text-[12.5px] text-white/60">{leyendo.etapa ? `${ETAPAS[leyendo.etapa] ?? tx.leyendo}…` : `${tx.subiendo}…`}</div>
           </div>
           <EscenaConexion banco={bancoLeyendo?.dominio ? { nombre: bancoLeyendo.nombre, dominio: bancoLeyendo.dominio } : null} movimientos={enVivo.length ? enVivo : MOVIMIENTOS_DEMO} ritmo={700} activa />

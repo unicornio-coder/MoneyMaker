@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { MODO_MOCK } from '@/lib/supabase/env';
-import { hayLLM } from '@/lib/services/llm';
+import { hayLLM, probarModelo } from '@/lib/services/llm';
 import { supabaseAdmin } from '@/lib/supabase/server';
 
 /** true si la base responde (o en mock); false si Supabase está pausado o caído. */
@@ -22,11 +22,14 @@ export const dynamic = 'force-dynamic';
  * Salud del despliegue para monitoreo externo (sin datos de usuario): versión, build, modo y qué integraciones
  * están configuradas. Responde 200 siempre que la función arranque.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const db = await baseDeDatosOk();
+  // ?modelo=1 hace una llamada mínima al servicio de lectura (se guarda 60 s): dice si la llave y el saldo sirven.
+  const lectura = new URL(req.url).searchParams.get('modelo') === '1' ? await probarModelo() : undefined;
   return NextResponse.json(
     {
       ok: true,
+      ...(lectura ? { lectura } : {}),
       version: process.env.NEXT_PUBLIC_APP_VERSION ?? null,
       build: (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7) || null,
       modo: MODO_MOCK ? 'mock' : 'supabase',

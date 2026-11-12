@@ -30,7 +30,7 @@ type Sec = 'perfil' | 'telegram' | 'seguridad' | 'notificaciones' | 'fuentes' | 
 
 const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon: typeof User }[] = [
   { id: 'perfil', label: 'Perfil', sub: 'Nombre, días de pago e ingreso', icon: User },
-  { id: 'telegram', label: 'Bot de Telegram', sub: 'Pregunta cuánto te queda desde tu chat', icon: Send },
+  { id: 'telegram', label: 'Billy en Telegram', sub: 'Opcional: el mismo asistente desde tu chat', icon: Send },
   { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Bancos, importaciones y su estado', icon: Link2 },
   { id: 'seguridad', label: 'Cuenta y seguridad', sub: 'Correo, contraseña y borrado', icon: Shield },
   { id: 'notificaciones', label: 'Avisos', sub: 'Resumen del domingo y cobros próximos', icon: Bell },
@@ -195,8 +195,8 @@ function SecTelegram({ telegram }: { telegram: EstadoTelegram }) {
   const [msg, setMsg] = useState<string | null>(null);
   return (
     <div className="card p-5">
-      <h2 className="flex items-center gap-2 font-display text-[18px] font-bold"><Send size={18} /> Pregúntale a tu bot</h2>
-      <p className="mt-1 text-[13px] text-txt-2 dark:text-fg-2">Conecta tu chat de Telegram y pregunta desde ahí. El bot contesta con las mismas cifras que ves en Presupuesto y Suscripciones; no guarda tus mensajes.</p>
+      <h2 className="flex items-center gap-2 font-display text-[18px] font-bold"><Send size={18} /> Billy en Telegram</h2>
+      <p className="mt-1 text-[13px] text-txt-2 dark:text-fg-2">Billy ya vive dentro de la app (Inicio → Pregúntale a Billy). Si además quieres preguntarle desde Telegram, conecta tu chat aquí. Contesta con las mismas cifras y no guarda tus mensajes.</p>
       <ul className="mt-4 space-y-2 text-[13px]">
         {['¿Cuánto me queda?', '¿Cuánto pago de suscripciones?', '¿Qué cobros vienen esta semana?'].map((q) => (
           <li key={q} className="rounded-card bg-bg-muted px-3.5 py-2.5 font-semibold dark:bg-surface-2">{q}</li>

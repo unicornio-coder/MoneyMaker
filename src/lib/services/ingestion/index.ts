@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { fuenteBelvo } from './belvo';
 import { fuenteCorreo } from './email';
 import { esPdf } from './pdf';
+import { esDocx } from './docx';
 import { fuentePdf } from './statement-pdf';
 import { fuenteTabla } from './statement-table';
 import { ErrorImportacion, type EntradaExtraccion, type ResultadoExtraccion, type TransactionSource } from './tipos';
@@ -22,7 +23,8 @@ export function hashArchivo(datos: Buffer): string {
 }
 
 export function fuenteParaArchivo(nombre: string, datos: Buffer): TransactionSource {
-  if (esPdf(datos)) return fuentePdf;
+  // Word se lee como texto y sigue el mismo camino que el PDF.
+  if (esPdf(datos) || esDocx(datos)) return fuentePdf;
   const ext = nombre.toLowerCase().split('.').pop() ?? '';
   if (EXTENSIONES_TABLA.includes(ext)) return fuenteTabla;
   throw new ErrorImportacion('no_pdf');

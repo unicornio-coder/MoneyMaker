@@ -100,7 +100,8 @@ export async function procesarAnalisis(repo: Repo, userId: string, id: string, a
   } catch (e) {
     const codigo = esErrorImportacion(e) ? e.codigo : 'servidor';
     const estado: Importacion['estado'] = codigo === 'necesita_contraseña' || codigo === 'contraseña_incorrecta' ? 'necesita_contraseña' : 'error';
-    if (!esErrorImportacion(e)) console.error('[importacion] analizar', e instanceof Error ? e.name : 'error');
+    if (!esErrorImportacion(e)) console.error('[importacion] analizar', e instanceof Error ? `${e.name}: ${e.message.slice(0, 200)}` : 'error');
+    else if (codigo === 'servidor') console.error('[importacion] servidor', e.message.slice(0, 300));
     imp = await repo.guardarImportacion(userId, { ...base, estado, error: codigo, etapa: 'listo', progreso: 100, duracionMs: Date.now() - inicio });
     await registrar(repo, userId, 'import_error', { codigo, kb: Math.round(archivo.datos.length / 1024) });
     return { importacion: imp, codigo };

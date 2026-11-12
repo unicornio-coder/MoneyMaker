@@ -37,6 +37,8 @@ function textoDe(res: Anthropic.Message): string {
 
 function traducirError(e: unknown): ErrorImportacion {
   if (e instanceof ErrorImportacion) return e;
+  // Sin este registro un fallo del servicio de lectura (llave, saldo, parámetros) solo se veía como "servidor".
+  console.error('[llm] estado de cuenta', e instanceof Anthropic.APIError ? `${e.status ?? ''} ${e.name}: ${e.message.slice(0, 300)}` : e instanceof Error ? `${e.name}: ${e.message.slice(0, 300)}` : 'error');
   if (e instanceof Anthropic.RateLimitError) return new ErrorImportacion('limite_api');
   if (e instanceof Anthropic.BadRequestError) return new ErrorImportacion(/pdf|document|page/i.test(e.message) ? 'ilegible' : 'servidor', e.message);
   if (e instanceof Anthropic.APIConnectionError) return new ErrorImportacion('servidor', 'Sin conexión con el servicio de lectura');
@@ -248,4 +250,27 @@ export async function redactarRespuestaBot(pregunta: string, datos: object): Pro
     console.warn('[llm] bot', e instanceof Error ? e.name : 'error');
     return null;
   }
+}
+
+let ultimaPrueba: { en: number; resultado: { ok: boolean; detalle: string } } | null = null;
+
+/**
+ * Prueba mínima del servicio de lectura (una respuesta de pocos tokens) para saber si la llave, el saldo y el modelo
+ * están bien sin tener que subir un archivo. El resultado se guarda 60 s para que la ruta pública no genere costo.
+ */
+export async function probarModelo(): Promise<{ ok: boolean; detalle: string }> {
+  if (ultimaPrueba && Date.now() - ultimaPrueba.en < 60_000) return ultimaPrueba.resultado;
+  const c = cliente();
+  let resultado: { ok: boolean; detalle: string };
+  if (!c) resultado = { ok: false, detalle: 'sin_llave' };
+  else {
+    try {
+      await c.messages.create({ model: MODELO, max_tokens: 16, messages: [{ role: 'user', content: 'Responde solo: ok' }] });
+      resultado = { ok: true, detalle: MODELO };
+    } catch (e) {
+      resultado = { ok: false, detalle: e instanceof Anthropic.APIError ? `${e.status ?? ''} ${e.name}: ${e.message.slice(0, 160)}` : e instanceof Error ? e.name : 'error' };
+    }
+  }
+  ultimaPrueba = { en: Date.now(), resultado };
+  return resultado;
 }

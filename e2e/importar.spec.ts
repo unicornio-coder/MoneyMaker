@@ -99,7 +99,7 @@ test('el mismo estado de cuenta dos veces no se repite', async ({ page }, testIn
 test('archivo que no es PDF muestra el error y se puede quitar', async ({ page }) => {
   await page.goto('/app/importar');
   await page.getByTestId('input-archivos').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: Buffer.from('no soy pdf') });
-  await expect(page.getByText('Ese archivo no es un PDF.')).toBeVisible();
+  await expect(page.getByText('No pudimos leer ese tipo de archivo.')).toBeVisible();
   await page.getByRole('button', { name: 'Quitar' }).click();
   await expect(page.getByTestId('lista-archivos')).toHaveCount(0);
 });
