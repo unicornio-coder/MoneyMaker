@@ -44,14 +44,16 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
           <span className="font-semibold text-green-dark dark:text-green-light">Reconectar</span>
         </Link>
       )}
+      {/* Billy siempre arriba, con o sin cuentas: es la puerta a "¿cuánto me queda?". */}
+      <Link href="/app/billy" className="card flex items-center gap-3 p-4 text-[13px] transition-shadow hover:shadow-hover" data-testid="tarjeta-billy">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={18} /></span>
+        <span className="min-w-0 flex-1">
+          <b className="block font-display text-[14px]">{hayCuentas ? 'Pregúntale a Billy' : 'Conoce a Billy'}</b>
+          <span className="text-txt-2 dark:text-fg-2">{hayCuentas ? <>&ldquo;¿Cuánto me queda?&rdquo; Te contesta aquí mismo, con tus cifras.</> : 'Te dice cuánto te queda, qué pagas de suscripciones y qué cobros vienen. Empieza con tu estado de cuenta.'}</span>
+        </span>
+        <ChevronRight size={18} className="shrink-0 text-txt-3" />
+      </Link>
       {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} quincena={datos.quincena ?? null} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={BANCOS ? { label: vacio.cta, onClick: () => setAgregarAbierto(true) } : { label: vacio.cta, href: '/app/importar' }} />}
-      {hayCuentas && (
-        <Link href="/app/billy" className="card flex items-center gap-3 p-4 text-[13px]">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={18} /></span>
-          <span className="min-w-0 flex-1"><b className="block font-display text-[14px]">Pregúntale a Billy</b><span className="text-txt-2 dark:text-fg-2">&ldquo;¿Cuánto me queda?&rdquo; Te contesta aquí mismo, con tus cifras.</span></span>
-          <ChevronRight size={18} className="shrink-0 text-txt-3" />
-        </Link>
-      )}
       {ordenBloques(datos.metas ?? []).map((b) =>
         b === 'cuentas' ? (
           <Cuentas key={b} cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
