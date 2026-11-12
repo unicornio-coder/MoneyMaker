@@ -23,7 +23,7 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
       <p className="mt-6 text-center text-[13px] text-txt-2 dark:text-fg-2">
         ¿No tienes cuenta? <Link href="/registro" className="font-semibold text-green-dark underline-offset-4 hover:underline dark:text-green-light">Crear cuenta</Link>
       </p>
-      <p className="mt-3 text-center text-[11.5px] text-txt-3">Si antes entrabas con un enlace por correo, crea tu contraseña con "Olvidé mi contraseña".</p>
+      <p className="mt-3 text-center text-[11.5px] text-txt-3">Si antes entrabas con un enlace por correo, crea tu contraseña con &ldquo;Olvidé mi contraseña&rdquo;.</p>
     </div>
   );
 }
