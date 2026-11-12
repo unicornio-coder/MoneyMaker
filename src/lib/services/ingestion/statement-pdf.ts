@@ -93,18 +93,30 @@ export const fuentePdf: TransactionSource = {
 
     if (hayLLM()) {
       onEtapa?.('extrayendo');
-      // Texto primero: si pdf.js sacó texto legible, va el texto (más rápido y barato). Si no (fuentes ofuscadas,
-      // escaneos), va el PDF completo como documento. Un PDF cifrado sin texto legible no se puede leer.
-      if (pdf && legible) {
-        const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
-        resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
-      } else if (word !== null) {
-        throw new ErrorImportacion('ilegible', 'El documento de Word no trae texto legible');
-      } else if (!cifrado) {
-        const { extraccion, tokens } = await extraerEstadoDeCuenta({ pdf: datos });
-        resultado = { resumen: aResumen(extraccion, pdf?.paginas ?? null), movimientos: aMovimientos(extraccion), metodo: 'claude-pdf', tokens };
-      } else {
-        throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
+      try {
+        // Texto primero: si pdf.js sacó texto legible, va el texto (más rápido y barato). Si no (fuentes ofuscadas,
+        // escaneos), va el PDF completo como documento. Un PDF cifrado sin texto legible no se puede leer.
+        if (pdf && legible) {
+          const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
+          resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
+        } else if (word !== null) {
+          throw new ErrorImportacion('ilegible', 'El documento de Word no trae texto legible');
+        } else if (!cifrado) {
+          const { extraccion, tokens } = await extraerEstadoDeCuenta({ pdf: datos });
+          resultado = { resumen: aResumen(extraccion, pdf?.paginas ?? null), movimientos: aMovimientos(extraccion), metodo: 'claude-pdf', tokens };
+        } else {
+          throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
+        }
+      } catch (e) {
+        // El servicio de lectura rechazó la llave o no respondió: si el documento trae texto legible, se lee con reglas
+        // y se avisa. Así subir un PDF funciona aunque la llave esté mal; si las reglas no sacan nada, se dice el motivo real.
+        const recuperable = esErrorImportacion(e) && (e.codigo === 'lectura_no_disponible' || e.codigo === 'servidor' || e.codigo === 'limite_api');
+        if (!recuperable || !pdf || !legible) throw e;
+        const r = extraerPorReglas(pdf.texto, pdf.paginas);
+        if (!r.movimientos.length) throw e;
+        resultado = { ...r, metodo: 'reglas', tokens: { entrada: 0, salida: 0 } };
+        advertencias.push(e.codigo === 'lectura_no_disponible' ? 'Leído con reglas básicas porque el servicio de lectura rechazó la llave. Revisa fechas y montos.' : 'Leído con reglas básicas porque el servicio de lectura no respondió. Revisa fechas y montos.');
+        console.warn('[pdf] modelo no disponible, leído con reglas:', e.codigo);
       }
     } else {
       // Sin modelo, solo se puede leer un PDF con texto limpio; si pdf.js no pudo abrirlo o el texto está ofuscado, lo que falta es la lectura inteligente.
