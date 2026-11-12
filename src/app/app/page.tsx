@@ -3,7 +3,7 @@ import { getAggregator } from '@/lib/services/aggregator';
 import { posicionesMock, seriesMock } from '@/lib/mock/cuentas';
 import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Inicio } from '@/components/inicio/Inicio';
-import { datosDelBot } from '@/lib/services/telegram';
+import { datosDelBot, telegramConfigurado } from '@/lib/services/telegram';
 import type { CuentaVista, DatosInicio } from '@/components/inicio/tipos';
 
 export const metadata = { title: 'Inicio · MoneyMaker' };
@@ -49,6 +49,7 @@ export default async function InicioPage({ searchParams }: { searchParams: { cue
     instituciones,
     agregador: agg.nombre,
     sandbox: agg.entorno === 'sandbox',
+    invitarTelegram: telegramConfigurado() ? !(await repo.chatDeTelegram(usuario.id).catch(() => 'x')) : false,
     quincena: q && q.hayDatos && q.limite > 0 ? { teQueda: q.teQueda, diasRestantes: q.diasRestantes, periodoActual: q.periodoActual, periodo: q.periodo } : null,
     fuentes: links.map((l) => ({ id: l.id, proveedor: l.proveedor, institucion: l.institucion, estado: l.estado })),
   };

@@ -128,7 +128,7 @@ función resuelve el problema.
 
 ### Caso de prueba real (lo ejecuta JC)
 
-Pasos: entrar a la app → Ajustes → Cuentas conectadas → Telegram → "Conectar Telegram" → tocar Iniciar en el chat
+Pasos: entrar a la app → Ajustes → Bot de Telegram → "Conectar Telegram" → tocar Iniciar en el chat
 → mandar las dos preguntas → abrir Presupuesto y Suscripciones en la app y comparar.
 
 | | Pregunta 1 | Pregunta 2 |

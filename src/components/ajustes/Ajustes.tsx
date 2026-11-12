@@ -26,10 +26,11 @@ export type DiagBelvo = { entorno: 'sandbox' | 'production' | 'mock'; hayBancos:
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? '0.1.0';
 const BUILD = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
 
-type Sec = 'perfil' | 'seguridad' | 'notificaciones' | 'fuentes' | 'familia' | 'exportar' | null;
+type Sec = 'perfil' | 'telegram' | 'seguridad' | 'notificaciones' | 'fuentes' | 'familia' | 'exportar' | null;
 
 const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon: typeof User }[] = [
   { id: 'perfil', label: 'Perfil', sub: 'Nombre, días de pago e ingreso', icon: User },
+  { id: 'telegram', label: 'Bot de Telegram', sub: 'Pregunta cuánto te queda desde tu chat', icon: Send },
   { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Bancos, importaciones y su estado', icon: Link2 },
   { id: 'seguridad', label: 'Cuenta y seguridad', sub: 'Correo, contraseña y borrado', icon: Shield },
   { id: 'notificaciones', label: 'Avisos', sub: 'Resumen del domingo y cobros próximos', icon: Bell },
@@ -49,7 +50,8 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
       <div className="mx-auto max-w-settings animate-screen space-y-4">
         <button type="button" onClick={() => setSec(null)} className="flex items-center gap-1 text-[13px] font-semibold text-green-dark dark:text-green-light"><ChevronLeft size={16} /> Ajustes</button>
         {sec === 'perfil' && <SecPerfil perfil={perfil} usuario={usuario} />}
-        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} belvo={belvo} telegram={telegram} />}
+        {sec === 'telegram' && <SecTelegram telegram={telegram} />}
+        {sec === 'fuentes' && <SecFuentes links={links} gmailConfigurado={gmailConfigurado} outlookConfigurado={outlookConfigurado} aviso={aviso} belvo={belvo} />}
         {sec === 'seguridad' && <SecSeguridad usuario={usuario} modoMock={modoMock} />}
         {sec === 'notificaciones' && <Avisos resumenDomingo={perfil.resumenDomingo !== false} avisosCobros={perfil.avisosCobros !== false} nivel={nivel} />}
         {sec === 'familia' && <div className="card p-5 text-[13px] text-txt-2 dark:text-fg-2">Familia llega después de la beta: integrantes, cuentas compartidas y gastos por hijo.</div>}
@@ -185,7 +187,41 @@ function EstadoBelvo({ belvo }: { belvo: NonNullable<DiagBelvo> }) {
   );
 }
 
-function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo, telegram }: { links: Fuente[]; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; belvo?: DiagBelvo; telegram: EstadoTelegram }) {
+/** Bot de Telegram: conectar el chat, ver qué se le puede preguntar y desconectarlo. */
+function SecTelegram({ telegram }: { telegram: EstadoTelegram }) {
+  const [pendiente, start] = useTransition();
+  const router = useRouter();
+  const [enlaceBot, setEnlaceBot] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  return (
+    <div className="card p-5">
+      <h2 className="flex items-center gap-2 font-display text-[18px] font-bold"><Send size={18} /> Pregúntale a tu bot</h2>
+      <p className="mt-1 text-[13px] text-txt-2 dark:text-fg-2">Conecta tu chat de Telegram y pregunta desde ahí. El bot contesta con las mismas cifras que ves en Presupuesto y Suscripciones; no guarda tus mensajes.</p>
+      <ul className="mt-4 space-y-2 text-[13px]">
+        {['¿Cuánto me queda?', '¿Cuánto pago de suscripciones?', '¿Qué cobros vienen esta semana?'].map((q) => (
+          <li key={q} className="rounded-card bg-bg-muted px-3.5 py-2.5 font-semibold dark:bg-surface-2">{q}</li>
+        ))}
+      </ul>
+      {!telegram.configurado ? (
+        <p className="mt-4 text-[12px] text-txt-3">Disponible cuando se configure el bot en el servidor (TELEGRAM_BOT_TOKEN).</p>
+      ) : (
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {telegram.vinculado && <span className="rounded-pill bg-green-50 px-2.5 py-1 text-[11.5px] font-bold text-green-dark dark:bg-surface-2 dark:text-green-light">Conectado</span>}
+          {enlaceBot ? (
+            <a href={enlaceBot} target="_blank" rel="noreferrer" className="btn-primary inline-flex h-11 items-center gap-2 px-5 text-[13px]"><Send size={15} /> Abrir Telegram y tocar Iniciar</a>
+          ) : (
+            <button type="button" disabled={pendiente} onClick={() => start(async () => { const r = await enlaceTelegram(); if (r.ok) setEnlaceBot(r.url); else setMsg(r.error); })} className={cn('inline-flex h-11 items-center gap-2 px-5 text-[13px]', telegram.vinculado ? 'rounded-pill border border-line-2 font-semibold dark:border-edge' : 'btn-primary')}><Send size={15} /> {pendiente ? 'Preparando…' : telegram.vinculado ? 'Conectar otro chat' : 'Conectar Telegram'}</button>
+          )}
+          {telegram.vinculado && <button type="button" disabled={pendiente} onClick={() => confirm('¿Desconectar Telegram?') && start(async () => { await desconectarTelegram(); setEnlaceBot(null); router.refresh(); })} className="h-9 rounded-pill px-3 text-[12px] font-semibold text-txt-2">Desconectar</button>}
+          {enlaceBot && <span className="basis-full text-[11.5px] text-txt-3">El enlace vale 15 minutos. Cuando el bot te salude, vuelve y actualiza esta página.</span>}
+        </div>
+      )}
+      {msg && <p className="mt-4 rounded-input bg-green-50 px-3 py-2 text-[12.5px] font-semibold text-green-dark dark:bg-surface-2 dark:text-green-light">{msg}</p>}
+    </div>
+  );
+}
+
+function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo }: { links: Fuente[]; gmailConfigurado: boolean; outlookConfigurado: boolean; aviso?: string | null; belvo?: DiagBelvo }) {
   const [pendiente, start] = useTransition();
   const router = useRouter();
   const [bitsoKey, setBitsoKey] = useState('');
@@ -197,7 +233,6 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo,
   const dispositivo = links.find((l) => l.proveedor === 'dispositivo');
   const [token, setToken] = useState<string | null>(null);
   const [reenvio, setReenvio] = useState<{ direccion: string; activo: boolean } | null>(null);
-  const [enlaceBot, setEnlaceBot] = useState<string | null>(null);
   const copiar = (t: string) => { try { void navigator.clipboard.writeText(t); setMsg('Copiado.'); } catch { setMsg(t); } };
   const sync = (p: 'gmail' | 'outlook' | 'bitso') => start(async () => { const r = await sincronizarConector(p); setMsg(r.ok ? `Listo: ${r.insertados} movimientos nuevos.` : r.error ?? 'No se pudo sincronizar.'); router.refresh(); });
   const desconectar = (p: 'gmail' | 'outlook' | 'bitso', nombre: string) => confirm(`¿Desconectar ${nombre}?`) && start(async () => { await desconectarConector(p); router.refresh(); });
@@ -252,25 +287,6 @@ function SecFuentes({ links, gmailConfigurado, outlookConfigurado, aviso, belvo,
             )}
           </div>
         ))}
-      </div>
-
-      <div className="mt-6 border-t border-edge pt-5">
-        <h3 className="flex items-center gap-2 font-display text-[15px] font-bold"><Send size={16} /> Telegram: pregúntale a tu bot</h3>
-        <p className="mt-1 text-[12.5px] text-txt-2 dark:text-fg-2">Conecta tu chat y pregunta desde Telegram cuánto te queda de la quincena, cuánto pagas de suscripciones o qué cobros vienen. El bot contesta con las mismas cifras que ves aquí; no guarda tus mensajes.</p>
-        {!telegram.configurado ? (
-          <p className="mt-3 text-[12px] text-txt-3">Disponible cuando se configure el bot en el servidor (TELEGRAM_BOT_TOKEN).</p>
-        ) : (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {telegram.vinculado && <span className="rounded-pill bg-green-50 px-2.5 py-1 text-[11.5px] font-bold text-green-dark dark:text-green-light dark:bg-surface-2">Conectado</span>}
-            {enlaceBot ? (
-              <a href={enlaceBot} target="_blank" rel="noreferrer" className="btn-primary inline-flex h-10 items-center gap-2 px-4 text-[12.5px]"><Send size={15} /> Abrir Telegram y tocar Iniciar</a>
-            ) : (
-              <button type="button" disabled={pendiente} onClick={() => start(async () => { const r = await enlaceTelegram(); if (r.ok) setEnlaceBot(r.url); else setMsg(r.error); })} className={cn('inline-flex h-10 items-center gap-2 px-4 text-[12.5px]', telegram.vinculado ? 'rounded-pill border border-line-2 font-semibold dark:border-edge' : 'btn-primary')}><Send size={15} /> {telegram.vinculado ? 'Conectar otro chat' : 'Conectar Telegram'}</button>
-            )}
-            {telegram.vinculado && <button type="button" disabled={pendiente} onClick={() => confirm('¿Desconectar Telegram?') && start(async () => { await desconectarTelegram(); setEnlaceBot(null); router.refresh(); })} className="h-9 rounded-pill px-3 text-[12px] font-semibold text-txt-2">Desconectar</button>}
-            {enlaceBot && <span className="basis-full text-[11.5px] text-txt-3">El enlace vale 15 minutos. Cuando el bot te salude, vuelve y actualiza esta página.</span>}
-          </div>
-        )}
       </div>
 
       <div className="mt-6 border-t border-edge pt-5">
