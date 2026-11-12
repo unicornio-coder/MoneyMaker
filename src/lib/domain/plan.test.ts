@@ -4,18 +4,22 @@ import { ahorroAnual, importacionesDelMes, incluye, nivelPlan, puedeConectarBanc
 const ahora = new Date('2026-09-28T12:00:00Z');
 
 describe('nivelPlan', () => {
+  it('con los planes apagados todos son plus, sin importar el perfil', () => {
+    expect(nivelPlan({ plan: 'gratis', trialTermina: '2020-01-01' }, ahora, false)).toBe('plus');
+    expect(nivelPlan({ plan: 'trial', trialTermina: '2020-01-01' }, ahora, false)).toBe('plus');
+  });
   it('plus si paga', () => {
-    expect(nivelPlan({ plan: 'plus', trialTermina: '2026-01-01', planRenueva: '2026-10-28' }, ahora)).toBe('plus');
+    expect(nivelPlan({ plan: 'plus', trialTermina: '2026-01-01', planRenueva: '2026-10-28' }, ahora, true)).toBe('plus');
   });
   it('plus durante la prueba y gratis cuando termina', () => {
-    expect(nivelPlan({ plan: 'trial', trialTermina: '2026-10-02T00:00:00Z' }, ahora)).toBe('plus');
-    expect(nivelPlan({ plan: 'trial', trialTermina: '2026-09-20T00:00:00Z' }, ahora)).toBe('gratis');
+    expect(nivelPlan({ plan: 'trial', trialTermina: '2026-10-02T00:00:00Z' }, ahora, true)).toBe('plus');
+    expect(nivelPlan({ plan: 'trial', trialTermina: '2026-09-20T00:00:00Z' }, ahora, true)).toBe('gratis');
   });
   it('la prueba de Stripe manda sobre la del registro', () => {
-    expect(nivelPlan({ plan: 'trial', trialTermina: '2026-09-20T00:00:00Z', planRenueva: '2026-10-05T00:00:00Z' }, ahora)).toBe('plus');
+    expect(nivelPlan({ plan: 'trial', trialTermina: '2026-09-20T00:00:00Z', planRenueva: '2026-10-05T00:00:00Z' }, ahora, true)).toBe('plus');
   });
   it('gratis explícito', () => {
-    expect(nivelPlan({ plan: 'gratis', trialTermina: '2027-01-01' }, ahora)).toBe('gratis');
+    expect(nivelPlan({ plan: 'gratis', trialTermina: '2027-01-01' }, ahora, true)).toBe('gratis');
   });
 });
 

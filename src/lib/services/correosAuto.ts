@@ -25,7 +25,7 @@ ${parrafos.map((p) => `<p style="margin:14px 0 0;font-size:14px;line-height:1.55
 export function correoBienvenida(perfil: Pick<Perfil, 'email' | 'nombre'>, urlApp: string) {
   const nombre = perfil.nombre?.split(' ')[0];
   const parrafos = [
-    `${nombre ? `Hola ${nombre}. ` : ''}Ya tienes MoneyMaker. Tienes 7 días de Plus completo: bancos ilimitados, suscripciones detectadas, cancelación por carta y avisos.`,
+    `${nombre ? `Hola ${nombre}. ` : ''}Ya tienes MoneyMaker, gratis y con todo: suscripciones detectadas, presupuesto por quincena, cancelación por carta y avisos.`,
     'Lo primero que conviene hacer: subir el estado de cuenta que tu banco ya te manda. En dos minutos ves tus suscripciones y cuánto te queda.',
     'Si algo no cuadra, responde a este correo. Lo leemos.',
   ];
