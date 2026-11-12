@@ -33,7 +33,7 @@ test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Ahorrar cada quincena/ })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Sube tu estado de cuenta' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sube tu estado de cuenta', exact: true })).toBeVisible();
   await expect(page.getByText('Paso 3 de 3')).toBeVisible();
   // Sin "saltar" y sin conectar banco: la única salida es subir un estado de cuenta.
   await expect(page.getByRole('button', { name: /Ver mi panel/ })).toHaveCount(0);
