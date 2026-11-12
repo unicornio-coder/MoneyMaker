@@ -45,12 +45,14 @@ type Props = {
   activa?: boolean;
   /** Etiqueta bajo la escena ("Leyendo el documento…"). */
   etiqueta?: string | null;
+  /** Texto de la lista mientras no hay movimientos que mostrar. */
+  textoVacio?: string;
   className?: string;
   /** Tema de la escena. */
   tono?: 'oscuro' | 'claro';
 };
 
-export function EscenaConexion({ banco = null, movimientos = MOVIMIENTOS_DEMO, ritmo = 900, activa = true, etiqueta = null, className, tono = 'oscuro' }: Props) {
+export function EscenaConexion({ banco = null, movimientos = MOVIMIENTOS_DEMO, ritmo = 900, activa = true, etiqueta = null, textoVacio = 'Conectando…', className, tono = 'oscuro' }: Props) {
   const [n, setN] = useState(0);
 
   useEffect(() => {
@@ -106,7 +108,7 @@ export function EscenaConexion({ banco = null, movimientos = MOVIMIENTOS_DEMO, r
               <span className={cn('font-display text-[14px] font-bold', m.abono && (oscuro ? 'text-green-light' : 'text-green-dark dark:text-green-light'))}>{m.monto}</span>
             </li>
           ))}
-          {visibles.length === 0 && <li className={cn('rounded-card px-3.5 py-2.5 text-[12.5px]', oscuro ? 'bg-white/[0.07] text-white/60' : 'bg-surface text-txt-2 shadow-card')}>Conectando…</li>}
+          {visibles.length === 0 && <li className={cn('rounded-card px-3.5 py-2.5 text-[12.5px]', oscuro ? 'bg-white/[0.07] text-white/60' : 'bg-surface text-txt-2 shadow-card')}>{textoVacio}</li>}
         </ul>
         {etiqueta && <p className={cn('mt-3 text-[12.5px] font-semibold', oscuro ? 'text-green-light' : 'text-green-dark dark:text-green-light')}>{etiqueta}</p>}
       </div>

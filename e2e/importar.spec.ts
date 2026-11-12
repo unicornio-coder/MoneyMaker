@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
-import { CASOS, crearPdfEstado } from '../scripts/qa-pdfs.mjs';
+import * as XLSX from 'xlsx';
+import { CASOS, crearDocxEstado, crearPdfEstado, crearXlsxEstado, type CasoPdf } from '../scripts/qa-pdfs.mjs';
 
 // Flujo completo: Inicio vacío → Agregar cuenta → subir 3 PDFs a la vez → revisión → guardar → Inicio con drawer → Gastos → Fijos.
 // Corre en modo demo sin llaves: el usuario arranca vacío y los PDFs se leen por reglas.
@@ -99,3 +100,22 @@ test('archivo que no es PDF muestra el error y se puede quitar', async ({ page }
   await page.getByRole('button', { name: 'Quitar' }).click();
   await expect(page.getByTestId('lista-archivos')).toHaveCount(0);
 });
+
+test('un Excel y un Word también terminan en "Listo para revisar"', async ({ page }) => {
+  // Mismas cuentas de prueba pero con otra tarjeta y otro periodo, para que no choquen con los PDF ya guardados.
+  const base = CASOS[0];
+  const excel: CasoPdf = { ...base, archivo: 'nu.xlsx', banco: 'Nu', ultimos4: '7777', movimientos: base.movimientos.slice(0, 5) };
+  const word: CasoPdf = { ...CASOS[2], archivo: 'hsbc.docx', banco: 'HSBC', ultimos4: '8888' };
+  await page.goto('/app/importar');
+  await page.getByTestId('input-archivos').setInputFiles([
+    { name: 'nu.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: crearXlsxEstado(excel, XLSX) },
+    { name: 'hsbc.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer: crearDocxEstado(word) },
+  ]);
+  const lista = page.getByTestId('lista-archivos');
+  await expect(lista.locator('li[data-estado="revisar"]')).toHaveCount(2, { timeout: 60_000 });
+  await expect(page.getByText('Listo para revisar · Nu ···· 7777 · 5 movimientos')).toBeVisible();
+  await expect(page.getByText(/Listo para revisar · HSBC ···· 8888/)).toBeVisible();
+  await expect(page.getByText('Conectando tu banco')).toHaveCount(0);
+  await captura(page, '11-excel-y-word');
+});
+

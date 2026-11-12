@@ -88,6 +88,79 @@ function fechaEn(hoy, offsetMeses, dia) {
  * crédito con suscripciones y MSI (corte hace dos meses), mismo plástico un mes después (corte el mes pasado)
  * y débito con nómina los días 14 y fin de mes (mes pasado completo).
  */
+/** Líneas del estado de cuenta en texto plano (las mismas que el PDF). Sirven para armar un Word de prueba. */
+export function lineasEstado(spec) {
+  const cargos = spec.movimientos.filter((m) => !m.abono).reduce((s, m) => s + m.centavos, 0);
+  const abonos = spec.movimientos.filter((m) => m.abono).reduce((s, m) => s + m.centavos, 0);
+  const out = [
+    `ESTADO DE CUENTA ${spec.banco.toUpperCase()}`,
+    spec.tipo === 'credito' ? `Tarjeta de Crédito ${spec.producto}` : `Cuenta de Nómina ${spec.producto}`,
+    'Titular: PERSONA DE PRUEBA',
+    `No. de ${spec.tipo === 'credito' ? 'tarjeta' : 'cuenta'}: **** **** **** ${spec.ultimos4}`,
+    `Periodo: ${spec.periodoInicio} al ${spec.periodoFin}`,
+    `Fecha de corte: ${spec.fechaCorte}`,
+  ];
+  if (spec.tipo === 'credito') out.push(`Fecha límite de pago: ${spec.fechaLimite}`, `Pago mínimo: ${dinero(spec.pagoMinimo)}`, `Límite de crédito: ${dinero(spec.limite)}`, `Saldo al corte: ${dinero(spec.saldoAlCorte)}`);
+  else out.push(`Saldo final: ${dinero(spec.saldoAlCorte)}`);
+  out.push(`Total de cargos: ${dinero(cargos)}`, `Total de pagos y abonos: ${dinero(abonos)}`, '', 'Fecha  Descripción  Monto');
+  for (const m of spec.movimientos) out.push(`${m.fecha}  ${m.descripcion.slice(0, 48)}  ${dinero(m.abono ? -m.centavos : m.centavos)}`);
+  out.push('', PIE);
+  return out;
+}
+
+function zipSinComprimir(entradas) {
+  const partes = [];
+  const directorio = [];
+  let offset = 0;
+  for (const [nombre, contenido] of entradas) {
+    const n = Buffer.from(nombre, 'utf8');
+    const c = Buffer.from(contenido, 'utf8');
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt32LE(c.length, 18);
+    local.writeUInt32LE(c.length, 22);
+    local.writeUInt16LE(n.length, 26);
+    const dir = Buffer.alloc(46);
+    dir.writeUInt32LE(0x02014b50, 0);
+    dir.writeUInt16LE(20, 6);
+    dir.writeUInt32LE(c.length, 20);
+    dir.writeUInt32LE(c.length, 24);
+    dir.writeUInt16LE(n.length, 28);
+    dir.writeUInt32LE(offset, 42);
+    partes.push(local, n, c);
+    directorio.push(dir, n);
+    offset += local.length + n.length + c.length;
+  }
+  const dirBuf = Buffer.concat(directorio);
+  const fin = Buffer.alloc(22);
+  fin.writeUInt32LE(0x06054b50, 0);
+  fin.writeUInt16LE(entradas.length, 8);
+  fin.writeUInt16LE(entradas.length, 10);
+  fin.writeUInt32LE(dirBuf.length, 12);
+  fin.writeUInt32LE(offset, 16);
+  return Buffer.concat([...partes, dirBuf, fin]);
+}
+
+const xmlSeguro = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Estado de cuenta ficticio como Word (.docx mínimo: un párrafo por línea). */
+export function crearDocxEstado(spec) {
+  const parrafos = lineasEstado(spec).map((l) => `<w:p><w:r><w:t xml:space="preserve">${xmlSeguro(l)}</w:t></w:r></w:p>`).join('');
+  const documento = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${parrafos}</w:body></w:document>`;
+  const tipos = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`;
+  return zipSinComprimir([['[Content_Types].xml', tipos], ['word/document.xml', documento]]);
+}
+
+/** Estado de cuenta ficticio como Excel exportado del banco (Fecha, Concepto, Cargo, Abono). */
+export function crearXlsxEstado(spec, XLSX) {
+  const filas = [[`${spec.banco} · ${spec.tipo === 'credito' ? 'Tarjeta' : 'Cuenta'} ···· ${spec.ultimos4}`], [], ['Fecha', 'Concepto', 'Cargo', 'Abono']];
+  for (const m of spec.movimientos) filas.push([m.fecha, m.descripcion, m.abono ? '' : (m.centavos / 100).toFixed(2), m.abono ? (m.centavos / 100).toFixed(2) : '']);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(filas), 'Movimientos');
+  return Buffer.from(XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }));
+}
+
 export function casos(hoy = new Date()) {
   const F = (offset, dia) => fechaEn(hoy, offset, dia);
   return [

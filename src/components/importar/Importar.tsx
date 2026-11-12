@@ -319,6 +319,7 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         banco={{ nombre: primeroBanco?.nombre || 'tu banco', dominio: primeroBanco?.dominio }}
         estado={confirmando}
         titulo={revisables.length > 1 ? `Guardando ${revisables.length} estados de cuenta` : `Guardando tu estado de cuenta`}
+        tituloError="No se pudo guardar"
         pasos={['Creando tus cuentas', 'Guardando movimientos sin repetir', 'Categorizando cada compra', 'Detectando suscripciones y meses sin intereses', 'Armando tu quincena y presupuesto']}
         error={errorConfirmar}
         onCerrar={() => setConfirmando(null)}
@@ -402,9 +403,12 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         <section className="rounded-card-xl bg-ink p-5 text-white animate-rise md:p-7" data-testid="escena-conexion">
           <div className="mb-4 text-center">
             <div className="font-display text-[18px] font-bold tracking-[-0.3px]">Leyendo tu estado de cuenta{bancoLeyendo?.dominio ? ` de ${bancoLeyendo.nombre}` : ''}</div>
-            <div className="text-[12.5px] text-white/60">{leyendo.etapa ? `${ETAPAS[leyendo.etapa] ?? tx.leyendo}…` : `${tx.subiendo}…`}</div>
+            <div className="text-[12.5px] text-white/60">
+              {leyendo.etapa ? `${ETAPAS[leyendo.etapa] ?? tx.leyendo}…` : `${tx.subiendo}…`}
+              {leyendo.estado === 'leyendo' && leyendo.inicio && (() => { const eta = estimarSegundos(leyendo.tamano); const seg = Math.round((Date.now() - leyendo.inicio) / 1000); return <span className="text-white/45">{seg > eta ? ' · casi listo' : ` · suele tardar ~${eta} s`}</span>; })()}
+            </div>
           </div>
-          <EscenaConexion banco={bancoLeyendo?.dominio ? { nombre: bancoLeyendo.nombre, dominio: bancoLeyendo.dominio } : null} movimientos={enVivo.length ? enVivo : MOVIMIENTOS_DEMO} ritmo={700} activa />
+          <EscenaConexion banco={bancoLeyendo?.dominio ? { nombre: bancoLeyendo.nombre, dominio: bancoLeyendo.dominio } : null} movimientos={enVivo.length ? enVivo : MOVIMIENTOS_DEMO} ritmo={700} activa textoVacio="Leyendo…" />
         </section>
       )}
 
