@@ -6,3 +6,9 @@
  * tenga habilitada la banca para esta cuenta.
  */
 export const BANCOS = process.env.NEXT_PUBLIC_BANCOS === 'true';
+
+/**
+ * Planes de pago (Gratis / Plus). Apagada: todos tienen todas las funciones, no hay límites ni prueba de 7 días y
+ * la sección "Plan" no existe. Se enciende con NEXT_PUBLIC_PLANES=true el día que se cobre.
+ */
+export const PLANES = process.env.NEXT_PUBLIC_PLANES === 'true';

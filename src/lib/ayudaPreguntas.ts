@@ -1,6 +1,6 @@
 // Preguntas frecuentes. Las usa el centro de ayuda (/app/ayuda) y la landing (las primeras cuatro).
 
-import { BANCOS } from '@/lib/flags';
+import { BANCOS, PLANES } from '@/lib/flags';
 
 const SEGURIDAD = BANCOS
   ? { q: '¿Es seguro? ¿Ven mi contraseña del banco?', a: 'No. La conexión la hace Belvo, un agregador regulado por la Ley Fintech; nosotros solo recibimos movimientos. El PDF se lee en memoria y se descarta. Puedes borrar tu cuenta y todos tus datos desde Ajustes → Cuenta y seguridad.' }
@@ -10,7 +10,7 @@ const CONECTAR = BANCOS
   ? { q: '¿Cómo conecto mi banco?', a: 'Inicio → Agregar → Conectar mi banco. Escribes tus datos en la ventana segura de Belvo, nunca en MoneyMaker. Solo lectura: no podemos mover dinero. Si tu banco no aparece, sube el PDF de tu estado de cuenta.' }
   : { q: '¿Cómo subo mi estado de cuenta?', a: 'Descarga el PDF del mes desde la app o el portal de tu banco (es el mismo que te llega por correo). En MoneyMaker: Inicio → Subir estado de cuenta → Elegir archivo. También leemos Excel, CSV, TXT y Word. En dos minutos ves tus movimientos con nombre y categoría.' };
 
-export const PREGUNTAS: { q: string; a: string }[] = [
+const TODAS: { q: string; a: string }[] = [
   SEGURIDAD,
   CONECTAR,
   { q: '¿Cómo cancelo una suscripción?', a: 'Suscripciones → toca la suscripción → "Cancelar en …" te lleva directo a la página de cancelación, o "Mandar carta por correo" envía una carta formal en tu nombre con copia a ti. Cuando esté cancelada, marca "Ya la cancelé" y vigilamos que el cargo no regrese.' },
@@ -22,3 +22,6 @@ export const PREGUNTAS: { q: string; a: string }[] = [
   { q: '¿Cómo recibo avisos en mi teléfono?', a: 'Ajustes → Avisos → "Activar avisos aquí". En Android, instala MoneyMaker desde Chrome (menú → Agregar a pantalla de inicio) para recibirlos con la app cerrada. En iPhone, agrégala a la pantalla de inicio desde Safari.' },
   { q: '¿Cómo borro mi cuenta?', a: 'Ajustes → Cuenta y seguridad → "Borrar mi cuenta". Se eliminan tus cuentas, movimientos, conexiones y suscripciones de inmediato. No hay periodo de espera.' },
 ];
+
+/** Con los planes apagados no hay nada que explicar de Gratis, Plus ni reembolsos. */
+export const PREGUNTAS = PLANES ? TODAS : TODAS.filter((p) => !/Plus/.test(p.q));

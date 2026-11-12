@@ -7,6 +7,7 @@ import { User, Shield, Bell, Crown, Users, Download, LogOut, ChevronRight, Chevr
 import { cn } from '@/lib/cn';
 import { fechaCorta, money } from '@/lib/format';
 import { TEXTO_LIMITE, type Nivel } from '@/lib/domain/plan';
+import { PLANES } from '@/lib/flags';
 import { AvisoPlus } from '@/components/planes/AvisoPlus';
 import { Avisos } from '@/components/ajustes/Avisos';
 import type { Perfil } from '@/lib/domain/tipos';
@@ -34,7 +35,7 @@ const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon
   { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Estados de cuenta, correo y su estado', icon: Link2 },
   { id: 'seguridad', label: 'Cuenta y seguridad', sub: 'Correo, contraseña y borrado', icon: Shield },
   { id: 'notificaciones', label: 'Avisos', sub: 'Resumen del domingo y cobros próximos', icon: Bell },
-  { id: 'plan', label: 'Plan', sub: 'Gratis o Plus · prueba y facturación', icon: Crown },
+  ...(PLANES ? [{ id: 'plan' as const, label: 'Plan', sub: 'Gratis o Plus · prueba y facturación', icon: Crown }] : []),
   { id: 'familia', label: 'Familia', sub: 'Gastos por integrante (pronto)', icon: Users },
   { id: 'exportar', label: 'Exportar datos', sub: 'Descarga tus movimientos en CSV', icon: Download },
 ];
@@ -72,7 +73,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
         <div className="min-w-0">
           <div className="truncate font-display text-[16px] font-bold">{perfil.nombre || usuario.nombre}</div>
           <div className="truncate text-[12.5px] text-txt-2 dark:text-fg-2">{usuario.email}</div>
-          <div className="mt-0.5 text-[11.5px] font-semibold text-green-dark dark:text-green-light">{perfil.plan === 'plus' ? 'Plus' : perfil.plan === 'trial' ? `Prueba de Plus hasta el ${fechaCorta(perfil.planRenueva ?? perfil.trialTermina)}` : 'Plan Gratis'}</div>
+          {PLANES && <div className="mt-0.5 text-[11.5px] font-semibold text-green-dark dark:text-green-light">{perfil.plan === 'plus' ? 'Plus' : perfil.plan === 'trial' ? `Prueba de Plus hasta el ${fechaCorta(perfil.planRenueva ?? perfil.trialTermina)}` : 'Plan Gratis'}</div>}
         </div>
       </div>
       <ul className="card divide-y divide-edge overflow-hidden p-0">
@@ -112,7 +113,7 @@ export function Ajustes({ usuario, perfil, links, seccionInicial, modoMock, gmai
           <Link href="/legal/privacidad" className="hover:text-fg">Aviso de privacidad</Link>
           <Link href="/legal/terminos" className="hover:text-fg">Términos</Link>
           <a href="mailto:hola@moneymaker.mx" className="hover:text-fg">hola@moneymaker.mx</a>
-          <button type="button" onClick={() => router.push('/app/planes')} className="hover:text-fg">Planes</button>
+          {PLANES && <button type="button" onClick={() => router.push('/app/planes')} className="hover:text-fg">Planes</button>}
         </p>
         <p>MoneyMaker v{VERSION}{BUILD ? ` · ${BUILD}` : ''} · {modoMock ? 'modo demo' : 'cuenta real'}</p>
         <p>No somos una institución financiera. No movemos dinero ni damos asesoría de inversión.</p>

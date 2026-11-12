@@ -2,6 +2,7 @@
 // la cuenta baja a Gratis y nada se borra. Lógica pura, sin I/O.
 
 import type { Perfil } from './tipos';
+import { PLANES } from '@/lib/flags';
 
 export type Nivel = 'gratis' | 'plus';
 
@@ -14,8 +15,12 @@ export type Funcion = 'cancelacion' | 'negociacion' | 'reportes' | 'tiempo_real'
 
 const SOLO_PLUS: ReadonlySet<Funcion> = new Set(['cancelacion', 'negociacion', 'reportes', 'tiempo_real', 'exportar']);
 
-/** Nivel efectivo del usuario ahora: Plus si paga o si la prueba sigue viva; Gratis en cualquier otro caso. */
-export function nivelPlan(perfil: Pick<Perfil, 'plan' | 'trialTermina' | 'planRenueva'>, ahora: Date = new Date()): Nivel {
+/**
+ * Nivel efectivo del usuario ahora: Plus si paga o si la prueba sigue viva; Gratis en cualquier otro caso.
+ * Con los planes apagados (NEXT_PUBLIC_PLANES, hoy no se cobra) todos son Plus: todas las funciones, sin límites.
+ */
+export function nivelPlan(perfil: Pick<Perfil, 'plan' | 'trialTermina' | 'planRenueva'>, ahora: Date = new Date(), cobro: boolean = PLANES): Nivel {
+  if (!cobro) return 'plus';
   if (perfil.plan === 'plus') return 'plus';
   if (perfil.plan === 'trial') {
     const fin = perfil.planRenueva ?? perfil.trialTermina;
