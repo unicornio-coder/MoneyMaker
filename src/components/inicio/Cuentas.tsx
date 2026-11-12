@@ -1,5 +1,7 @@
 'use client';
 
+import { BANCOS } from '@/lib/flags';
+
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Money } from '@/components/ui/Money';
@@ -44,7 +46,7 @@ export function Cuentas({ cuentas, onAbrir, onAgregar }: { cuentas: CuentaVista[
             <Plus size={22} strokeWidth={2.5} />
           </span>
           <span className="text-[14px] font-bold">Agregar cuenta</span>
-          <span className="text-[11px] text-txt-2 dark:text-fg-2">Banco, tarjeta o PDF</span>
+          <span className="text-[11px] text-txt-2 dark:text-fg-2">{BANCOS ? 'Banco, tarjeta o PDF' : 'Sube un estado de cuenta'}</span>
         </button>
         {cuentas.map((c, i) => {
           const esCredito = c.tipo === 'credito';

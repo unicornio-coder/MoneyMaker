@@ -7,6 +7,7 @@ import { FormCorreo } from './FormCorreo';
 import { SiempreClaro } from './SiempreClaro';
 import { Revelar } from './Revelar';
 import { PREGUNTAS } from '@/lib/ayudaPreguntas';
+import { BANCOS } from '@/lib/flags';
 
 // Landing al estilo Apple × Stori: una idea por pantalla, tipografía grande, el producto real (capturas) al centro, casi sin texto.
 // Cada bloque tiene un titular de una línea, una frase de apoyo y un visual del producto. Nada inventado: sin testimonios.
@@ -144,7 +145,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       {/* 3. Conecta todo */}
       <Seccion id="conecta" className="bg-bg-page py-24 md:py-32">
         <Revelar>
-          <Titular sub="Conecta tu banco o sube tu estado de cuenta. Dos minutos después, cada movimiento tiene nombre y categoría.">Tus cuentas, juntas.</Titular>
+          <Titular sub={BANCOS ? 'Conecta tu banco o sube tu estado de cuenta. Dos minutos después, cada movimiento tiene nombre y categoría.' : 'Sube el estado de cuenta de cada banco y tarjeta. Dos minutos después, cada movimiento tiene nombre y categoría.'}>Tus cuentas, juntas.</Titular>
         </Revelar>
         <Revelar delay={150} className="mt-14">
           <EscenaConexion tono="claro" />

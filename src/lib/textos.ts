@@ -1,8 +1,18 @@
 // Textos del flujo "Agregar cuenta → subir estado de cuenta". Vienen de Producto (qa/entregables/textos-flujo.json).
 
 import textosJson from '../../qa/entregables/textos-flujo.json';
+import { BANCOS } from '@/lib/flags';
 
-export const TEXTOS = textosJson;
+type Textos = Omit<typeof textosJson, 'con_bancos'>;
+
+/** Con la conexión bancaria encendida, los textos de `con_bancos` sustituyen a los de solo estado de cuenta. */
+function conBancos(base: typeof textosJson): Textos {
+  const { con_bancos, ...resto } = base;
+  if (!BANCOS) return resto;
+  return { ...resto, vacios: { ...resto.vacios, ...con_bancos.vacios } };
+}
+
+export const TEXTOS: Textos = conBancos(textosJson);
 
 type Vars = Record<string, string | number>;
 

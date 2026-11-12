@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { BANCOS } from '@/lib/flags';
 import { TrendingUp, Plus, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
@@ -67,11 +69,15 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, sa
           </div>
           <div>
             <h2 className="font-display text-[24px] font-bold tracking-[-0.6px]">Tus inversiones, en un solo lugar</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-txt-2 dark:text-fg-2">Conecta GBM+, Bitso o CetesDirecto, o sube su estado de cuenta, y aquí ves cuánto has aportado y cuánto ha crecido.</p>
+            <p className="mt-2 text-[14px] leading-relaxed text-txt-2 dark:text-fg-2">{BANCOS ? 'Conecta GBM+, Bitso o CetesDirecto, o sube su estado de cuenta, y aquí ves cuánto has aportado y cuánto ha crecido.' : 'Sube el estado de cuenta de GBM+, Bitso, CetesDirecto o tu casa de bolsa y aquí ves cuánto has aportado y cuánto ha crecido.'}</p>
           </div>
-          <button type="button" onClick={() => setBancos(true)} className="btn-primary mx-auto flex h-12 items-center justify-center px-8 text-[15px]">Conectar inversión</button>
+          {BANCOS ? (
+            <button type="button" onClick={() => setBancos(true)} className="btn-primary mx-auto flex h-12 items-center justify-center px-8 text-[15px]">Conectar inversión</button>
+          ) : (
+            <Link href="/app/importar" className="btn-primary mx-auto flex h-12 w-fit items-center justify-center px-8 text-[15px]">Subir estado de cuenta</Link>
+          )}
         </div>
-        <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
+        {BANCOS && <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />}
       </>
     );
   }
@@ -93,11 +99,19 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, sa
         <div className="mt-3"><Linea serie={serie} /></div>
       </div>
 
-      <button type="button" onClick={() => setBancos(true)} className="flex h-16 w-full items-center gap-3 rounded-16 border border-edge bg-surface px-3 text-left transition-shadow hover:shadow-hover">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white"><Plus size={18} /></span>
-        <span className="flex-1"><span className="block text-[13.5px] font-bold">Conectar cuenta de inversión</span><span className="block text-[11px] text-txt-2 dark:text-fg-2">GBM+, Bitso, CetesDirecto, Kuspit o bancos</span></span>
-        <ChevronRight size={18} className="text-txt-3" />
-      </button>
+      {BANCOS ? (
+        <button type="button" onClick={() => setBancos(true)} className="flex h-16 w-full items-center gap-3 rounded-16 border border-edge bg-surface px-3 text-left transition-shadow hover:shadow-hover">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green text-white"><Plus size={18} /></span>
+          <span className="flex-1"><span className="block text-[13.5px] font-bold">Conectar cuenta de inversión</span><span className="block text-[11px] text-txt-2 dark:text-fg-2">GBM+, Bitso, CetesDirecto, Kuspit o bancos</span></span>
+          <ChevronRight size={18} className="text-txt-3" />
+        </button>
+      ) : (
+        <Link href="/app/importar" className="flex h-16 w-full items-center gap-3 rounded-16 border border-edge bg-surface px-3 text-left transition-shadow hover:shadow-hover">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-white dark:bg-white dark:text-ink"><Plus size={18} /></span>
+          <span className="flex-1"><span className="block text-[13.5px] font-bold">Subir estado de cuenta de inversión</span><span className="block text-[11px] text-txt-2 dark:text-fg-2">GBM+, Bitso, CetesDirecto, Kuspit o tu casa de bolsa</span></span>
+          <ChevronRight size={18} className="text-txt-3" />
+        </Link>
+      )}
 
       <section>
         <h2 className="mb-2 font-display text-[16px] font-bold">Cuentas conectadas</h2>
@@ -135,7 +149,7 @@ export function Inversiones({ cuentas, movimientos, instituciones, agregador, sa
       <p className="text-center text-[10.3px] text-txt-3">Información educativa, no es asesoría de inversión.</p>
 
       <DrawerCuenta cuenta={cuenta} movimientos={movimientos} cuentas={cuentas} onClose={() => setAbierta(null)} />
-      <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
+      {BANCOS && <ModalBancos open={bancos} onClose={() => setBancos(false)} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />}
     </div>
   );
 }

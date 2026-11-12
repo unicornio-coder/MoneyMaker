@@ -1,6 +1,6 @@
 {
   "provisional": true,
-  "nota": "Versión mínima creada por Claude Code (T-002). Conservar las claves al sustituir.",
+  "nota": "Versión mínima creada por Claude Code (T-002). Conservar las claves al sustituir. Con NEXT_PUBLIC_BANCOS=true se aplican encima los textos de `con_bancos`.",
   "modal": {
     "titulo": "Agregar cuenta",
     "opciones": {
@@ -107,24 +107,24 @@
   },
   "vacios": {
     "inicio": {
-      "titulo": "Conecta tu dinero",
-      "texto": "Conecta tu banco o sube el estado de cuenta que ya te manda. En dos minutos ves tus suscripciones y cuánto te sobra.",
-      "cta": "Conectar banco o subir PDF"
+      "titulo": "Sube tu estado de cuenta",
+      "texto": "El PDF que tu banco ya te manda cada mes. En dos minutos ves tus suscripciones y cuánto te sobra.",
+      "cta": "Subir estado de cuenta"
     },
     "gastos": {
       "titulo": "Sin movimientos todavía",
-      "texto": "Conecta tu banco o sube un estado de cuenta y aquí verás tu gasto por periodo y categoría.",
-      "cta": "Conectar banco o subir PDF"
+      "texto": "Sube un estado de cuenta y aquí verás tu gasto por periodo y categoría.",
+      "cta": "Subir estado de cuenta"
     },
     "fijos": {
       "titulo": "Sin suscripciones detectadas",
       "texto": "Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos.",
-      "cta": "Conectar banco o subir PDF"
+      "cta": "Subir estado de cuenta"
     },
     "presupuesto": {
       "titulo": "Tu presupuesto se arma solo",
-      "texto": "Con los movimientos de una cuenta te proponemos un presupuesto por quincena. También puedes subir tu Excel.",
-      "cta": "Conectar banco o subir PDF"
+      "texto": "Con los movimientos de un estado de cuenta te proponemos un presupuesto por quincena. También puedes subir tu Excel.",
+      "cta": "Subir estado de cuenta"
     },
     "patrimonio": {
       "titulo": "Sin cuentas todavía",
@@ -136,5 +136,29 @@
     "no_guardamos_pdf": "El PDF se lee y se descarta. No lo guardamos.",
     "no_pedimos_contraseña_banco": "Nunca pedimos las claves de tu banco.",
     "solo_lectura": "Solo leemos movimientos. No movemos dinero."
+  },
+  "con_bancos": {
+    "vacios": {
+      "inicio": {
+        "titulo": "Conecta tu dinero",
+        "texto": "Conecta tu banco o sube el estado de cuenta que ya te manda. En dos minutos ves tus suscripciones y cuánto te sobra.",
+        "cta": "Conectar banco o subir PDF"
+      },
+      "gastos": {
+        "titulo": "Sin movimientos todavía",
+        "texto": "Conecta tu banco o sube un estado de cuenta y aquí verás tu gasto por periodo y categoría.",
+        "cta": "Conectar banco o subir PDF"
+      },
+      "fijos": {
+        "titulo": "Sin suscripciones detectadas",
+        "texto": "Detectamos suscripciones, servicios y meses sin intereses a partir de tus movimientos.",
+        "cta": "Conectar banco o subir PDF"
+      },
+      "presupuesto": {
+        "titulo": "Tu presupuesto se arma solo",
+        "texto": "Con los movimientos de una cuenta te proponemos un presupuesto por quincena. También puedes subir tu Excel.",
+        "cta": "Conectar banco o subir PDF"
+      }
+    }
   }
 }

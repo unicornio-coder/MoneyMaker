@@ -2,6 +2,7 @@
 // sin fuentes. Texto y HTML con la paleta; sin datos financieros.
 
 import type { Perfil } from '@/lib/domain/tipos';
+import { BANCOS } from '@/lib/flags';
 import { enviarCorreo, type ResultadoCorreo } from './correo';
 
 function esc(s: string): string {
@@ -25,7 +26,7 @@ export function correoBienvenida(perfil: Pick<Perfil, 'email' | 'nombre'>, urlAp
   const nombre = perfil.nombre?.split(' ')[0];
   const parrafos = [
     `${nombre ? `Hola ${nombre}. ` : ''}Ya tienes MoneyMaker. Tienes 7 días de Plus completo: bancos ilimitados, suscripciones detectadas, cancelación por carta y avisos.`,
-    'Lo primero que conviene hacer: conectar un banco o subir el estado de cuenta que ya te manda. En dos minutos ves tus suscripciones y cuánto te queda.',
+    'Lo primero que conviene hacer: subir el estado de cuenta que tu banco ya te manda. En dos minutos ves tus suscripciones y cuánto te queda.',
     'Si algo no cuadra, responde a este correo. Lo leemos.',
   ];
   return {
@@ -39,13 +40,14 @@ export function correoConectaBanco(perfil: Pick<Perfil, 'email' | 'nombre'>, url
   const nombre = perfil.nombre?.split(' ')[0];
   const parrafos = [
     `${nombre ? `Hola ${nombre}. ` : ''}Todavía no hay ninguna cuenta en tu MoneyMaker, así que no podemos decirte nada útil.`,
-    'Conecta tu banco (solo lectura, con Belvo) o sube el PDF de tu estado de cuenta. Lo que tarda: dos minutos.',
-    'Si lo que te frena es la seguridad: nunca vemos tu contraseña del banco y el PDF se lee y se descarta.',
+    BANCOS ? 'Conecta tu banco (solo lectura, con Belvo) o sube el PDF de tu estado de cuenta. Lo que tarda: dos minutos.' : 'Sube el PDF del estado de cuenta que tu banco ya te manda. Lo que tarda: dos minutos.',
+    'Si lo que te frena es la seguridad: nunca vemos tu contraseña del banco y el archivo se lee y se descarta.',
   ];
+  const url = BANCOS ? `${urlApp}/app` : `${urlApp}/app/importar`;
   return {
-    asunto: 'Falta un paso: conecta tu banco',
-    texto: `${parrafos.join('\n\n')}\n\nConectar: ${urlApp}/app`,
-    html: plantilla('Falta un paso.', parrafos, { texto: 'Conectar mi banco', url: `${urlApp}/app` }, urlApp),
+    asunto: BANCOS ? 'Falta un paso: conecta tu banco' : 'Falta un paso: sube tu estado de cuenta',
+    texto: `${parrafos.join('\n\n')}\n\n${BANCOS ? 'Conectar' : 'Subir'}: ${url}`,
+    html: plantilla('Falta un paso.', parrafos, { texto: BANCOS ? 'Conectar mi banco' : 'Subir estado de cuenta', url }, urlApp),
   };
 }
 

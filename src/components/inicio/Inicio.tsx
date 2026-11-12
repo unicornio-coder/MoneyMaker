@@ -12,6 +12,7 @@ import { Historial } from '@/components/movimientos/Historial';
 import { HojaAgregarCuenta } from '@/components/cuentas/HojaAgregarCuenta';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TEXTOS } from '@/lib/textos';
+import { BANCOS } from '@/lib/flags';
 
 type Bloque = 'cuentas' | 'suscripciones' | 'movimientos';
 const BLOQUE_POR_META: Record<string, Bloque> = { suscripciones: 'suscripciones', deudas: 'cuentas', casa: 'cuentas', invertir: 'cuentas', ahorrar: 'movimientos', familia: 'movimientos' };
@@ -43,7 +44,7 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
           <span className="font-semibold text-green-dark dark:text-green-light">Reconectar</span>
         </Link>
       )}
-      {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} quincena={datos.quincena ?? null} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={{ label: vacio.cta, onClick: () => setAgregarAbierto(true) }} />}
+      {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} quincena={datos.quincena ?? null} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={BANCOS ? { label: vacio.cta, onClick: () => setAgregarAbierto(true) } : { label: vacio.cta, href: '/app/importar' }} />}
       {hayCuentas && (
         <Link href="/app/billy" className="card flex items-center gap-3 p-4 text-[13px]">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={18} /></span>
