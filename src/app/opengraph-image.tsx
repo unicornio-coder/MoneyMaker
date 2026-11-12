@@ -15,8 +15,8 @@ export default function Imagen() {
           <div style={{ display: 'flex', marginLeft: 20, fontSize: 36, fontWeight: 700 }}>MoneyMaker</div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', fontSize: 92, fontWeight: 800, letterSpacing: -3, lineHeight: 1.05 }}>Tu dinero, claro.</div>
-          <div style={{ display: 'flex', marginTop: 24, fontSize: 36, color: '#4ADE80' }}>Todas tus cuentas. Cada quincena. Sin darnos tus claves.</div>
+          <div style={{ display: 'flex', fontSize: 78, fontWeight: 800, letterSpacing: -3, lineHeight: 1.05 }}>Todo tu dinero, en un solo lugar.</div>
+          <div style={{ display: 'flex', marginTop: 24, fontSize: 36, color: '#4ADE80' }}>Cuentas, quincena, suscripciones y presupuesto.</div>
         </div>
       </div>
     ),

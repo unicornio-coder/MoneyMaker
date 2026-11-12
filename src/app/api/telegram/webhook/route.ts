@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-const SIN_VINCULO = 'Para saber quién eres necesito que conectes tu cuenta: entra a MoneyMaker, abre Ajustes → Cuentas conectadas → Telegram y toca "Conectar Telegram".';
+const SIN_VINCULO = 'Para saber quién eres necesito que conectes tu cuenta: entra a MoneyMaker, abre Ajustes → Bot de Telegram y toca "Conectar Telegram".';
 const BIENVENIDA = 'Listo, tu cuenta de MoneyMaker quedó conectada. Pregúntame cuánto te queda de la quincena, cuánto pagas de suscripciones o qué cobros vienen esta semana.';
 
 type Update = { message?: { text?: string; chat?: { id?: number; type?: string } } };

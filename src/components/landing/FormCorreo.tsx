@@ -24,7 +24,7 @@ export function FormCorreo() {
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="tu@correo.com" className="h-[52px] w-full rounded-[14px] border-2 border-line-2 bg-white pl-12 pr-4 text-[15px] text-ink outline-none focus:border-green-light" />
       </label>
       <button type="submit" className="flex h-[52px] items-center justify-center gap-2 rounded-[14px] bg-ink px-6 text-[15px] font-bold text-white transition-colors hover:bg-green-dark">
-        Empezar registro <ArrowRight size={18} />
+        Empezar gratis <ArrowRight size={18} />
       </button>
     </form>
   );
