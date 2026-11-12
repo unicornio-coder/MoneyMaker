@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FileUp, Landmark, Mail, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { TEXTOS } from '@/lib/textos';
+import { BANCOS } from '@/lib/flags';
 import { Panel } from '@/components/ui/Panel';
 import { ModalBancos } from './ModalBancos';
 import type { DatosInicio } from '@/components/inicio/tipos';
@@ -19,18 +20,19 @@ type Props = {
   sandbox?: boolean;
 };
 
-/** "Agregar cuenta": conectar el banco (Belvo), subir el estado de cuenta o conectar el correo. Las tres activas. */
+/** "Agregar cuenta": subir el estado de cuenta (camino principal) o las alertas del correo. Conectar el banco solo con NEXT_PUBLIC_BANCOS. */
 export function HojaAgregarCuenta({ open, onClose, bancoSugerido, instituciones, agregador, sandbox }: Props) {
   const router = useRouter();
   const [bancos, setBancos] = useState(false);
   const t = TEXTOS.modal;
   const opciones = [
-    { id: 'banco', icon: Landmark, titulo: t.opciones.banco.titulo, texto: t.opciones.banco.texto },
+    ...(BANCOS ? [{ id: 'banco', icon: Landmark, titulo: t.opciones.banco.titulo, texto: t.opciones.banco.texto }] : []),
     { id: 'pdf', icon: FileUp, titulo: t.opciones.pdf.titulo, texto: t.opciones.pdf.texto },
     { id: 'correo', icon: Mail, titulo: t.opciones.correo.titulo, texto: t.opciones.correo.texto },
   ];
+  const principal = BANCOS ? 'banco' : 'pdf';
   const elegir = (id: string) => {
-    if (id === 'banco' && instituciones?.length && agregador) {
+    if (id === 'banco' && BANCOS && instituciones?.length && agregador) {
       setBancos(true);
       return;
     }
@@ -48,7 +50,7 @@ export function HojaAgregarCuenta({ open, onClose, bancoSugerido, instituciones,
             return (
               <li key={o.id} className="animate-rise" style={{ animationDelay: `${60 + i * 70}ms` }}>
                 <button type="button" onClick={() => elegir(o.id)} className={cn('flex w-full items-center gap-3.5 rounded-card border border-edge bg-surface px-4 py-3.5 text-left transition-all hover:border-green hover:shadow-hover')}>
-                  <span className={cn('flex h-11 w-11 flex-none items-center justify-center rounded-full', o.id === 'banco' ? 'bg-green text-white' : 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light')}>
+                  <span className={cn('flex h-11 w-11 flex-none items-center justify-center rounded-full', o.id === principal ? 'bg-ink text-white dark:bg-white dark:text-ink' : 'bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light')}>
                     <Icon size={20} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -61,9 +63,9 @@ export function HojaAgregarCuenta({ open, onClose, bancoSugerido, instituciones,
             );
           })}
         </ul>
-        <p className="pb-1 text-center text-[11px] text-txt-3">Solo lectura. El PDF se descarta; con Belvo tus claves van en su ventana segura y nosotros nunca las vemos.</p>
+        <p className="pb-1 text-center text-[11px] text-txt-3">{BANCOS ? 'Solo lectura. El PDF se descarta; con Belvo tus claves van en su ventana segura y nosotros nunca las vemos.' : 'Solo lectura. El archivo se lee en memoria y se descarta. Nunca pedimos las claves de tu banco.'}</p>
       </Panel>
-      {instituciones && agregador && (
+      {BANCOS && instituciones && agregador && (
         <ModalBancos open={open && bancos} onClose={() => { setBancos(false); onClose(); }} instituciones={instituciones} agregador={agregador} sandbox={sandbox} />
       )}
     </>

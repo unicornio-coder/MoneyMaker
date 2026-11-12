@@ -31,7 +31,7 @@ type Sec = 'perfil' | 'telegram' | 'seguridad' | 'notificaciones' | 'fuentes' | 
 const ITEMS: { id: Exclude<Sec, null> | 'plan'; label: string; sub: string; icon: typeof User }[] = [
   { id: 'perfil', label: 'Perfil', sub: 'Nombre, días de pago e ingreso', icon: User },
   { id: 'telegram', label: 'Billy en Telegram', sub: 'Opcional: el mismo asistente desde tu chat', icon: Send },
-  { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Bancos, importaciones y su estado', icon: Link2 },
+  { id: 'fuentes', label: 'Cuentas conectadas', sub: 'Estados de cuenta, correo y su estado', icon: Link2 },
   { id: 'seguridad', label: 'Cuenta y seguridad', sub: 'Correo, contraseña y borrado', icon: Shield },
   { id: 'notificaciones', label: 'Avisos', sub: 'Resumen del domingo y cobros próximos', icon: Bell },
   { id: 'plan', label: 'Plan', sub: 'Gratis o Plus · prueba y facturación', icon: Crown },
@@ -356,7 +356,7 @@ function SecSeguridad({ usuario, modoMock }: { usuario: UsuarioSesion; modoMock:
       <div className="card space-y-3 p-5">
         <h2 className="font-display text-[18px] font-bold">Cuenta y seguridad</h2>
         <div className="text-[13px]"><span className="text-txt-2 dark:text-fg-2">Correo:</span> <b>{usuario.email}</b></div>
-        <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Entras con el enlace que mandamos a tu correo. Si prefieres, crea una contraseña y úsala desde &quot;Tengo contraseña&quot; al entrar. Nunca guardamos claves bancarias; Belvo maneja la conexión con tu banco.</p>
+        <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Entras con tu correo y tu contraseña. Aquí puedes cambiarla. Nunca pedimos ni guardamos las claves de tu banco.</p>
         <Input label="Contraseña nueva" type="password" value={clave} onChange={(e) => setClave(e.target.value)} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="primary" disabled={clave.length < 8 || pendiente} onClick={guardarClave}>{pendiente ? 'Guardando…' : 'Guardar contraseña'}</Button>

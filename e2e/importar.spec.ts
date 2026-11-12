@@ -22,17 +22,13 @@ test('sube 3 estados de cuenta y llena todas las pantallas', async ({ page }, te
   const pdfs = await Promise.all(CASOS.map(async (c) => ({ name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado({ ...c, archivo: `${testInfo.project.name}-${c.archivo}` }) })));
 
   await page.goto('/app');
-  await expect(page.getByRole('heading', { name: 'Conecta tu dinero' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sube tu estado de cuenta' })).toBeVisible();
   await captura(page, '01-inicio-vacio');
 
-  // "Agregar" abre la hoja con las tres opciones; solo el PDF está activo.
+  // "Agregar" abre la hoja: subir el estado de cuenta es el camino principal; sin conexión bancaria (NEXT_PUBLIC_BANCOS apagada).
   await page.getByRole('button', { name: 'Agregar', exact: true }).click();
-  await expect(page.getByText('Subir estado de cuenta')).toBeVisible();
-  await page.getByRole('button', { name: /Conectar mi banco automáticamente/ }).click();
-  await expect(page.getByRole('dialog').getByText('Vincular banco')).toBeVisible();
-  await expect(page.getByRole('dialog').getByPlaceholder('Busca tu banco')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Agregar', exact: true }).click();
+  await expect(page.getByRole('dialog').getByText('Subir estado de cuenta')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Conectar mi banco/ })).toHaveCount(0);
   await captura(page, '02-hoja-agregar-cuenta');
   await page.getByRole('button', { name: /Subir estado de cuenta/ }).click();
   await expect(page).toHaveURL(/\/app\/importar/);
