@@ -23,7 +23,7 @@ test('capturas de login, registro e Inicio con cuentas', async ({ page, request 
   }
 
   await page.goto('/login');
-  await expect(page.getByRole('heading', { name: 'Entra con tu correo' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Inicia sesión' })).toBeVisible();
   await captura(page, 'login');
 
   await page.goto('/registro');

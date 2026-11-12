@@ -16,7 +16,7 @@ function Submit({ texto, pendiente }: { texto: string; pendiente: string }) {
 }
 
 /** Pide el correo y manda el enlace de recuperación. Siempre responde igual (exista o no la cuenta). */
-export function RecuperarForm() {
+export function RecuperarForm({ enlaceVencido }: { enlaceVencido?: boolean }) {
   const [estado, action] = useFormState<(AuthResult & { enviado?: boolean }) | undefined, FormData>(recuperarContraseña, undefined);
   if (estado?.enviado) {
     return (
@@ -29,6 +29,7 @@ export function RecuperarForm() {
   }
   return (
     <form action={action} className="mt-8 space-y-3.5">
+      {enlaceVencido && !estado?.error && <p className="rounded-input bg-negative-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-negative dark:bg-surface-2" role="alert">Ese enlace ya no es válido o ya se usó. Pide uno nuevo.</p>}
       <Input name="email" type="email" label="Correo" placeholder="tu@correo.com" autoComplete="email" required autoFocus />
       {estado?.error && (
         <p className="flex items-center gap-2 rounded-input bg-negative-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-negative dark:bg-surface-2" role="alert"><AlertCircle size={16} /> {estado.error}</p>
@@ -39,11 +40,12 @@ export function RecuperarForm() {
 }
 
 /** Nueva contraseña, ya con la sesión que abrió el enlace del correo. */
-export function RestablecerForm() {
+export function RestablecerForm({ tokenHash }: { tokenHash?: string }) {
   const [estado, action] = useFormState<AuthResult | undefined, FormData>(cambiarContraseña, undefined);
   const [ver, setVer] = useState(false);
   return (
     <form action={action} className="mt-8 space-y-3.5">
+      {tokenHash && <input type="hidden" name="token_hash" value={tokenHash} />}
       <div className="relative">
         <Input name="password" type={ver ? 'text' : 'password'} label="Contraseña nueva" placeholder="Mínimo 8 caracteres" autoComplete="new-password" className="pr-12" required autoFocus />
         <button type="button" onClick={() => setVer((v) => !v)} aria-label={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="absolute bottom-3 right-3 text-txt-3 transition-colors hover:text-fg">
