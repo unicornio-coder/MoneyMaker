@@ -15,6 +15,35 @@
 
 ---
 
+## Contexto: qué es MoneyMaker y qué hace hoy
+
+MoneyMaker es una app de finanzas personales para México. El usuario no conecta su banco ni da contraseñas: sube
+el estado de cuenta que su banco ya le manda y la app arma lo demás. Billy, la función de este assignment, es la
+capa que contesta preguntas sobre esas cifras. Lo que ya está construido y en el repositorio:
+
+| Qué hace | Cómo lo hace | Evidencia |
+|---|---|---|
+| **Lee estados de cuenta** en PDF, Excel, CSV y Word | Extrae el texto y un modelo (Claude) devuelve el resumen y cada movimiento en un formato validado | `src/lib/services/ingestion/`, `src/lib/services/llm.ts` |
+| **Identifica el banco y la cuenta** | Saca institución, últimos 4 dígitos, tipo (débito o crédito), periodo y fecha de corte | En producción, el 22 de septiembre leyó un estado de BBVA de prueba y lo guardó como "Cuenta de débito Libretón ···· 4471" |
+| **Comprueba que lo leído cuadre** | Suma cargos y abonos y los compara contra el resumen del propio estado de cuenta | Ese mismo estado quedó con cuadre "ok"; función `evaluarCuadre` |
+| **No repite movimientos** | Detecta el mismo archivo y el mismo periodo ya guardado | Prueba de navegador "Este estado de cuenta ya está en tu cuenta" |
+| **Separa y clasifica cada movimiento** | Gasto, ingreso, pago de tarjeta o transferencia, con categoría y comercio | `src/lib/domain/categorizar.ts`, con pruebas |
+| **Detecta suscripciones, gastos fijos y meses sin intereses** | Busca cargos que se repiten por monto y fecha | `src/lib/domain/recurrentes.ts`, con pruebas |
+| **Arma el presupuesto por quincena** | Propone límites por categoría con el historial y deduce los días de pago de la nómina | `src/lib/domain/presupuesto.ts`, `quincena.ts` |
+| **Ayuda a cancelar suscripciones** | Enlace directo, pasos por servicio o carta lista para enviar | `src/components/fijos/ModalCancelar.tsx` |
+| **Billy** contesta "¿cuánto me queda?" | Usa las cifras de Presupuesto y descarta cualquier redacción con cifras que la app no calculó | `src/lib/domain/telegram.ts`, 12 pruebas |
+| **Simula invertir el sobrante** | Tres supuestos fijos a 1, 3 o 5 años | `src/lib/domain/simulador.ts` |
+| **Acceso con correo y contraseña**, portada y onboarding | Supabase Auth; metas en orden de importancia que acomodan Inicio | PR #63, #64, #65 |
+
+**Calidad:** cada cambio pasa por lint, verificación de tipos, más de 190 pruebas unitarias y pruebas de navegador en
+móvil y escritorio (una de ellas sube tres estados de cuenta y revisa que todas las pantallas se llenen), además de
+una revisión automática de accesibilidad. 68 pull requests mezclados.
+
+**Qué no funciona hoy:** la lectura de estados de cuenta está detenida en producción porque la llave del servicio
+de lectura venció (caso 2 de la validación). El código no cambió; funcionó en septiembre y funciona en las pruebas.
+
+---
+
 ## Paso 1 · Especificación
 
 ### La función, como la escribió JC (Pre-Class Work de la Sesión 19, opción 2 de 3)
