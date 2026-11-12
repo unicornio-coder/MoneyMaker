@@ -3,6 +3,8 @@ import { getAggregator } from '@/lib/services/aggregator';
 import { posicionesMock, seriesMock } from '@/lib/mock/cuentas';
 import { aISO, sumarMeses, hoyMX } from '@/lib/domain/fechas';
 import { Inversiones } from '@/components/inversiones/Inversiones';
+import { SimuladorCripto } from '@/components/inversiones/SimuladorCripto';
+import { datosDelBot } from '@/lib/services/telegram';
 import type { CuentaVista } from '@/components/inicio/tipos';
 
 export const metadata = { title: 'Inversiones · MoneyMaker' };
@@ -26,5 +28,13 @@ export default async function InversionesPage() {
       const rendimiento = rendMes > 0 ? `+${Math.round(rendMes).toLocaleString('es-MX')} este mes` : `${(((serie[serie.length - 1] - serie[0]) / (serie[0] || 1)) * 100).toFixed(1)} % en 30 días`;
       return { ...c, externalId: ext, inversion: { serie, posiciones: (c.banco === 'Bitso' && posBitso) || (ext && posicionesMock[ext]) || [], rendimiento, aportado } };
     });
-  return <Inversiones cuentas={cuentas} movimientos={movimientos} instituciones={instituciones.filter((i) => i.tipo === 'inversion' || ['GBM+', 'Bitso', 'CetesDirecto', 'Kuspit'].includes(i.nombre))} agregador={agg.nombre} sandbox={agg.entorno === 'sandbox'} hoy={aISO(hoy)} />;
+  // Lo que le queda de su quincena (la cifra de Presupuesto) es el punto de partida del simulador.
+  const q = await datosDelBot(repo, usuario.id, hoy).catch(() => null);
+  const sobrante = q && q.hayDatos && q.limite > 0 && q.teQueda > 0 ? q.teQueda : null;
+  return (
+    <>
+      <Inversiones cuentas={cuentas} movimientos={movimientos} instituciones={instituciones.filter((i) => i.tipo === 'inversion' || ['GBM+', 'Bitso', 'CetesDirecto', 'Kuspit'].includes(i.nombre))} agregador={agg.nombre} sandbox={agg.entorno === 'sandbox'} hoy={aISO(hoy)} />
+      <SimuladorCripto sobrante={sobrante} />
+    </>
+  );
 }

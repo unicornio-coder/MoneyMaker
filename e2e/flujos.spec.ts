@@ -33,16 +33,16 @@ test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Ahorrar cada quincena/ })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Continuar' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Conecta tu dinero' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sube tu estado de cuenta', exact: true })).toBeVisible();
   await expect(page.getByText('Paso 3 de 3')).toBeVisible();
-  // Sin "saltar": las dos únicas salidas son conectar un banco o subir un PDF.
+  // Sin "saltar" y sin conectar banco: la única salida es subir un estado de cuenta.
   await expect(page.getByRole('button', { name: /Ver mi panel/ })).toHaveCount(0);
-  await page.getByRole('button', { name: /Conectar mi banco/ }).click();
-  await expect(page.getByRole('dialog').filter({ hasText: 'Vincular banco' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await page.getByRole('button', { name: /Subir estado de cuenta/ }).click();
+  await expect(page.getByRole('button', { name: /Conectar mi banco/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Subir estado de cuenta/ })).toBeVisible();
+  // El archivo elegido aquí viaja a la pantalla de importar y se empieza a leer ahí mismo.
+  await page.getByTestId('onboarding-archivo').setInputFiles({ name: 'estado.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 prueba') });
   await expect(page).toHaveURL(/\/app\/importar/);
+  await expect(page.getByTestId('lista-archivos').locator('li')).toHaveCount(1);
 
   // El nombre quedó guardado en Ajustes.
   await page.goto('/app/ajustes');

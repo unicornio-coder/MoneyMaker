@@ -1,6 +1,7 @@
 // Fuente: estado de cuenta en PDF. Con ANTHROPIC_API_KEY el PDF va a Claude como documento (o como texto si
 // venía cifrado); sin llave se leen líneas con reglas. El buffer se descarta al salir.
 
+import { esDocx, leerDocx } from './docx';
 import { evaluarCuadre } from '@/lib/domain/dedupe';
 import { aCentavos } from '@/lib/domain/money';
 import type { MovimientoNormalizado, ResumenEstado, TipoCuentaEstado } from '@/lib/domain/tipos';
@@ -78,11 +79,13 @@ async function intentarLeer(datos: Buffer, contraseña: string | null | undefine
 export const fuentePdf: TransactionSource = {
   nombre: 'statement-pdf',
   async extraer({ datos, contraseña, onEtapa }) {
-    if (!esPdf(datos)) throw new ErrorImportacion('no_pdf');
+    // Word: el texto sale del propio archivo y entra por el mismo camino que el texto de un PDF.
+    const word = esDocx(datos) ? leerDocx(datos) : null;
+    if (!esPdf(datos) && word === null) throw new ErrorImportacion(esDocx(datos) ? 'ilegible' : 'no_pdf');
     if (datos.length > PDF_MAX_BYTES) throw new ErrorImportacion('muy_grande');
     onEtapa?.('leyendo');
-    const cifrado = esPdfCifrado(datos);
-    const pdf = await intentarLeer(datos, contraseña);
+    const cifrado = word === null && esPdfCifrado(datos);
+    const pdf = word !== null ? { paginas: 1, texto: word, cifrado: false } : await intentarLeer(datos, contraseña);
     if (cifrado && !pdf) throw new ErrorImportacion(contraseña ? 'contraseña_incorrecta' : 'necesita_contraseña');
     const legible = !!pdf && textoLegible(pdf.texto);
     const advertencias: string[] = [];
@@ -95,6 +98,8 @@ export const fuentePdf: TransactionSource = {
       if (pdf && legible) {
         const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
         resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
+      } else if (word !== null) {
+        throw new ErrorImportacion('ilegible', 'El documento de Word no trae texto legible');
       } else if (!cifrado) {
         const { extraccion, tokens } = await extraerEstadoDeCuenta({ pdf: datos });
         resultado = { resumen: aResumen(extraccion, pdf?.paginas ?? null), movimientos: aMovimientos(extraccion), metodo: 'claude-pdf', tokens };

@@ -19,11 +19,11 @@
     }
   },
   "carga": {
-    "titulo": "Tus estados de cuenta en PDF",
-    "subtitulo": "PDF de cualquier banco o tarjeta. Hasta 10 archivos de 10 MB.",
+    "titulo": "Sube tu estado de cuenta",
+    "subtitulo": "PDF, Excel, CSV o Word de cualquier banco o tarjeta. Hasta 10 archivos de 10 MB.",
     "ayuda": "Arrastra los archivos aquí o elige desde tu celular o computadora.",
-    "boton": "Elegir archivos",
-    "boton_movil": "Elegir PDF"
+    "boton": "Elegir archivo",
+    "boton_movil": "Elegir archivo"
   },
   "multiple": {
     "titulo": "Tus archivos",
@@ -87,12 +87,12 @@
     "subir_otro": "Subir otro"
   },
   "errores": {
-    "no_pdf": "Ese archivo no es un PDF. Sube el estado de cuenta que descargaste de tu banco.",
+    "no_pdf": "No pudimos leer ese tipo de archivo. Sube tu estado de cuenta en PDF, Excel, CSV o Word (.docx).",
     "corrupto": "No pudimos abrir este PDF. Descárgalo de nuevo desde tu banco e inténtalo otra vez.",
     "muy_grande": "El archivo pesa más de 10 MB. Descarga solo el estado de cuenta del mes.",
     "demasiados": "Puedes subir hasta 10 archivos a la vez.",
     "ilegible": "El documento está escaneado y no se lee bien. Descarga el PDF original desde la app de tu banco.",
-    "no_es_estado": "Este archivo no parece un estado de cuenta. Sube el PDF mensual de tu tarjeta o cuenta.",
+    "no_es_estado": "Este archivo no parece un estado de cuenta. Sube el que te manda tu banco cada mes, de tu tarjeta o cuenta.",
     "contraseña_incorrecta": "La contraseña no es correcta.",
     "ya_subido": "Este estado de cuenta ya está en tu cuenta.",
     "sin_cuadre": "Los totales no cuadran con el resumen del banco.",

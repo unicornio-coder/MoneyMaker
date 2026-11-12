@@ -20,7 +20,7 @@ export type DatosInicio = {
   sandbox?: boolean;
   /** Conexiones y su estado, para avisar cuando un banco pide reconectar. */
   fuentes: { id: string; proveedor: string; institucion: string; estado: 'ok' | 'mfa' | 'roto' | 'pendiente' }[];  /** La cifra de Presupuesto para la quincena (la misma que da el bot de Telegram). null si aún no hay presupuesto. */
-  /** true si el bot de Telegram está disponible y este usuario aún no conecta su chat: Inicio lo invita. */
-  invitarTelegram?: boolean;
+  /** Metas del onboarding, en el orden de importancia que eligió el usuario: deciden el orden de los bloques de Inicio. */
+  metas?: string[];
   quincena?: { teQueda: number; diasRestantes: number; periodoActual: boolean; periodo: string } | null;
 };
