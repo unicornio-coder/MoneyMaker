@@ -133,6 +133,17 @@ No escribas llaves ni tokens en el chat. No cambies código.
       widget + API) o Syncfy (syncfy.com, de Paybook). Nuestro código habla con Belvo detrás de la interfaz `Aggregator`
       (`src/lib/services/aggregator.ts`): cambiar de proveedor es una implementación nueva de esa interfaz, no reescribir
       la app.
+5i. Plantilla "Reset Password" de Supabase (para que "Olvidé mi contraseña" abra la pantalla de contraseña nueva en
+   cualquier navegador, aunque el correo se abra en otro dispositivo). Es el único correo de acceso que manda la app:
+   para entrar se usa correo y contraseña, nunca un enlace.
+   1. Entra a https://supabase.com/dashboard → proyecto jlfxbhrevernywtqwfgu → Authentication → Email Templates.
+   2. Abre la plantilla "Reset Password".
+   3. En el cuerpo, sustituye el enlace {{ .ConfirmationURL }} por exactamente este:
+      {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery
+   4. En Authentication → URL Configuration confirma que Site URL es https://money-maker-tawny.vercel.app y que en
+      Redirect URLs está https://money-maker-tawny.vercel.app/auth/callback (y el dominio propio cuando exista).
+   5. Guarda. Prueba: /recuperar con tu correo → el enlace del correo abre /restablecer → guarda la contraseña nueva →
+      entra con ella en /login.
 6. Opcional pero útil: crea un client id gratuito en brandfetch.com/developers y guárdalo como secreto del repo
    en GitHub (Settings → Secrets → Actions) con el nombre BRANDFETCH_CLIENT_ID. Vuelve a correr el workflow "Logos".
 7. Prueba de usuario real: entra a https://money-maker-tawny.vercel.app/app/ajustes → Cuentas conectadas →

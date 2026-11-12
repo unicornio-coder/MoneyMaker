@@ -69,3 +69,9 @@ Resend (por correo).
 
 `docs/PROMPTS-MAESTROS.md` tiene los pasos exactos: Belvo producción, Resend, Stripe, Google OAuth, VAPID, token de
 issues, respaldo, dominio propio y rama por defecto a `main`.
+
+**Acceso.** Se entra con correo y contraseña (una sola pantalla con pestañas Entrar / Crear cuenta y "Volver al inicio").
+Nunca se manda un enlace para entrar; el único correo de acceso es "Olvidé mi contraseña". Para que ese enlace abra la
+pantalla de contraseña nueva en cualquier navegador, la plantilla "Reset Password" de Supabase debe apuntar a
+`{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery` (paso 5i del prompt maestro). Quien ya dio
+nombre y contraseña al registrarse no ve el paso "Te damos la bienvenida" del onboarding: entra directo a las metas.
