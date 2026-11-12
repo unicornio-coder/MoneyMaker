@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AccesoTabs } from '@/components/auth/AccesoTabs';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { GoogleButton } from '@/components/auth/GoogleButton';
 
@@ -9,6 +10,7 @@ const GOOGLE = process.env.NEXT_PUBLIC_LOGIN_GOOGLE === 'true';
 export default function LoginPage({ searchParams }: { searchParams: { next?: string; error?: string; cuenta?: string } }) {
   return (
     <div className="animate-screen">
+      <AccesoTabs activa="entrar" />
       <h1 className="font-display text-[32px] font-bold leading-tight tracking-[-1px]">Inicia sesión</h1>
       <p className="mt-1.5 text-[14px] text-txt-2 dark:text-fg-2">Entra con tu correo y tu contraseña.</p>
       {searchParams.cuenta === 'creada' && <p className="mt-4 rounded-input bg-green-50 px-3.5 py-2.5 text-[12.5px] font-semibold text-green-dark dark:bg-surface-2 dark:text-green-light" role="status">Tu cuenta quedó creada. Entra con tu correo y tu contraseña.</p>}

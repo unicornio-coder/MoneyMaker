@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Check, ChevronRight, FileText, Lock, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Check, ChevronRight, Download, FileText, ListChecks, Lock, ShieldCheck, Upload } from 'lucide-react';
 import { Logo } from '@/components/shell/Logo';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { EscenaConexion } from './EscenaConexion';
@@ -68,10 +68,10 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       <section className="relative overflow-hidden bg-surface text-fg">
         <span className="pointer-events-none absolute left-1/2 top-[-320px] h-[760px] w-[760px] -translate-x-1/2 rounded-full bg-green-100 blur-[120px]" aria-hidden />
         <div className="relative mx-auto max-w-[1120px] px-5 pb-0 pt-20 text-center md:px-8 md:pt-28">
-          <h1 className="mx-auto max-w-[900px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(46px, 8vw, 96px)' }}>
-            Tu dinero, claro.
+          <h1 className="mx-auto max-w-[900px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(40px, 6.6vw, 80px)' }}>
+            Todo tu dinero, en un solo lugar.
           </h1>
-          <p className="mx-auto mt-6 max-w-[560px] text-[18px] leading-relaxed text-txt-2 animate-rise [animation-delay:120ms] md:text-[22px]">Todas tus cuentas. Cada quincena. Sin darnos tus claves.</p>
+          <p className="mx-auto mt-6 max-w-[560px] text-[18px] leading-relaxed text-txt-2 animate-rise [animation-delay:120ms] md:text-[22px]">Tus cuentas, tu quincena, tus suscripciones y tu presupuesto. Sin darnos tus claves.</p>
           <div className="mx-auto mt-8 max-w-[460px] animate-rise [animation-delay:220ms]">
             {sesion ? (
               <Link href="/app" className="btn-primary mx-auto flex h-[54px] w-full max-w-[320px] items-center justify-center gap-2 text-[16px]">Ir a mi panel <ArrowRight size={18} /></Link>
@@ -79,13 +79,19 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
               <FormCorreo />
             )}
           </div>
-          <p className="mt-3 text-[12.5px] text-txt-2 animate-rise [animation-delay:300ms]">7 días gratis · Cancela cuando quieras</p>
+          <p className="mt-3 text-[12.5px] text-txt-2 animate-rise [animation-delay:300ms]">Gratis · Sin tarjeta · Sin claves del banco</p>
           <div className="relative mt-14 animate-rise [animation-delay:380ms] md:mt-20">
             <div className="relative mx-auto w-[300px] md:w-[340px]">
               <div className="pointer-events-none absolute -inset-10 rounded-full bg-green/25 blur-[70px]" aria-hidden />
-              <div className="relative rounded-[46px] border-[8px] border-[#0f1412] bg-[#0f1412] p-2 shadow-[0_40px_90px_rgba(11,31,23,0.45)]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/landing/inicio.png" alt="Inicio de MoneyMaker: saldo neto, cuentas y suscripciones" width={786} height={1702} className="block w-full rounded-[36px] bg-canvas" />
+              <div className="relative rounded-[52px] bg-[#0f1412] p-[7px] shadow-[0_50px_100px_-20px_rgba(11,31,23,0.55),0_0_0_1.5px_rgba(255,255,255,0.14)_inset]">
+                <span className="absolute -left-[3px] top-[120px] h-9 w-[3px] rounded-l bg-[#0f1412]" aria-hidden />
+                <span className="absolute -left-[3px] top-[172px] h-14 w-[3px] rounded-l bg-[#0f1412]" aria-hidden />
+                <span className="absolute -right-[3px] top-[150px] h-20 w-[3px] rounded-r bg-[#0f1412]" aria-hidden />
+                <div className="relative overflow-hidden rounded-[45px] bg-canvas">
+                  <span className="absolute left-1/2 top-[10px] z-10 h-[24px] w-[92px] -translate-x-1/2 rounded-full bg-[#0f1412]" aria-hidden />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/landing/inicio.png" alt="Inicio de MoneyMaker: saldo neto, cuentas y suscripciones" width={786} height={1702} className="block w-full" />
+                </div>
               </div>
             </div>
             <span className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-surface to-transparent" aria-hidden />
@@ -106,28 +112,39 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </div>
       </section>
 
-      {/* 2b. Cómo funciona, en tres pasos */}
-      <Seccion className="py-16 md:py-20">
+      {/* 2b. Cómo funciona: subir el estado de cuenta, en tres pasos */}
+      <Seccion id="como-funciona" className="py-20 md:py-28">
         <Revelar>
+          <Titular sub="No conectas nada ni das contraseñas. Usas el PDF que tu banco ya te manda cada mes.">Sube tu estado de cuenta. Nosotros hacemos lo demás.</Titular>
+        </Revelar>
+        <Revelar delay={120} className="mt-12">
           <ol className="grid gap-4 md:grid-cols-3">
             {[
-              ['Conecta o sube tu PDF', 'Tu banco vía Belvo o el estado de cuenta que ya te manda. Dos minutos.'],
-              ['Vemos cada cargo', 'Suscripciones, meses sin intereses y gasto por categoría, con nombre y logo.'],
-              ['Cancelas y ahorras', 'Lo que no usas se cancela en un toque o con una carta que mandamos por ti.'],
-            ].map(([t, d], i) => (
-              <li key={t} className="card flex gap-4 p-5">
-                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-ink font-display text-[15px] font-bold text-white dark:bg-white dark:text-ink">{i + 1}</span>
-                <span className="min-w-0"><span className="block font-display text-[16px] font-bold">{t}</span><span className="mt-1 block text-[13.5px] leading-relaxed text-txt-2 dark:text-fg-2">{d}</span></span>
-              </li>
-            ))}
+              [Download, 'Descarga tu estado de cuenta', 'Entra a la app o al portal de tu banco y baja el PDF del mes. Es el mismo que te llega por correo.'],
+              [Upload, 'Súbelo a MoneyMaker', 'Arrastra el PDF o elígelo desde tu teléfono. Lo leemos en un par de minutos y no se guarda.'],
+              [ListChecks, 'Ve todo ordenado', 'Tus suscripciones, tus meses sin intereses, tu gasto por categoría y tu presupuesto de la quincena.'],
+            ].map(([I, t, d], i) => {
+              const Icon = I as typeof Lock;
+              return (
+                <li key={String(t)} className="card p-6">
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-green-50 text-green-dark dark:bg-surface-2 dark:text-green-light"><Icon size={20} /></span>
+                    <span className="font-display text-[13px] font-bold text-txt-3">Paso {i + 1}</span>
+                  </div>
+                  <div className="mt-4 font-display text-[18px] font-bold">{String(t)}</div>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-txt-2 dark:text-fg-2">{String(d)}</p>
+                </li>
+              );
+            })}
           </ol>
+          {!sesion && <Link href="/registro" className="btn-primary mx-auto mt-8 flex h-[52px] w-full max-w-[320px] items-center justify-center gap-2 text-[15px]">Subir mi primer estado de cuenta <ArrowRight size={18} /></Link>}
         </Revelar>
       </Seccion>
 
       {/* 3. Conecta todo */}
       <Seccion id="conecta" className="bg-bg-page py-24 md:py-32">
         <Revelar>
-          <Titular sub="Conecta tu banco o sube tu estado de cuenta. Dos minutos después, cada movimiento tiene nombre y categoría.">Todo tu dinero, en un lugar.</Titular>
+          <Titular sub="Conecta tu banco o sube tu estado de cuenta. Dos minutos después, cada movimiento tiene nombre y categoría.">Tus cuentas, juntas.</Titular>
         </Revelar>
         <Revelar delay={150} className="mt-14">
           <EscenaConexion tono="claro" />
@@ -234,7 +251,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </Revelar>
         <Revelar delay={120} className="mx-auto mt-10 max-w-[720px]">
           <ul className="card divide-y divide-edge p-0">
-            {PREGUNTAS.slice(0, 4).map((p) => (
+            {PREGUNTAS.filter((p) => !p.q.includes('Plus')).slice(0, 4).map((p) => (
               <li key={p.q}>
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center gap-3 px-5 py-4 text-left text-[15px] font-bold [&::-webkit-details-marker]:hidden">
@@ -250,19 +267,18 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         </Revelar>
       </Seccion>
 
-      {/* 8. Precio, una vez */}
+      {/* 8. Cierre: es gratis */}
       <Seccion id="precio" className="py-24 md:py-32">
         <Revelar>
-          <Titular sub="Gratis con un banco y lo básico. Plus por $149 al mes con todo, y 7 días para probarlo.">Empieza gratis. Plus por menos de $5 al día.</Titular>
+          <Titular sub="Sin tarjeta, sin periodo de prueba y sin letras chiquitas.">Empieza gratis.</Titular>
         </Revelar>
         <Revelar delay={120} className="mx-auto mt-10 max-w-[520px]">
           <ul className="grid gap-2.5 text-[14.5px] sm:grid-cols-2">
-            {['Bancos y estados de cuenta ilimitados', 'Presupuesto por quincena', 'Cancelamos y negociamos por ti', 'Resumen del domingo y avisos', 'Inversiones y metas', 'Garantía de 30 días'].map((b) => (
+            {['Estados de cuenta de tus bancos', 'Presupuesto por quincena', 'Suscripciones y cobros próximos', 'Meses sin intereses bajo control', 'Bot de Telegram', 'Inversiones y metas'].map((b) => (
               <li key={b} className="flex items-center gap-2.5"><Check size={17} className="flex-none text-green-dark dark:text-green-light" /> {b}</li>
             ))}
           </ul>
-          <Link href={sesion ? '/app' : '/registro'} className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">{sesion ? 'Ir a mi panel' : 'Empezar 7 días gratis'} <ArrowRight size={18} /></Link>
-          <p className="mt-3 text-center text-[12px] text-txt-3">Sin tarjeta para empezar. Plus: $149 al mes o $1,290 al año. Cancela desde Ajustes.</p>
+          <Link href={sesion ? '/app' : '/registro'} className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">{sesion ? 'Ir a mi panel' : 'Empezar gratis'} <ArrowRight size={18} /></Link>
         </Revelar>
       </Seccion>
       </main>
