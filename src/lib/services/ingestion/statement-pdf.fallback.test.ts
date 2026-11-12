@@ -1,10 +1,14 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { CASOS, crearPdfEstado } from '../../../../scripts/qa-pdfs.mjs';
 import { ErrorImportacion } from './tipos';
 
 // Con llave configurada pero rechazada por el servicio (401), el PDF con texto legible se lee con reglas y se avisa.
-const llm = vi.hoisted(() => ({ hayLLM: vi.fn((): boolean => true), extraerEstadoDeCuenta: vi.fn() }));
-vi.mock('../llm', () => llm);
+// Sin espías de vitest: el modelo simulado solo lanza el error que le pongamos (los espías marcaban el error como no manejado).
+const llm = vi.hoisted(() => {
+  const estado = { fallo: null as Error | null };
+  return { estado, hayLLM: () => true, extraerEstadoDeCuenta: async () => { throw estado.fallo ?? new Error('sin respuesta simulada'); } };
+});
+vi.mock('../llm', () => ({ hayLLM: llm.hayLLM, extraerEstadoDeCuenta: llm.extraerEstadoDeCuenta }));
 
 import { fuentePdf } from './statement-pdf';
 
@@ -14,10 +18,8 @@ beforeAll(async () => {
 });
 
 describe('PDF cuando el servicio de lectura falla', () => {
-  beforeEach(() => llm.extraerEstadoDeCuenta.mockReset());
-
   it('llave rechazada: se lee con reglas, con todos los movimientos y un aviso', async () => {
-    llm.extraerEstadoDeCuenta.mockImplementation(async () => { throw new ErrorImportacion('lectura_no_disponible', '401 AuthenticationError'); });
+    llm.estado.fallo = new ErrorImportacion('lectura_no_disponible', '401 AuthenticationError');
     const etapas: string[] = [];
     const r = await fuentePdf.extraer({ nombre: 'bbva.pdf', datos: pdf, onEtapa: (e) => etapas.push(e) });
     expect(r.metodo).toBe('reglas');
@@ -28,17 +30,17 @@ describe('PDF cuando el servicio de lectura falla', () => {
   });
 
   it('servicio caído: también se lee con reglas; un documento ilegible sigue siendo ilegible', async () => {
-    llm.extraerEstadoDeCuenta.mockImplementation(async () => { throw new ErrorImportacion('servidor', 'Sin conexión con el servicio de lectura'); });
+    llm.estado.fallo = new ErrorImportacion('servidor', 'Sin conexión con el servicio de lectura');
     const r = await fuentePdf.extraer({ nombre: 'bbva.pdf', datos: pdf });
     expect(r.metodo).toBe('reglas');
     expect(r.advertencias.some((a) => a.includes('no respondió'))).toBe(true);
 
-    llm.extraerEstadoDeCuenta.mockImplementation(async () => { throw new ErrorImportacion('ilegible'); });
+    llm.estado.fallo = new ErrorImportacion('ilegible');
     await expect(fuentePdf.extraer({ nombre: 'bbva.pdf', datos: pdf })).rejects.toMatchObject({ codigo: 'ilegible' });
   });
 
   it('si las reglas no sacan ningún movimiento, se dice el motivo real (la llave), no "no es estado de cuenta"', async () => {
-    llm.extraerEstadoDeCuenta.mockImplementation(async () => { throw new ErrorImportacion('lectura_no_disponible'); });
+    llm.estado.fallo = new ErrorImportacion('lectura_no_disponible');
     const { PDFDocument, StandardFonts } = await import('pdf-lib');
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
