@@ -42,3 +42,6 @@ export function iso(ddmmyyyy: string): string;
 export function esperadoDe(caso: CasoPdf): Esperado;
 export function crearPdfEstado(spec: CasoPdf): Promise<Buffer>;
 export function generarEstadosDePrueba(dir?: string): Promise<string[]>;
+export function lineasEstado(spec: CasoPdf): string[];
+export function crearDocxEstado(spec: CasoPdf): Buffer;
+export function crearXlsxEstado(spec: CasoPdf, XLSX: typeof import('xlsx')): Buffer;

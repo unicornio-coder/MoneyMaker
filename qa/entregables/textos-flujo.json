@@ -20,7 +20,7 @@
   },
   "carga": {
     "titulo": "Sube tu estado de cuenta",
-    "subtitulo": "PDF, Excel, CSV o Word de cualquier banco o tarjeta. Hasta 10 archivos de 10 MB.",
+    "subtitulo": "PDF, Excel, CSV, TXT o Word (.docx) de cualquier banco o tarjeta. Hasta 10 archivos de 10 MB.",
     "ayuda": "Arrastra los archivos aquí o elige desde tu celular o computadora.",
     "boton": "Elegir archivo",
     "boton_movil": "Elegir archivo"
@@ -92,18 +92,19 @@
     "muy_grande": "El archivo pesa más de 10 MB. Descarga solo el estado de cuenta del mes.",
     "demasiados": "Puedes subir hasta 10 archivos a la vez.",
     "ilegible": "El documento está escaneado y no se lee bien. Descarga el PDF original desde la app de tu banco.",
-    "no_es_estado": "Este archivo no parece un estado de cuenta. Sube el que te manda tu banco cada mes, de tu tarjeta o cuenta.",
+    "no_es_estado": "Este archivo no parece un estado de cuenta. Sube el PDF (o el Excel) que tu banco te manda cada mes con los movimientos de tu tarjeta o cuenta.",
     "contraseña_incorrecta": "La contraseña no es correcta.",
     "ya_subido": "Este estado de cuenta ya está en tu cuenta.",
     "sin_cuadre": "Los totales no cuadran con el resumen del banco.",
     "sin_movimientos": "Este periodo no tiene movimientos. Lo guardamos solo para actualizar el saldo.",
-    "servidor": "Algo falló de nuestro lado. Inténtalo de nuevo en un momento.",
+    "servidor": "Algo falló de nuestro lado al leer el archivo. Reintenta en un momento; si sigue igual, repórtalo desde Ayuda.",
     "sin_conexion": "Se perdió la conexión. Revisa tu internet y vuelve a intentarlo.",
     "limite_api": "Estamos leyendo muchos documentos en este momento. Espera un minuto y reintenta.",
     "sesion_expirada": "Tu sesión terminó. Vuelve a entrar; tus archivos siguen aquí.",
-    "sin_modelo": "Este estado de cuenta necesita la lectura inteligente y no está activada en el servidor (falta ANTHROPIC_API_KEY). Actívala e inténtalo de nuevo.",
+    "sin_modelo": "Este archivo necesita la lectura inteligente y ahora mismo no está activa (falta configurar la llave de lectura). Reintenta en unos minutos; si sigue igual, repórtalo desde Ayuda.",
     "moneda_sin_equivalente": "Hay cargos en otra moneda sin equivalente en pesos; los guardamos con el monto original.",
-    "limite_plan": "En el plan Gratis puedes subir un estado de cuenta al mes. Pásate a Plus para subir los que quieras."
+    "limite_plan": "En el plan Gratis puedes subir un estado de cuenta al mes. Pásate a Plus para subir los que quieras.",
+    "lectura_no_disponible": "El servicio de lectura no respondió: la llave de lectura no es válida. Reintenta en unos minutos; si sigue igual, repórtalo desde Ayuda."
   },
   "vacios": {
     "inicio": {

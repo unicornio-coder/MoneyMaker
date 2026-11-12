@@ -40,6 +40,7 @@ function traducirError(e: unknown): ErrorImportacion {
   // Sin este registro un fallo del servicio de lectura (llave, saldo, parámetros) solo se veía como "servidor".
   console.error('[llm] estado de cuenta', e instanceof Anthropic.APIError ? `${e.status ?? ''} ${e.name}: ${e.message.slice(0, 300)}` : e instanceof Error ? `${e.name}: ${e.message.slice(0, 300)}` : 'error');
   if (e instanceof Anthropic.RateLimitError) return new ErrorImportacion('limite_api');
+  if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) return new ErrorImportacion('lectura_no_disponible', `${e.status ?? ''} ${e.name}`.trim());
   if (e instanceof Anthropic.BadRequestError) return new ErrorImportacion(/pdf|document|page/i.test(e.message) ? 'ilegible' : 'servidor', e.message);
   if (e instanceof Anthropic.APIConnectionError) return new ErrorImportacion('servidor', 'Sin conexión con el servicio de lectura');
   if (e instanceof Anthropic.APIError) return new ErrorImportacion('servidor', `${e.name} ${e.status ?? ''}`.trim());
@@ -95,7 +96,7 @@ type EntradaLLM = { pdf?: Buffer | null; texto?: string | null };
 function contenidoDe(entrada: EntradaLLM): Anthropic.ContentBlockParam[] {
   const bloques: Anthropic.ContentBlockParam[] = [];
   if (entrada.pdf) bloques.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: entrada.pdf.toString('base64') } });
-  else if (entrada.texto) bloques.push({ type: 'text', text: `Texto del estado de cuenta (extraído del PDF):\n\n${entrada.texto.slice(0, 250_000)}` });
+  else if (entrada.texto) bloques.push({ type: 'text', text: `Texto del estado de cuenta (extraído del archivo: PDF, Word, Excel o CSV):\n\n${entrada.texto.slice(0, 250_000)}` });
   bloques.push({ type: 'text', text: 'Extrae el resumen y todos los movimientos de este estado de cuenta.' });
   return bloques;
 }

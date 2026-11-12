@@ -22,6 +22,8 @@ type Props = {
   /** Pasos que se van marcando mientras el servidor trabaja. */
   pasos?: string[];
   titulo?: string;
+  /** Título cuando falla; por defecto "No pudimos conectar {banco}". */
+  tituloError?: string;
   ctaListo?: string;
   onCerrar: () => void;
   onListo: () => void;
@@ -31,7 +33,7 @@ type Props = {
 const PASOS_BANCO = ['Verificando acceso seguro', 'Descargando tus cuentas', 'Leyendo 12 meses de movimientos', 'Detectando suscripciones y meses sin intereses', 'Armando tu quincena'];
 
 /** Pantalla de progreso mientras conectamos una fuente: enlace animado banco ↔ MoneyMaker, pasos y resultado con cifras. */
-export function ConectandoBanco({ banco, estado, resultado, error, dePlan, pasos = PASOS_BANCO, titulo, ctaListo = 'Ver mi panel', onCerrar, onListo, onReintentar }: Props) {
+export function ConectandoBanco({ banco, estado, resultado, error, dePlan, pasos = PASOS_BANCO, titulo, tituloError, ctaListo = 'Ver mi panel', onCerrar, onListo, onReintentar }: Props) {
   const [paso, setPaso] = useState(0);
   const [mostrarListo, setMostrarListo] = useState(false);
 
@@ -94,7 +96,7 @@ export function ConectandoBanco({ banco, estado, resultado, error, dePlan, pasos
           {vista === 'error' ? (
             <div className="mt-6 text-center">
               <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white animate-pop"><AlertTriangle size={24} /></span>
-              <h3 className="mt-3 font-display text-[20px] font-bold tracking-[-0.4px]">{dePlan ? `${banco.nombre} necesita Plus` : `No pudimos conectar ${banco.nombre}`}</h3>
+              <h3 className="mt-3 font-display text-[20px] font-bold tracking-[-0.4px]">{dePlan ? `${banco.nombre} necesita Plus` : (tituloError ?? `No pudimos conectar ${banco.nombre}`)}</h3>
               {dePlan ? <AvisoPlus texto={error ?? ''} oscuro className="mt-3 text-left" /> : <p className="mt-1.5 text-[13px] leading-relaxed text-white/70">{error ?? 'Intenta de nuevo en un momento.'}</p>}
               <div className="mt-6 flex gap-2">
                 {onReintentar && <Button variant="white" size="lg" className="flex-1" onClick={onReintentar}>Reintentar</Button>}
