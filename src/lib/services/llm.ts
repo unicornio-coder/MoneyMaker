@@ -11,8 +11,31 @@ import { ErrorImportacion } from './ingestion/tipos';
 const MODELO = process.env.ANTHROPIC_MODEL || 'claude-opus-5';
 const CATEGORIAS = ['fijos', 'comida', 'super', 'transporte', 'online', 'entretenimiento', 'salud', 'servicios', 'suscripciones', 'msi', 'colegiaturas', 'comisiones', 'efectivo', 'viajes', 'hogar', 'otros', 'nomina', 'ingreso', 'rendimiento', 'pago_tarjeta', 'transferencia', 'inversion'];
 
+// Si el servicio rechaza la llave (401/403), durante 10 minutos se trabaja sin modelo: los PDF con texto legible se
+// leen con reglas y ningún archivo espera a recibir otro 401. /api/health?modelo=1 sigue probando la llave real.
+const SIN_MODELO_MS = 10 * 60_000;
+let llaveRechazadaHasta = 0;
+
 export function hayLLM(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return !!process.env.ANTHROPIC_API_KEY && Date.now() >= llaveRechazadaHasta;
+}
+
+/** true mientras dure la cuarentena por llave rechazada. */
+export function llaveRechazada(): boolean {
+  return !!process.env.ANTHROPIC_API_KEY && Date.now() < llaveRechazadaHasta;
+}
+
+export function marcarLlaveRechazada(ms = SIN_MODELO_MS): void {
+  llaveRechazadaHasta = Date.now() + ms;
+}
+
+/** Solo para pruebas y para cuando la llave vuelve a servir. */
+export function limpiarLlaveRechazada(): void {
+  llaveRechazadaHasta = 0;
+}
+
+function esErrorDeLlave(e: unknown): boolean {
+  return e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError;
 }
 
 function cliente(): Anthropic | null {
@@ -40,7 +63,11 @@ function traducirError(e: unknown): ErrorImportacion {
   // Sin este registro un fallo del servicio de lectura (llave, saldo, parámetros) solo se veía como "servidor".
   console.error('[llm] estado de cuenta', e instanceof Anthropic.APIError ? `${e.status ?? ''} ${e.name}: ${e.message.slice(0, 300)}` : e instanceof Error ? `${e.name}: ${e.message.slice(0, 300)}` : 'error');
   if (e instanceof Anthropic.RateLimitError) return new ErrorImportacion('limite_api');
-  if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) return new ErrorImportacion('lectura_no_disponible', `${e.status ?? ''} ${e.name}`.trim());
+  if (esErrorDeLlave(e)) {
+    marcarLlaveRechazada();
+    const err = e as { status?: number; name?: string };
+    return new ErrorImportacion('lectura_no_disponible', `${err.status ?? ''} ${err.name ?? ''}`.trim());
+  }
   if (e instanceof Anthropic.BadRequestError) return new ErrorImportacion(/pdf|document|page/i.test(e.message) ? 'ilegible' : 'servidor', e.message);
   if (e instanceof Anthropic.APIConnectionError) return new ErrorImportacion('servidor', 'Sin conexión con el servicio de lectura');
   if (e instanceof Anthropic.APIError) return new ErrorImportacion('servidor', `${e.name} ${e.status ?? ''}`.trim());
@@ -68,6 +95,7 @@ Responde solo JSON: [{"descripcion":"...","comercio":"...","dominio":"...|null",
     if (!Array.isArray(lista)) return null;
     return lista.filter((x) => x && typeof x.descripcion === 'string' && CATEGORIAS.includes(x.categoria));
   } catch (e) {
+    if (esErrorDeLlave(e)) marcarLlaveRechazada();
     console.warn('[llm] categorizar', e instanceof Error ? e.name : 'error');
     return null;
   }
@@ -175,6 +203,7 @@ export async function extraerReciboConLLM(correo: { from: string; subject: strin
     if (!parsed.success || !parsed.data.esRecibo || !parsed.data.total || !parsed.data.comercio) return null;
     return parsed.data;
   } catch (e) {
+    if (esErrorDeLlave(e)) marcarLlaveRechazada();
     console.warn('[llm] recibo', e instanceof Error ? e.name : 'error');
     return null;
   }
@@ -219,6 +248,7 @@ export async function insightsConLLM(resumen: object): Promise<InsightIA[] | nul
     const parsed = InsightIASchema.safeParse(extraerJson<unknown>(textoDe(res)));
     return parsed.success ? parsed.data.insights : null;
   } catch (e) {
+    if (esErrorDeLlave(e)) marcarLlaveRechazada();
     console.warn('[llm] insights', e instanceof Error ? e.name : 'error');
     return null;
   }
@@ -248,6 +278,7 @@ export async function redactarRespuestaBot(pregunta: string, datos: object): Pro
     const texto = textoDe(res).trim();
     return texto && texto.length <= 600 ? texto : null;
   } catch (e) {
+    if (esErrorDeLlave(e)) marcarLlaveRechazada();
     console.warn('[llm] bot', e instanceof Error ? e.name : 'error');
     return null;
   }
@@ -261,14 +292,17 @@ let ultimaPrueba: { en: number; resultado: { ok: boolean; detalle: string } } | 
  */
 export async function probarModelo(): Promise<{ ok: boolean; detalle: string }> {
   if (ultimaPrueba && Date.now() - ultimaPrueba.en < 60_000) return ultimaPrueba.resultado;
-  const c = cliente();
+  // Prueba la llave real aunque esté en cuarentena: así /api/health dice la verdad y, si ya sirve, la cuarentena se levanta.
+  const c = process.env.ANTHROPIC_API_KEY ? new Anthropic({ maxRetries: 0, timeout: 30_000 }) : null;
   let resultado: { ok: boolean; detalle: string };
   if (!c) resultado = { ok: false, detalle: 'sin_llave' };
   else {
     try {
       await c.messages.create({ model: MODELO, max_tokens: 16, messages: [{ role: 'user', content: 'Responde solo: ok' }] });
+      limpiarLlaveRechazada();
       resultado = { ok: true, detalle: MODELO };
     } catch (e) {
+      if (esErrorDeLlave(e)) marcarLlaveRechazada();
       resultado = { ok: false, detalle: e instanceof Anthropic.APIError ? `${e.status ?? ''} ${e.name}: ${e.message.slice(0, 160)}` : e instanceof Error ? e.name : 'error' };
     }
   }
