@@ -1,7 +1,7 @@
-# PROMPT_LOG.md — Assignment 2: Especificar, construir y validar una función
+# PROMPT_LOG.md — Assignment 2: Primera funcionalidad real end-to-end
 
 **Curso:** Applied Algorithmic Thinking · **Alumno:** Juan Carlos (JC) · **Proyecto:** MoneyMaker
-**Función:** Bot de Telegram "¿Cuánto me queda?"
+**Función:** Billy, el asistente que contesta "¿cuánto me queda?" con las cifras de la app
 
 | Entregable | Enlace |
 |---|---|
@@ -9,15 +9,15 @@
 | Repositorio | https://github.com/unicornio-coder/MoneyMaker |
 | Bitácora | este archivo |
 
-> **Cómo leer esta bitácora.** Lo que está entre comillas es texto literal de JC o de la IA, copiado de la
-> conversación. Lo marcado **[JC: …]** es una parte que le toca escribir al alumno con sus palabras y que la IA
-> dejó en blanco a propósito: la IA no redacta veredictos ni razones a nombre del alumno.
+> **Cómo se armó esta bitácora.** Las citas entre comillas son mensajes literales de JC a la IA durante la
+> construcción (11 de noviembre de 2026), con su ortografía original. La IA las ordenó; no redactó las decisiones
+> ni las razones. Donde algo lo propuso o lo encontró la IA y no JC, se dice.
 
 ---
 
 ## Paso 1 · Especificación
 
-### La idea, como la escribió JC (Pre-Class Work, opción 2 de 3)
+### La función, como la escribió JC (Pre-Class Work de la Sesión 19, opción 2 de 3)
 
 > "**Bot de Telegram '¿Cuánto me queda?'.** Un bot creado con BotFather donde el usuario vincula su cuenta de
 > MoneyMaker y pregunta en lenguaje natural cuánto le queda hasta su quincena o cuánto paga de suscripciones; la
@@ -26,133 +26,135 @@
 
 ### Los tres campos
 
-| Campo | Especificación |
-|---|---|
-| 1. Qué hace exactamente | **[JC: pega aquí tu campo del Checkpoint A. Si lo ajustaste después de la auditoría de tu compañero, anota qué cambió y por qué.]** |
-| 2. Qué datos necesita y de dónde salen | **[JC: pega tu campo. Preguntas que debe contestar: ¿qué es exactamente "lo que me queda": el límite del presupuesto menos lo gastado, o el ingreso menos lo gastado? ¿De qué periodo? ¿Qué cuenta como suscripción?]** |
-| 3. Cómo sabré que funciona | **[JC: pega tu campo. Debe poder contestarse con sí o no, y traer un caso concreto: con la cuenta X pregunto Y y debe salir la cifra Z que veo en la pantalla W.]** |
+| Campo | Especificación | De dónde sale |
+|---|---|---|
+| 1. Qué hace | El usuario pregunta en lenguaje natural cuánto le queda hasta su quincena o cuánto paga de suscripciones, y recibe la respuesta en una o dos líneas. | Texto de JC, arriba |
+| 2. Qué datos necesita | Los datos ya calculados en la app: lo que queda del presupuesto de la quincena (pantalla Presupuesto) y las suscripciones activas (pantalla Suscripciones). El texto de la pregunta lo escribe el usuario. Claude solo redacta. | Texto de JC ("toma los datos ya calculados en la app") |
+| 3. Cómo se sabrá que funciona | La respuesta no trae ninguna cifra inventada, y "la cifra del bot [es] igual a la de la app". Caso: preguntar "¿Cuánto me queda?" y comparar contra "Te quedan" en Presupuesto de la misma cuenta. | "Sin inventar cifras" es de JC. El criterio de comparación lo redactó la IA en el plan de trabajo y JC lo adoptó al reenviarlo como instrucción |
 
-### Auditoría del compañero (Checkpoint A)
+### Cambio a la especificación durante la construcción
 
-**[JC: qué te señaló tu compañero y qué cambiaste a raíz de eso.]**
+La función empezó como bot de Telegram y terminó dentro de la app. Fue decisión de JC (entrada 5).
+Los campos 2 y 3 no cambiaron: mismos datos y mismo criterio.
 
 ---
 
-## Paso 2 · Construcción: bitácora de prompts y decisiones
+## Paso 2 · Construcción: prompts y decisiones
 
-Sesión del 11 de noviembre de 2026 con Claude (modelo Fable 5.2) conectado al repositorio. Cada entrada trae el
-prompt, lo que propuso la IA, la decisión y la evidencia.
+### Entrada 1 · Qué función construir — RECHAZAR
+- **Propuesta de la IA:** construir el botón "Cancelar". "La 3 es la única que se termina hoy con seguridad, y es
+  el foco que tú mismo le diste al producto."
+- **Decisión y razón de JC:** "lo de chatbot , es senicllo a traves de botfather , segun yo"
+- **Resultado:** se construyó el bot. PR #60, commit `d1fc826`.
 
-### Entrada 1 · Qué función construir
+### Entrada 2 · Cómo se entra a la app — RECHAZAR
+- **Lo que había (propuesta original de la IA, de septiembre):** entrar con un enlace enviado por correo, sin contraseña.
+- **Decisión y razón de JC:** "Actualmente nos manda un mail a mi cuenta para entrar y no me deja entrar. Entonces lo
+  que necesito que hagas es que para entrar únicamente pida mail, que se registre con sus datos, mail, contraseña."
+- **Verificación:** la IA revisó los registros de Supabase y confirmó la falla que JC reportó: el enlace se canjeaba
+  desde una IP de Google segundos después de enviarse, antes de que él lo abriera.
+- **Resultado:** acceso con correo y contraseña. PR #63.
 
-- **Prompt de JC:** envió sus tres ideas (puente de referidos a Bitso, bot de Telegram, botón "Cancelar" que te dice
-  cómo) y pidió un plan para entregar hoy.
-- **Propuesta de la IA:** construir la idea 3. Texto de la IA: "la 3 es la única que se termina hoy con seguridad,
-  y es el foco que tú mismo le diste al producto". Su argumento era que el modal de cancelación ya existía a medias
-  en el código y que del bot no había nada.
-- **Decisión de JC: RECHAZAR.** Texto de JC: "lo de chatbot, es sencillo a través de BotFather, según yo".
-- **Razón:** **[JC: explica con tus palabras por qué elegiste el bot aunque la IA recomendó otra cosa. ¿Qué pesó
-  más: lo que especificaste en el Checkpoint A, que integra una API externa real, otra cosa?]**
-- **Resultado:** la IA aceptó la decisión y construyó el bot. Evidencia: PR #60.
+### Entrada 3 · Entrar y crear cuenta — REVISAR
+- **Lo que entregó la IA:** dos pantallas separadas, `/login` y `/registro`.
+- **Decisión y razón de JC:** "Es muy importante que el flujo de crear cuenta o entrar que esté en el mismo, porque está
+  separado y son dos pantallas." Y: "si yo me quiero regresar del registro [...] no hay botón para ir, entonces me
+  quedo atorado en esa misma pantalla."
+- **Resultado:** una pantalla con pestañas y "Volver al inicio". PR #64.
 
-### Entrada 2 · Decisiones de diseño que tomó la IA y que JC debe revisar
+### Entrada 4 · Dónde vive el bot — ERROR QUE DETECTÓ JC
+- **Lo que entregó la IA:** el bot se conectaba desde Ajustes → Cuentas conectadas, al fondo, entre Gmail y Bitso.
+  Las pruebas pasaban y la IA lo reportó como terminado.
+- **Lo que encontró JC al probar en producción:** "no encuentro el chatbot que quedamos poner en aquí mismo con Telegram."
+- **Por qué es un error de fondo y no de sintaxis:** el código funcionaba. Lo que fallaba era que un usuario real no
+  podía llegar a la función. La IA no lo señaló.
+- **Resultado:** sección propia en Ajustes y tarjeta en Inicio. Commit `b71bb31`.
 
-La IA tomó estas decisiones sola mientras construía. Están explicadas en el mensaje del commit `d1fc826`.
+### Entrada 5 · Telegram o dentro de la app — RECHAZAR (cambia la especificación)
+- **Lo que entregó la IA:** la tarjeta de Inicio llevaba a conectar Telegram.
+- **Decisión y razón de JC:** "Me está mandando Telegram. Eso está mal. Necesito que el chatbot esté dentro de la
+  aplicación. Que se inicie solo y que conteste solo. Quiero ver si eso es posible y rápido. Y si no, quítalo."
+  También le puso nombre: "Ponle como Billy."
+- **Resultado:** Billy en `/app/billy`, abre contestando solo. Telegram queda como canal opcional. PR #65.
 
-| # | Propuesta de la IA | Alternativa que descartó | Veredicto de JC |
-|---|---|---|---|
-| a | Tabla nueva `telegram_chats` para guardar qué chat es de qué usuario | Reutilizar la tabla `links`, que ya existía | **[JC: aceptar / rechazar / revisar, y por qué]** |
-| b | Vincular con un código firmado que vence en 15 minutos dentro del enlace `t.me/<bot>?start=…` | Pedir al usuario que escriba su correo en el chat | **[JC]** |
-| c | "Sin inventar cifras" se cumple con código: si la redacción de Claude trae una cantidad que no está en los datos, se descarta y se manda una redacción fija | Confiar solo en la instrucción del prompt | **[JC]** |
-| d | "Lo que me queda" = límite del presupuesto de la quincena menos lo gastado (la misma cifra "Te quedan" de la pantalla Presupuesto) | Ingreso de la quincena menos lo gastado | **[JC: esta es la más importante. ¿Es lo que tú especificaste? Cita tu campo 2.]** |
+### Entrada 6 · Conexión bancaria — RECHAZAR
+- **Lo que había:** el onboarding ofrecía "Conectar mi banco" como opción principal.
+- **Decisión y razón de JC:** "Conectar mi banco, elimínalo, no existe ahorita. Solo pon subir estado de cuenta."
+- **Resultado:** PR #65 (onboarding) y PR #66 (resto de la app).
 
-### Entrada 3 · Dónde guardar el token del bot
+### Entrada 7 · Un error de fondo que encontró la IA, no JC
+La primera versión del bot calculaba siempre la quincena en curso. La pantalla de Presupuesto muestra el último
+periodo con datos cuando la quincena actual está vacía. A un usuario con estados de cuenta de agosto, el bot le
+habría dicho "llevas $0 de $9,000": una cifra que no es inventada pero no contesta la pregunta. Las 189 pruebas
+pasaban. Lo encontró la IA al comparar su código contra Presupuesto. Corrección en el commit `e62791f`.
+JC no participó en este hallazgo; se registra así porque es lo que pasó.
 
-- **Propuesta de la IA:** que JC pusiera el token directo en Vercel. Texto de la IA: "No me lo pegues aquí."
-- **Decisión de JC: RECHAZAR.** Pegó el token en la conversación para que la IA lo configurara.
-- **Razón:** **[JC]**
-- **Consecuencia:** el token quedó escrito en una conversación. Pendiente: regenerarlo en BotFather con `/revoke`
-  y actualizar `TELEGRAM_BOT_TOKEN` en Vercel.
-
-### Entrada 4 · Publicar a producción
-
-- **Propuesta de la IA:** no tocar producción sin confirmación. Dejó el bot en un PR y pidió un "sí, publica"
-  antes de crear la tabla en Supabase y mezclar a `main`.
-- **Decisión de JC: ACEPTAR.** Reenvió el plan de trabajo completo, que empieza por "Publicar: aplicar la
-  migración 0013, mezclar el PR #60 a main".
-- **Razón:** **[JC]**
-- **Evidencia:** PR #60 mezclado con el CI en verde (189 pruebas y las de navegador).
-
-### Entrada 5 · Un error de fondo, y quién lo encontró
-
-- **Qué pasó:** la primera versión del bot (PR #60) calculaba siempre la quincena en curso. La pantalla de
-  Presupuesto no hace eso: si la quincena actual no tiene movimientos, muestra el último periodo con datos. Para
-  un usuario que sube estados de cuenta en PDF (que siempre terminan antes de hoy), el bot habría contestado algo
-  como "llevas $0 de $9,000", una cifra coherente que no responde la pregunta.
-- **Por qué importa:** las 189 pruebas pasaban y la redacción no inventaba ninguna cifra. El error no estaba en el
-  código sino en qué periodo contesta la pregunta, que es parte de la especificación.
-- **Quién lo encontró:** la IA, al comparar su propio código contra la pantalla de Presupuesto antes del caso de
-  prueba. **No lo detectó JC.** Se registra así porque es lo que pasó.
-- **Corrección:** commit `e62791f`. El bot usa el mismo periodo que Presupuesto y lo dice ("en tu último periodo
-  con datos…").
-- **Veredicto de JC sobre la corrección:** **[JC: ¿es lo que quieres que conteste el bot cuando no hay datos de
-  esta quincena, o prefieres que diga solo "no tengo datos recientes"? Decide y explica.]**
-
-### Lo que la IA no verificó y JC debe cuestionar
-
-Puntos donde la IA resolvió algo sin preguntar o no pudo comprobarlo. Son el lugar natural para que el alumno
-encuentre errores que la IA no señaló.
-
-1. El bot no se ha probado con un mensaje real de Telegram. Las pruebas son de la lógica, no del chat.
-2. La definición de "lo que me queda" (entrada 2d) la eligió la IA.
-3. Las suscripciones que cuenta el bot son las que la app detectó. Si la detección falla, el bot repite el error.
-4. Si el usuario pregunta algo fuera de los tres temas, el bot contesta una ayuda genérica. No está especificado.
-5. La IA no pudo iniciar sesión en producción (no escribe contraseñas en sitios reales), así que no recorrió la
-   app con una cuenta. Lo que sabe de las pantallas viene del código, de las pruebas y de capturas del 5 de octubre.
+### Entrada 8 · Decisiones técnicas de la IA que JC no revisó
+Tabla propia para los chats, código de vinculación firmado de 15 minutos, y definir "lo que me queda" como límite
+del presupuesto menos lo gastado (no ingreso menos lo gastado). Están en el commit `d1fc826`. JC las aceptó sin
+revisarlas; no hay una razón suya registrada.
 
 ---
 
 ## Paso 3 · Validación
 
-### Evidencia automática (corrida por la IA)
+### Caso 1 · Prueba real en producción — NO PASÓ
+- **Input:** JC entró a https://money-maker-tawny.vercel.app con su cuenta, después de publicar el PR #65, y buscó a Billy.
+- **Output (palabras de JC):** "No veo el chatbot."
+- **Veredicto de JC: RECHAZAR.** "Me acabo de meter al link que me enviaste y no hay nada diferente."
+- **Causa (la encontró la IA después del reporte):** la tarjeta de Billy solo se muestra cuando la cuenta ya tiene
+  movimientos, y la cuenta de JC no tenía ninguno. Billy sí responde en `/app/billy`, pero no había cómo llegar.
+- **Contra la especificación:** el campo 1 dice que el usuario pregunta y recibe respuesta. Si no puede encontrar dónde
+  preguntar, la función no cumple, aunque el cálculo esté bien.
+- **Estado:** corrección en curso (Billy visible siempre).
 
-| Qué se comprobó | Dónde | Resultado |
-|---|---|---|
-| El bot usa las cifras de Presupuesto y solo suscripciones activas | `src/lib/domain/telegram.test.ts` | Pasa |
-| Una cifra que no está en los datos se detecta ("$3,000" cuando el dato es $2,850) | mismo archivo | Pasa |
-| Sin movimientos, el bot no dice ninguna cifra | mismo archivo | Pasa |
-| El código de vinculación vence a los 15 minutos y no se puede alterar | `src/lib/services/telegram.test.ts` | Pasa |
+### Caso 2 · Prueba real en producción — NO PASÓ
+- **Input:** JC subió un archivo para tener datos con los que Billy pudiera contestar.
+- **Output (palabras de JC):** "traté de subir un estado de cuenta y no sirvió."
+- **Diagnóstico, output literal de `/api/health?modelo=1`:**
+  `"lectura":{"ok":false,"detalle":"401 ... authentication_error ... invalid x-api-key"}`
+- **Qué significa:** la llave del servicio que lee los documentos ya no es válida. No es un error de la función;
+  es una dependencia externa caída. Sin datos, Billy solo puede contestar "Todavía no tengo movimientos tuyos".
+- **Estado:** pendiente de que JC cambie la llave.
 
-Esto no sustituye el caso de prueba real: demuestra que las piezas hacen lo que dice el código, no que la
-función resuelve el problema.
+### Caso 3 · Prueba automática de la lógica — PASA
+Se ejecuta en cada cambio (GitHub Actions). Archivo: `src/lib/domain/telegram.test.ts`.
+- **Input:** presupuesto de la quincena de $9,000, gastado $6,150, 4 días restantes; suscripciones Netflix $249 y
+  Spotify $129; pregunta "¿Cuánto me queda?".
+- **Output:** "Te quedan $2,850 para 4 días: llevas $6,150 de $9,000. Son $713 por día."
+- **Segunda comprobación:** un texto que dice "Te quedan $3,000" se detecta como cifra inventada y se descarta.
+- **Qué demuestra y qué no:** que el cálculo y el filtro de cifras hacen lo que dice la especificación. No demuestra
+  que un usuario real pueda usar la función; eso lo mostraron los casos 1 y 2.
 
-### Caso de prueba real (lo ejecuta JC)
+### Veredicto general
+La lógica de Billy cumple los campos 2 y 3 en pruebas automáticas. En producción, con un usuario real, la función
+**todavía no cumple el campo 1**: JC no pudo encontrarla y no pudo cargar datos para probarla. Falta un caso real
+con datos en el que se compare la respuesta de Billy contra Presupuesto.
 
-Pasos: entrar a la app → Ajustes → Bot de Telegram → "Conectar Telegram" → tocar Iniciar en el chat
-→ mandar las dos preguntas → abrir Presupuesto y Suscripciones en la app y comparar.
+---
 
-| | Pregunta 1 | Pregunta 2 |
-|---|---|---|
-| Input exacto | ¿Cuánto me queda? | ¿Cuánto pago de suscripciones? |
-| Output del bot, copiado tal cual | **[JC: pega]** | **[JC: pega]** |
-| Cifra en la app | **[JC: "Te quedan" en Presupuesto]** | **[JC: total en Suscripciones]** |
-| ¿Coinciden? | **[JC]** | **[JC]** |
+## Estado de la aplicación al entregar
 
-**Veredicto:** **[JC: funciona / no funciona, con una razón que cite el output de arriba y tu campo 3 de la
-especificación. No basta "el caso pasó": explica por qué esa respuesta resuelve el problema que te propusiste.]**
+| Parte | Estado |
+|---|---|
+| Portada, crear cuenta, entrar con contraseña | Publicado; pasa las pruebas de navegador |
+| Billy (`/app/billy`) | Responde; con cifras reales solo si la cuenta tiene movimientos |
+| Subir estado de cuenta | No funciona: llave del servicio de lectura inválida |
+| Presupuesto, Gastos, Suscripciones, Inversiones | Publicado; pasan las pruebas de navegador con datos de ejemplo |
+| Billy en Telegram | Publicado, sin probar con un mensaje real |
 
 ---
 
 ## Uso de IA
 
-- **Herramienta:** Claude (modelo Fable 5.2), en una sesión conectada al repositorio de GitHub, a Supabase y a Vercel.
-- **Qué hizo la IA:** leyó las instrucciones del assignment y el código; escribió todo el código del bot, sus
-  pruebas y la migración; encontró y corrigió el error de periodo de la entrada 5; corrigió dos pruebas viejas que
-  fallaban por depender de la fecha; hizo que el error de Gmail diga el motivo; abrió los PR #60 y #61; publicó a
-  producción cuando JC lo autorizó; y redactó la estructura de esta bitácora con citas literales.
-- **Qué hizo JC:** propuso las tres ideas; eligió el bot en contra de la recomendación de la IA; creó el bot en
-  BotFather; autorizó la publicación; dio la dirección del trabajo en cada mensaje.
-- **Qué le toca a JC y no hizo la IA:** los tres campos de la especificación, los veredictos y razones marcados
-  **[JC]**, y el caso de prueba real.
-- **Límite que puso la IA:** JC pidió que la IA hiciera todo "sin tener que yo hacer nada". La IA se negó a
-  inventar decisiones o veredictos, porque las instrucciones del assignment piden que eso lo aporte el alumno.
+- **Herramientas:** Claude (modelo Fable 5.2) en una sesión conectada al repositorio, a Supabase y a Vercel; y Claude Code.
+- **Qué hizo la IA:** escribió todo el código de la función, sus pruebas y las migraciones; diagnosticó las fallas con
+  los registros; abrió los PR; y armó esta bitácora ordenando los mensajes literales de JC.
+- **Qué hizo JC:** propuso la función; la eligió contra la recomendación de la IA; probó cada versión en producción;
+  rechazó o pidió revisar cinco propuestas (entradas 1, 2, 3, 5 y 6); detectó un error que la IA no señaló (entrada 4);
+  y publicó cada cambio.
+- **Qué se verificó y qué no:** JC verificó en producción el acceso, la ubicación del bot y la subida de archivos.
+  No revisó las decisiones técnicas de la entrada 8, y todavía no se compara la cifra de Billy contra Presupuesto con
+  datos reales.
+- **Límite que puso la IA:** JC pidió que la IA hiciera el trabajo sola y que el documento dijera que todo está
+  completo. La IA no escribió razones que JC no dio ni reportó como funcionando lo que no funciona.
