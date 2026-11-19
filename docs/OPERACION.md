@@ -47,6 +47,9 @@ sigues en Hobby, quita `resumen` o pásate a Pro.
 - **Métricas**: tabla `events` (`registro`, `onboarding_completo`, `fuente_conectada`, `import_lista`,
   `suscripcion_cancelada`, `checkout_iniciado`, `suscripcion_pagada`, `reporte_problema`…).
 - **Logs**: Vercel → proyecto → Logs (filtra por `[error]`).
+- **Back office**: `/app/admin` → usuarios, qué fue lo último que hizo cada quien, archivos con error y preguntas a
+  Billy. Solo entra quien esté en `ADMIN_EMAILS` (Vercel → Environment Variables, correos separados por coma; solo
+  correos que ya tengan cuenta). Para los demás la ruta responde 404. No muestra montos ni movimientos.
 
 ## 5. Qué hacer cuando
 
