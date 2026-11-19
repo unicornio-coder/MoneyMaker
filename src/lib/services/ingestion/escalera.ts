@@ -1,6 +1,7 @@
-// Lectura escalonada de un estado de cuenta. Decisión de escalabilidad de JC (noviembre de 2026): el costo de la
-// IA por archivo es lo único de la app que crece con cada usuario, así que cada archivo empieza por el lector más
-// barato y solo sube al siguiente cuando la propia app puede comprobar que el anterior no bastó.
+// Lectura escalonada de un estado de cuenta (decisión de escalabilidad, noviembre de 2026; ver README, sección
+// "Decisiones de diseño vs. sugerencias del IS"). El costo de la IA por archivo es lo único de la app que crece con
+// cada usuario, así que cada archivo empieza por el lector más barato y solo sube al siguiente cuando la propia app
+// puede comprobar que el anterior no bastó. El criterio lo puso JC: que no limite al cliente y que no salga caro.
 //
 //   1. Reglas (sin costo). Se aceptan solo si la suma de movimientos cuadra con los totales que imprime el banco.
 //   2. Modelo económico. Se acepta salvo que sus totales no cuadren.
