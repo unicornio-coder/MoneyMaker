@@ -1,3 +1,4 @@
+import { rutaSegura } from '@/lib/auth/ruta';
 import { NextResponse, type NextRequest } from 'next/server';
 import { supabaseServer } from '@/lib/supabase/server';
 
@@ -5,7 +6,7 @@ import { supabaseServer } from '@/lib/supabase/server';
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
-  const next = url.searchParams.get('next') || '/app';
+  const next = rutaSegura(url.searchParams.get('next'));
   const tokenHash = url.searchParams.get('token_hash');
   const type = url.searchParams.get('type');
   // Recuperación con token_hash: no se canjea aquí. Se manda a la pantalla de contraseña nueva y se canjea al guardar,

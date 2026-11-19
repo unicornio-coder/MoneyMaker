@@ -17,7 +17,14 @@ type R = { ok: true } | { ok: false; error: string };
 
 export async function actualizarPerfil(datos: { nombre?: string; diasPago?: number[]; ingresoQuincenal?: number | null; metas?: string[]; onboardingCompleto?: boolean }): Promise<R> {
   const { usuario, repo, perfil } = await contexto();
-  const cambios: typeof datos = { ...datos };
+  // Lista blanca: una server action recibe lo que mande el cliente, no lo que diga el tipo. Solo se aceptan estos
+  // cinco campos; plan, prueba y datos de cobro nunca se pueden escribir desde aquí.
+  const cambios: typeof datos = {};
+  if (typeof datos?.nombre === 'string') cambios.nombre = datos.nombre.slice(0, 80);
+  if (Array.isArray(datos?.diasPago)) cambios.diasPago = datos.diasPago.filter((d) => typeof d === 'number' && Number.isFinite(d)).slice(0, 4);
+  if (datos?.ingresoQuincenal === null || (typeof datos?.ingresoQuincenal === 'number' && Number.isFinite(datos.ingresoQuincenal) && datos.ingresoQuincenal >= 0)) cambios.ingresoQuincenal = datos.ingresoQuincenal;
+  if (Array.isArray(datos?.metas)) cambios.metas = datos.metas.filter((m) => typeof m === 'string').slice(0, 12).map((m) => m.slice(0, 40));
+  if (typeof datos?.onboardingCompleto === 'boolean') cambios.onboardingCompleto = datos.onboardingCompleto;
   const primeraVez = !!cambios.onboardingCompleto && !perfil.onboardingCompleto;
   if (cambios.diasPago) {
     cambios.diasPago = Array.from(new Set(cambios.diasPago.map((d) => Math.max(1, Math.min(31, Math.round(d)))))).sort((a, b) => a - b);

@@ -1,5 +1,6 @@
 'use server';
 
+import { rutaSegura } from './ruta';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { MODO_MOCK } from '@/lib/supabase/env';
@@ -22,7 +23,7 @@ export async function iniciarSesion(_: AuthResult | undefined, form: FormData): 
   if (!password) return { error: 'Escribe tu contraseña.' };
   const { error } = await supabaseServer().auth.signInWithPassword({ email, password });
   if (error) return { error: 'Correo o contraseña incorrectos.' };
-  redirect(String(form.get('next') || '/app'));
+  redirect(rutaSegura(form.get('next')));
 }
 
 /**
@@ -63,7 +64,7 @@ export async function entrarConGoogle(next = '/app') {
   if (MODO_MOCK) redirect('/app');
   const { data, error } = await supabaseServer().auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${origen()}/auth/callback?next=${encodeURIComponent(next)}` },
+    options: { redirectTo: `${origen()}/auth/callback?next=${encodeURIComponent(rutaSegura(next))}` },
   });
   if (error || !data.url) redirect('/login?error=google');
   redirect(data.url);
