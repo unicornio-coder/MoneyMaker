@@ -1,6 +1,6 @@
 # MoneyMaker — instrucciones para Claude Code
 
-App de finanzas personales para México (web + móvil, PWA). Junta bancos, tarjetas, efectivo e inversiones; organiza el gasto por **quincena**; detecta suscripciones y **meses sin intereses**; arma presupuesto; mide patrimonio; da insights. Plan único $250 MXN/mes con 7 días de prueba.
+App de finanzas personales para México (web + móvil, PWA). Junta bancos, tarjetas, efectivo e inversiones; organiza el gasto por **quincena**; detecta suscripciones y **meses sin intereses**; arma presupuesto; mide patrimonio; da insights. Hoy es gratis: los planes de pago están apagados con la bandera `NEXT_PUBLIC_PLANES`.
 
 Lee primero `PLAN.md` (qué construimos y en qué orden) y el handoff de diseño en `docs/handoff/` (`README.md`, `FLUJOS.md`, `design-tokens.json`, capturas en `screenshots/`, prototipo navegable en `design-reference/MoneyMaker Web.dc.html`).
 
