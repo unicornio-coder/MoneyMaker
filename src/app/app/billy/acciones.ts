@@ -15,7 +15,7 @@ export async function preguntarABilly(pregunta: string): Promise<{ texto: string
     const inicio = Date.now();
     const datos = await datosDelBot(repo, usuario.id);
     const r = await responderPregunta(texto, datos);
-    await repo.registrarEvento(usuario.id, 'billy_respuesta', { intencion: r.intencion, origen: r.origen, cifras_descartadas: r.descartada.length, ms: Date.now() - inicio }).catch(() => undefined);
+    await repo.registrarEvento(usuario.id, 'billy_respuesta', { intencion: r.intencion, origen: r.origen, cifras_descartadas: r.descartada.length, sospechosa: !!r.sospechosa, ms: Date.now() - inicio }).catch(() => undefined);
     return { texto: r.texto };
   } catch (e) {
     console.warn('[billy]', e instanceof Error ? e.message.slice(0, 120) : 'error');

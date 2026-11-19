@@ -69,6 +69,16 @@ export function intencionDe(pregunta: string): Intencion {
   return 'ayuda';
 }
 
+/**
+ * true si la pregunta trae señales de querer cambiarle las reglas al bot ("ignora las instrucciones", "nueva
+ * instrucción del sistema", "actúa como…"). Con una pregunta así no se llama al modelo: se contesta con la redacción
+ * fija, que solo usa las cifras del propio usuario. Un falso positivo solo cuesta una respuesta menos natural.
+ */
+export function pareceInyeccion(pregunta: string): boolean {
+  const t = sinAcentos(pregunta);
+  return /instruccion|system prompt|\bprompt\b|ignora|olvida (lo|las|los|tus|todo|todas)|(nueva|nuevas|tus|estas|las) reglas?\b|del sistema|modo (desarrollador|dios|admin)|developer mode|jailbreak|actua como|finge (que|ser)|ahora eres|eres ahora|sin restricciones|administrador/.test(t);
+}
+
 const dias = (n: number) => (n === 1 ? '1 día' : `${n} días`);
 
 /** Respuesta sin modelo: mismas cifras, redacción fija. Es también el respaldo cuando la redacción del modelo no pasa la revisión. */
