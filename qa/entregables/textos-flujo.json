@@ -103,6 +103,7 @@
     "sesion_expirada": "Tu sesión terminó. Vuelve a entrar; tus archivos siguen aquí.",
     "sin_modelo": "Este archivo necesita la lectura inteligente y ahora mismo no está activa (falta configurar la llave de lectura). Reintenta en unos minutos; si sigue igual, repórtalo desde Ayuda.",
     "moneda_sin_equivalente": "Hay cargos en otra moneda sin equivalente en pesos; los guardamos con el monto original.",
+    "limite_diario": "Ya subiste muchos archivos hoy. Mañana puedes subir más; si es un error, escríbenos desde Ayuda.",
     "limite_plan": "En el plan Gratis puedes subir un estado de cuenta al mes. Pásate a Plus para subir los que quieras.",
     "lectura_no_disponible": "El servicio de lectura no respondió: la llave de lectura no es válida. Reintenta en unos minutos; si sigue igual, repórtalo desde Ayuda."
   },

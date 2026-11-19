@@ -5,7 +5,8 @@ import { analizarArchivo, iniciarAnalisis, procesarAnalisis } from '@/lib/servic
 import { esErrorImportacion } from '@/lib/services/ingestion';
 import { PDF_MAX_BYTES } from '@/lib/services/ingestion/pdf';
 import { enSegundoPlano } from '@/lib/server/segundo-plano';
-import { importacionesDelMes, nivelPlan, puedeImportarPdf, TEXTO_LIMITE } from '@/lib/domain/plan';
+import { importacionesDelMes, nivelPlan, puedeImportarPdf, superaTopeDiario, TEXTO_LIMITE } from '@/lib/domain/plan';
+import { MODO_MOCK } from '@/lib/supabase/env';
 import { hoyMX, aISO } from '@/lib/domain/fechas';
 import { limitarPeticion, LIMITES, respuesta429 } from '@/lib/server/ratelimit';
 import { registrarExcepcion } from '@/lib/server/errores';
@@ -23,6 +24,8 @@ export async function POST(req: Request) {
   const { usuario, repo, perfil } = await contexto();
   const lim = limitarPeticion(`imports:${usuario.id}`, LIMITES.imports);
   if (!lim.ok) return respuesta429(lim);
+  // Tope diario contado en la base (el de arriba vive en memoria por instancia y en Vercel no frena un abuso).
+  if (!MODO_MOCK && superaTopeDiario(await repo.importaciones(usuario.id))) return NextResponse.json({ codigo: 'limite_diario' }, { status: 429 });
   const nivel = nivelPlan(perfil);
   if (nivel === 'gratis') {
     const previas = importacionesDelMes(await repo.importaciones(usuario.id), aISO(hoyMX()));

@@ -5,10 +5,11 @@ import { esDocx, leerDocx } from './docx';
 import { evaluarCuadre } from '@/lib/domain/dedupe';
 import { aCentavos } from '@/lib/domain/money';
 import type { MovimientoNormalizado, ResumenEstado, TipoCuentaEstado } from '@/lib/domain/tipos';
-import { extraerEstadoDeCuenta, hayLLM } from '../llm';
+import { extraerEstadoDeCuenta, hayLLM, type NivelModelo } from '../llm';
 import { detectarBanco, detectarUltimos4, movimientosPorRegex, parsearFecha } from '../importer';
 import { aMovimientos, aResumen } from './esquema';
 import { esPdf, esPdfCifrado, leerPdf, PDF_MAX_BYTES, textoLegible, type PdfLeido } from './pdf';
+import { leerEscalonado, type Lectura } from './escalera';
 import { ErrorImportacion, esErrorImportacion, type ResultadoExtraccion, type TransactionSource } from './tipos';
 
 const RE_CREDITO = /PAGO M[IÍ]NIMO|FECHA L[IÍ]MITE DE PAGO|L[IÍ]MITE DE CR[EÉ]DITO|TARJETA DE CR[EÉ]DITO|PAGO PARA NO GENERAR INTERESES/i;
@@ -96,17 +97,23 @@ export const fuentePdf: TransactionSource = {
       try {
         // Texto primero: si pdf.js sacó texto legible, va el texto (más rápido y barato). Si no (fuentes ofuscadas,
         // escaneos), va el PDF completo como documento. Un PDF cifrado sin texto legible no se puede leer.
-        if (pdf && legible) {
-          const { extraccion, tokens } = await extraerEstadoDeCuenta({ texto: pdf.texto });
-          resultado = { resumen: aResumen(extraccion, pdf.paginas), movimientos: aMovimientos(extraccion), metodo: 'claude-texto', tokens };
-        } else if (word !== null) {
-          throw new ErrorImportacion('ilegible', 'El documento de Word no trae texto legible');
-        } else if (!cifrado) {
-          const { extraccion, tokens } = await extraerEstadoDeCuenta({ pdf: datos });
-          resultado = { resumen: aResumen(extraccion, pdf?.paginas ?? null), movimientos: aMovimientos(extraccion), metodo: 'claude-pdf', tokens };
-        } else {
-          throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
-        }
+        const texto = pdf && legible ? pdf.texto : null;
+        const paginas = pdf?.paginas ?? null;
+        if (texto === null && word !== null) throw new ErrorImportacion('ilegible', 'El documento de Word no trae texto legible');
+        if (texto === null && cifrado) throw new ErrorImportacion('ilegible', 'PDF cifrado sin texto legible');
+        // Lectura escalonada (ver escalera.ts): reglas sin costo si cuadran con los totales del banco; si no, el
+        // modelo económico; el fuerte solo cuando el económico no cuadra o falla por un problema del servicio.
+        const conModelo = (nivel: NivelModelo) => async (): Promise<Lectura> => {
+          const { extraccion, tokens } = await extraerEstadoDeCuenta(texto !== null ? { texto } : { pdf: datos }, nivel);
+          return { resumen: aResumen(extraccion, paginas), movimientos: aMovimientos(extraccion), tokens };
+        };
+        const leido = await leerEscalonado({
+          reglas: texto !== null ? () => ({ ...extraerPorReglas(texto, paginas), tokens: { entrada: 0, salida: 0 } }) : undefined,
+          economico: conModelo('economico'),
+          fuerte: conModelo('fuerte'),
+          reintentable: (e) => esErrorImportacion(e) && e.codigo === 'servidor',
+        });
+        resultado = { ...leido.lectura, metodo: leido.peldano === 'reglas' ? 'reglas' : texto !== null ? 'claude-texto' : 'claude-pdf' };
       } catch (e) {
         // El servicio de lectura rechazó la llave o no respondió: si el documento trae texto legible, se lee con reglas
         // y se avisa. Así subir un PDF funciona aunque la llave esté mal; si las reglas no sacan nada, se dice el motivo real.

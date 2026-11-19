@@ -2,13 +2,21 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { CASOS, crearPdfEstado } from '../../../../scripts/qa-pdfs.mjs';
 import { ErrorImportacion } from './tipos';
 
-// Con llave configurada pero rechazada por el servicio (401), el PDF con texto legible se lee con reglas y se avisa.
-// Sin espías de vitest: el modelo simulado solo lanza el error que le pongamos (los espías marcaban el error como no manejado).
+// Con llave configurada: un PDF cuyas sumas cuadran con los totales del banco se lee con reglas y el modelo ni se
+// llama. Si no se puede comprobar el cuadre, se llama al modelo; y si el servicio lo rechaza (401), se cae a reglas con aviso.
+// Sin espías de vitest: el modelo simulado solo cuenta llamadas y lanza el error que le pongamos.
 const llm = vi.hoisted(() => {
-  const estado = { fallo: null as Error | null };
-  return { estado, hayLLM: () => true, extraerEstadoDeCuenta: async () => { throw estado.fallo ?? new Error('sin respuesta simulada'); } };
+  const estado = { fallo: null as Error | null, llamadas: 0 };
+  return { estado, hayLLM: () => true, extraerEstadoDeCuenta: async () => { estado.llamadas++; throw estado.fallo ?? new Error('sin respuesta simulada'); } };
 });
 vi.mock('../llm', () => ({ hayLLM: llm.hayLLM, extraerEstadoDeCuenta: llm.extraerEstadoDeCuenta }));
+
+// Para simular un estado de cuenta que no imprime totales (no hay contra qué comprobar las reglas).
+const cuadre = vi.hoisted(() => ({ forzar: null as 'ok' | 'sin_cuadre' | 'sin_resumen' | null }));
+vi.mock('@/lib/domain/dedupe', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/lib/domain/dedupe')>();
+  return { ...real, evaluarCuadre: (...args: Parameters<typeof real.evaluarCuadre>) => { const r = real.evaluarCuadre(...args); return cuadre.forzar ? { ...r, cuadre: cuadre.forzar } : r; } };
+});
 
 import { fuentePdf } from './statement-pdf';
 
@@ -17,7 +25,25 @@ beforeAll(async () => {
   pdf = await crearPdfEstado(CASOS[0]);
 });
 
+describe('PDF con llave configurada: el cuadre decide si se paga el modelo', () => {
+  it('si las reglas cuadran con los totales del banco, el modelo no se llama y no hay aviso', async () => {
+    cuadre.forzar = null;
+    llm.estado.llamadas = 0;
+    llm.estado.fallo = new ErrorImportacion('lectura_no_disponible', '401 AuthenticationError');
+    const r = await fuentePdf.extraer({ nombre: 'bbva.pdf', datos: pdf });
+    expect(r.metodo).toBe('reglas');
+    expect(r.movimientos).toHaveLength(CASOS[0].movimientos.length);
+    expect(r.tokens).toEqual({ entrada: 0, salida: 0 });
+    expect(r.advertencias).toEqual([]);
+    expect(llm.estado.llamadas).toBe(0);
+  });
+});
+
 describe('PDF cuando el servicio de lectura falla', () => {
+  beforeAll(() => {
+    cuadre.forzar = 'sin_resumen';
+  });
+
   it('llave rechazada: se lee con reglas, con todos los movimientos y un aviso', async () => {
     llm.estado.fallo = new ErrorImportacion('lectura_no_disponible', '401 AuthenticationError');
     const etapas: string[] = [];

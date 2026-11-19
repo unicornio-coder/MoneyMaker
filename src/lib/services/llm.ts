@@ -8,7 +8,12 @@ import { z } from 'zod';
 import { ExtraccionSchema, type Extraccion } from './ingestion/esquema';
 import { ErrorImportacion } from './ingestion/tipos';
 
-const MODELO = process.env.ANTHROPIC_MODEL || 'claude-opus-5';
+// Dos niveles de modelo. El fuerte lee lo que el económico no logró cuadrar; el económico hace el trabajo diario.
+// Los identificadores son los que publica la documentación oficial de modelos de Anthropic (consultada el
+// 19-nov-2026). Antes el valor por defecto era el modelo más caro para todo, y nadie lo había decidido.
+const MODELO = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+const MODELO_ECONOMICO = process.env.ANTHROPIC_MODEL_ECONOMICO || 'claude-haiku-5-5';
+export type NivelModelo = 'economico' | 'fuerte';
 const CATEGORIAS = ['fijos', 'comida', 'super', 'transporte', 'online', 'entretenimiento', 'salud', 'servicios', 'suscripciones', 'msi', 'colegiaturas', 'comisiones', 'efectivo', 'viajes', 'hogar', 'otros', 'nomina', 'ingreso', 'rendimiento', 'pago_tarjeta', 'transferencia', 'inversion'];
 
 // Si el servicio rechaza la llave (401/403), durante 10 minutos se trabaja sin modelo: los PDF con texto legible se
@@ -145,7 +150,7 @@ function contenidoDe(entrada: EntradaLLM): Anthropic.ContentBlockParam[] {
 }
 
 /** Lee un estado de cuenta con Claude. Reintenta una vez si el JSON no valida; después lanza ErrorImportacion. */
-export async function extraerEstadoDeCuenta(entrada: EntradaLLM): Promise<{ extraccion: Extraccion; tokens: { entrada: number; salida: number } }> {
+export async function extraerEstadoDeCuenta(entrada: EntradaLLM, nivel: NivelModelo = 'fuerte'): Promise<{ extraccion: Extraccion; tokens: { entrada: number; salida: number } }> {
   const c = cliente();
   if (!c) throw new ErrorImportacion('servidor', 'Sin ANTHROPIC_API_KEY');
   if (!entrada.pdf && !entrada.texto) throw new ErrorImportacion('ilegible');
@@ -157,7 +162,7 @@ export async function extraerEstadoDeCuenta(entrada: EntradaLLM): Promise<{ extr
     try {
       res = await c.messages
         .stream({
-          model: MODELO,
+          model: nivel === 'economico' ? MODELO_ECONOMICO : MODELO,
           max_tokens: 48_000,
           system: SISTEMA_ESTADO,
           messages: [{ role: 'user', content: contenidoDe(entrada) }],
