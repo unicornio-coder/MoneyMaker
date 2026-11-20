@@ -7,7 +7,20 @@ const nextConfig = {
   env: { NEXT_PUBLIC_APP_VERSION: version },
   // Los logos locales cambian poco (el bot los repone con el mismo nombre): un día en caché y una semana sirviendo el viejo mientras revalida.
   async headers() {
-    return [{ source: '/logos/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }] }];
+    return [
+      { source: '/logos/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }] },
+      // Cabeceras de seguridad para todas las rutas: la app no se puede incrustar en otra página (clickjacking sobre
+      // "Borrar cuenta"), el navegador no adivina tipos de archivo y no se manda la URL completa a sitios externos.
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ];
   },
   images: {
     remotePatterns: [{ protocol: 'https', hostname: 'www.google.com', pathname: '/s2/favicons' }],

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ahorroAnual, importacionesDelMes, incluye, nivelPlan, puedeConectarBanco, puedeImportarPdf } from './plan';
+import { ahorroAnual, archivosEnUltimas24h, importacionesDelMes, incluye, nivelPlan, puedeConectarBanco, puedeImportarPdf, superaTopeDiario, TOPE_DIARIO_ARCHIVOS } from './plan';
 
 const ahora = new Date('2026-09-28T12:00:00Z');
 
@@ -47,5 +47,27 @@ describe('límites', () => {
   });
   it('el anual ahorra frente a 12 meses', () => {
     expect(ahorroAnual()).toBe(498);
+  });
+});
+
+describe('tope diario de archivos (protección contra abuso, no límite de plan)', () => {
+  const AHORA = new Date('2026-11-19T18:00:00Z');
+  const hace = (horas: number) => ({ createdAt: new Date(AHORA.getTime() - horas * 3_600_000).toISOString() });
+
+  it('cuenta solo los archivos de las últimas 24 horas', () => {
+    expect(archivosEnUltimas24h([hace(1), hace(23), hace(25), hace(200)], AHORA)).toBe(2);
+    expect(archivosEnUltimas24h([], AHORA)).toBe(0);
+  });
+
+  it('un uso normal nunca lo toca; un script que sube sin parar sí', () => {
+    expect(superaTopeDiario([hace(1), hace(2), hace(3)], AHORA)).toBe(false);
+    const abuso = Array.from({ length: TOPE_DIARIO_ARCHIVOS }, (_, i) => hace(i / 10));
+    expect(superaTopeDiario(abuso, AHORA)).toBe(true);
+    expect(superaTopeDiario(abuso.slice(1), AHORA)).toBe(false);
+  });
+
+  it('al día siguiente se puede volver a subir', () => {
+    const ayer = Array.from({ length: TOPE_DIARIO_ARCHIVOS + 5 }, () => hace(30));
+    expect(superaTopeDiario(ayer, AHORA)).toBe(false);
   });
 });

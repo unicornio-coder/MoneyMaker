@@ -9,7 +9,7 @@ import { aISO, deISO, hoyMX, sumarMeses } from '@/lib/domain/fechas';
 import { estimarIngresoQuincenal } from '@/lib/domain/nomina';
 import { presupuestoVsActual, proponerPresupuesto } from '@/lib/domain/presupuesto';
 import { ultimoRangoConDatos } from '@/lib/domain/series';
-import { armarDatosBot, cifrasInventadas, intencionDe, respuestaDeReglas, type DatosBot, type Intencion } from '@/lib/domain/telegram';
+import { armarDatosBot, cifrasInventadas, intencionDe, pareceInyeccion, respuestaDeReglas, type DatosBot, type Intencion } from '@/lib/domain/telegram';
 import { formatMXN } from '@/lib/format';
 import { hayLLM, redactarRespuestaBot } from './llm';
 
@@ -102,15 +102,17 @@ export async function datosDelBot(repo: Repo, userId: string, hoy = hoyMX()): Pr
   return armarDatosBot({ rango, periodoActual: actual, vs, recurrentes, movimientos: movs.length, hoy, diasPago });
 }
 
-export type RespuestaBot = { texto: string; origen: 'modelo' | 'reglas'; intencion: Intencion; descartada: number[] };
+export type RespuestaBot = { texto: string; origen: 'modelo' | 'reglas'; intencion: Intencion; descartada: number[]; sospechosa?: boolean };
 
 /**
  * Contesta una pregunta. Claude redacta con los datos; si su texto trae una cifra que no está en los datos,
  * se descarta y se manda la redacción fija. Así el bot nunca dice un número que la app no calculó.
+ * Si la pregunta parece un intento de cambiarle las reglas (inyección de prompt), ni siquiera llega al modelo.
  */
 export async function responderPregunta(pregunta: string, datos: DatosBot): Promise<RespuestaBot> {
   const intencion = intencionDe(pregunta);
   const respaldo = respuestaDeReglas(intencion, datos, formatMXN);
+  if (pareceInyeccion(pregunta)) return { texto: respaldo, origen: 'reglas', intencion, descartada: [], sospechosa: true };
   if (!datos.hayDatos || !hayLLM()) return { texto: respaldo, origen: 'reglas', intencion, descartada: [] };
   const texto = await redactarRespuestaBot(pregunta, datos);
   if (!texto) return { texto: respaldo, origen: 'reglas', intencion, descartada: [] };

@@ -13,6 +13,14 @@ import { cartaNegociacion, guionNegociacion, resultadoNegociacion } from '@/lib/
 import { generarCartaPdf, generarPdfCarta } from '@/lib/services/carta';
 import { enviarCorreo } from '@/lib/services/correo';
 import { incluye, nivelPlan, TEXTO_LIMITE } from '@/lib/domain/plan';
+import { correoValido } from '@/lib/domain/correo';
+import { limitarPeticion } from '@/lib/server/ratelimit';
+
+// Las cartas salen por correo desde el dominio de la app: pocas al día por usuario, un solo destinatario validado y
+// la copia siempre al correo de la cuenta (no a uno que escriba el cliente). Sin esto, la función servía para mandar
+// correo a cualquiera a nombre de MoneyMaker.
+const LIMITE_CARTAS = { max: 6, ventanaMs: 24 * 60 * 60_000 } as const;
+const MUCHAS_CARTAS = 'Ya enviaste varias cartas hoy. Mañana puedes enviar más.';
 
 type R = { ok: true; id?: string } | { ok: false; error: string };
 
@@ -70,13 +78,16 @@ export type ResultadoSolicitud = { ok: true; id: string; enviadoA: 'proveedor' |
 export async function solicitarCancelacion(recurrenteId: string, notas?: string, datos?: DatosCancelacion): Promise<ResultadoSolicitud> {
   const { usuario, repo, perfil } = await contexto();
   if (!incluye(nivelPlan(perfil), 'cancelacion')) return { ok: false, error: TEXTO_LIMITE.cancelacion, plan: true };
+  if (!limitarPeticion(`cartas:${usuario.id}`, LIMITE_CARTAS).ok) return { ok: false, error: MUCHAS_CARTAS };
+  if (datos?.correoProveedor?.trim() && !correoValido(datos.correoProveedor)) return { ok: false, error: 'Revisa el correo del proveedor: debe ser una sola dirección.' };
+  notas = notas?.slice(0, 400);
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos la suscripción.' };
   const hoy = hoyMX();
   const seguimiento = aISO(sumarDias(hoy, 10));
   const titular = datos?.nombre?.trim() || perfil.nombre?.trim() || usuario.nombre;
-  const correoUsuario = datos?.correo?.trim() || usuario.email;
-  const proveedor = datos?.correoProveedor?.trim() || null;
+  const correoUsuario = usuario.email;
+  const proveedor = correoValido(datos?.correoProveedor);
   const pdf = await generarCartaPdf({ servicio: r.nombre, titular, correo: correoUsuario, ultimos4: datos?.ultimos4 ?? null, montoMensual: r.tipo === 'msi' ? r.monto : costoMensual(r), fecha: aISO(hoy), notas: notas ?? null });
   const adjunto = { nombre: `cancelacion-${r.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`, contenido: pdf };
   let enviadoA: 'proveedor' | 'usuario' | null = null;
@@ -101,6 +112,8 @@ export type DatosNegociar = { precioActual: number; ofertaProveedor?: string | n
 export async function solicitarNegociacion(recurrenteId: string, datos: DatosNegociar): Promise<ResultadoSolicitud & { guion?: string[] }> {
   const { usuario, repo, perfil } = await contexto();
   if (!incluye(nivelPlan(perfil), 'negociacion')) return { ok: false, error: TEXTO_LIMITE.negociacion, plan: true };
+  if (!limitarPeticion(`cartas:${usuario.id}`, LIMITE_CARTAS).ok) return { ok: false, error: MUCHAS_CARTAS };
+  if (datos.correoProveedor?.trim() && !correoValido(datos.correoProveedor)) return { ok: false, error: 'Revisa el correo del proveedor: debe ser una sola dirección.' };
   const r = (await repo.recurrentes(usuario.id)).find((x) => x.id === recurrenteId);
   if (!r) return { ok: false, error: 'No encontramos el servicio.' };
   if (!(datos.precioActual > 0)) return { ok: false, error: 'Escribe cuánto pagas hoy.' };
@@ -112,7 +125,7 @@ export async function solicitarNegociacion(recurrenteId: string, datos: DatosNeg
   const guion = guionNegociacion(base);
   const pdf = await generarPdfCarta(cartaNegociacion(base));
   const adjunto = { nombre: `negociacion-${r.nombre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`, contenido: pdf };
-  const proveedor = datos.correoProveedor?.trim() || null;
+  const proveedor = correoValido(datos.correoProveedor);
   let enviadoA: 'proveedor' | 'usuario' | null = null;
   if (proveedor && usuario.email) {
     const env = await enviarCorreo({ para: proveedor, cc: usuario.email, responderA: usuario.email, asunto: `Solicitud de mejor tarifa: ${r.nombre}`, texto: `Adjunto mi solicitud para revisar la tarifa de ${r.nombre}. Pido respuesta por escrito en un plazo no mayor a diez días hábiles.\n\n${titular}`, adjuntos: [adjunto] });

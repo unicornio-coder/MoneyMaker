@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     const r = await responderPregunta(texto, datos);
     await enviarMensaje(chatId, r.texto);
     // Métrica sin contenido: qué se preguntó (por tipo), quién redactó y si se descartó una redacción con cifras ajenas.
-    await repo.registrarEvento(userId, 'telegram_respuesta', { intencion: r.intencion, origen: r.origen, cifras_descartadas: r.descartada.length, ms: Date.now() - inicio }).catch(() => undefined);
+    await repo.registrarEvento(userId, 'telegram_respuesta', { intencion: r.intencion, origen: r.origen, cifras_descartadas: r.descartada.length, sospechosa: !!r.sospechosa, ms: Date.now() - inicio }).catch(() => undefined);
   } catch (e) {
     console.warn('[telegram] webhook', e instanceof Error ? e.message.slice(0, 120) : 'error');
     await enviarMensaje(chatId, 'No pude consultar tus datos en este momento. Intenta de nuevo en un minuto.');

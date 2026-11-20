@@ -69,7 +69,9 @@ export async function procesarEntrada(repo: Repo, userId: string, correo: Correo
   const alerta = parsearAlerta(correo);
   if (!alerta) {
     // Correo de un comercio sin parser: el modelo lo lee (si hay llave) y devuelve el mismo formato.
-    if (pareceComercio(correo.from)) {
+    // Solo correos: las notificaciones del teléfono llegan de 50 en 50 y cualquiera con un token puede mandarlas,
+    // así que ahí no se paga modelo (son textos cortos; bastan las reglas).
+    if (fuente === 'correo' && pareceComercio(correo.from)) {
       const leido = await extraerReciboConLLM(correo);
       const r2 = leido ? reciboDesdeLLM(leido, correo.fecha) : null;
       if (r2) {

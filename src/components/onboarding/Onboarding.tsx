@@ -193,6 +193,11 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial, tieneCo
                   <li key={t} className="flex items-center gap-3"><span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-green-50 font-display text-[12px] font-bold text-green-dark dark:bg-surface-2 dark:text-green-light">{i + 1}</span>{t}</li>
                 ))}
               </ol>
+              <p className="mt-5 text-[13px] leading-relaxed text-txt-2 dark:text-fg-2" data-testid="onboarding-ejemplos">
+                ¿No tienes uno a la mano? Descarga un estado de cuenta de ejemplo y súbelo aquí:{' '}
+                <a href="/ejemplos/ejemplo-debito-nomina.pdf" download className="font-bold text-green-dark underline dark:text-green-light">cuenta de nómina</a>{' '}o{' '}
+                <a href="/ejemplos/ejemplo-tarjeta-de-credito-1.pdf" download className="font-bold text-green-dark underline dark:text-green-light">tarjeta de crédito</a>. Son documentos de prueba, no de un banco real.
+              </p>
               <p className="mt-5 flex items-center justify-center gap-1.5 text-[12px] text-txt-3"><ShieldCheck size={14} /> Solo lectura. Nunca pedimos las claves de tu banco.</p>
             </>
           )}

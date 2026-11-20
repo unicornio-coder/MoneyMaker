@@ -49,6 +49,23 @@ export function importacionesDelMes(importaciones: { createdAt: string; estado: 
   return importaciones.filter((i) => i.createdAt.slice(0, 7) === mes && i.estado !== 'error').length;
 }
 
+/**
+ * Tope de archivos por usuario en 24 horas. No es un límite de plan: un usuario normal sube 2 al mes, así que nadie
+ * lo nota. Existe para que una cuenta con un script no pueda gastar el saldo de la lectura con IA en una tarde.
+ * Se cuenta en la base de datos (no en memoria: en Vercel cada instancia tendría su propio contador) y cuentan
+ * también los archivos que terminaron en error.
+ */
+export const TOPE_DIARIO_ARCHIVOS = 20;
+
+export function archivosEnUltimas24h(importaciones: { createdAt: string }[], ahora: Date = new Date()): number {
+  const desde = ahora.getTime() - 24 * 60 * 60_000;
+  return importaciones.filter((i) => new Date(i.createdAt).getTime() >= desde).length;
+}
+
+export function superaTopeDiario(importaciones: { createdAt: string }[], ahora: Date = new Date()): boolean {
+  return archivosEnUltimas24h(importaciones, ahora) >= TOPE_DIARIO_ARCHIVOS;
+}
+
 export const TEXTO_LIMITE = {
   bancos: 'En el plan Gratis puedes conectar un banco. Pásate a Plus para conectar todos.',
   pdfs: 'En el plan Gratis puedes subir un estado de cuenta al mes. Pásate a Plus para subir los que quieras.',

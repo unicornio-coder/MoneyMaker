@@ -10,7 +10,7 @@ import { registrar } from './analytics';
 import { ingerirMovimientos, propuestaQuincena, recalcular, type PropuestaQuincena } from './ingest';
 import { ErrorImportacion, esErrorImportacion, extraerArchivo, hashArchivo } from './ingestion';
 import { casarRecibosPendientes } from './enriquecer';
-import { PDF_MAX_BYTES } from './ingestion/pdf';
+import { esPdfCifrado, PDF_MAX_BYTES } from './ingestion/pdf';
 
 const RESUMEN_VACIO: ResumenEstado = { institucion: null, producto: null, tipoCuenta: null, ultimos4: null, periodoInicio: null, periodoFin: null, fechaCorte: null, fechaLimitePago: null, pagoMinimoCentavos: null, saldoAlCorteCentavos: null, limiteCreditoCentavos: null, totalCargosCentavos: null, totalAbonosCentavos: null, tarjetasAdicionales: [], esEstadoDeCuenta: false, paginas: null };
 
@@ -33,6 +33,9 @@ function extraccionEnCache(previa: Importacion | null): Importacion | null {
 export async function iniciarAnalisis(repo: Repo, userId: string, archivo: { nombre: string; datos: Buffer; contraseña?: string | null }): Promise<ResultadoAnalisis & { procesar: boolean }> {
   if (archivo.datos.length > PDF_MAX_BYTES) throw new ErrorImportacion('muy_grande');
   const archivoHash = hashArchivo(archivo.datos);
+  // Una contraseña solo cambia el resultado si el PDF de verdad está cifrado. Mandarla con un PDF normal servía
+  // para saltarse la caché y volver a pagar la lectura del mismo archivo.
+  if (archivo.contraseña && !esPdfCifrado(archivo.datos)) archivo = { ...archivo, contraseña: null };
   const previa = await repo.importacionPorHash(userId, archivoHash);
   if (previa?.estado === 'confirmado') return { importacion: previa, codigo: 'ya_subido', procesar: false };
   if (previa?.estado === 'revisar' && !archivo.contraseña) return { importacion: previa, procesar: false };
@@ -84,8 +87,16 @@ export async function procesarAnalisis(repo: Repo, userId: string, id: string, a
     imp = await repo.guardarImportacion(userId, { ...base, estado: 'procesando', etapa: e, progreso: PROGRESO[e] });
   };
 
+  // Los avisos de etapa se guardan uno tras otro y se esperan antes del guardado final. Sueltos, uno de ellos podía
+  // llegar a la base después del resultado y dejar la importación otra vez en "procesando" sin movimientos.
+  let cola: Promise<unknown> = Promise.resolve();
+  const encolarEtapa = (e: NonNullable<Importacion['etapa']>) => {
+    cola = cola.then(() => etapa(e)).catch(() => undefined);
+  };
+
   try {
-    const r = await extraerArchivo({ nombre: archivo.nombre, datos: archivo.datos, contraseña: archivo.contraseña, onEtapa: (e) => void etapa(e).catch(() => undefined) });
+    const r = await extraerArchivo({ nombre: archivo.nombre, datos: archivo.datos, contraseña: archivo.contraseña, onEtapa: encolarEtapa });
+    await cola;
     const cuadre = evaluarCuadre(r.movimientos, r.resumen).cuadre;
     const duracionMs = Date.now() - inicio;
     // Mismo estado (banco, tarjeta, tipo y periodo) ya confirmado aunque los bytes cambien (otra descarga): no se repite.
@@ -98,6 +109,7 @@ export async function procesarAnalisis(repo: Repo, userId: string, id: string, a
     await registrar(repo, userId, 'import_lista', { metodo: r.metodo, ms: duracionMs, movimientos: r.movimientos.length, cache: false });
     return { importacion: imp };
   } catch (e) {
+    await cola;
     const codigo = esErrorImportacion(e) ? e.codigo : 'servidor';
     const estado: Importacion['estado'] = codigo === 'necesita_contraseña' || codigo === 'contraseña_incorrecta' ? 'necesita_contraseña' : 'error';
     if (!esErrorImportacion(e)) console.error('[importacion] analizar', e instanceof Error ? `${e.name}: ${e.message.slice(0, 200)}` : 'error');

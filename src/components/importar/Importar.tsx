@@ -101,7 +101,9 @@ function itemDeImportacion(imp: Importacion): Item {
 }
 
 function ajusteDe(imp: Importacion, bancoSugerido?: string): Ajuste {
-  return { institucion: imp.resumen.institucion ?? bancoSugerido ?? '', tipoCuenta: imp.resumen.tipoCuenta ?? 'credito', ultimos4: imp.resumen.ultimos4 ?? '' };
+  // Si el archivo no dice de qué banco es, se propone "Mi banco" (se puede corregir con el lápiz) para que el botón de
+  // guardar no quede apagado sin explicación. Un Excel o CSV casi siempre es una cuenta de débito, no una tarjeta.
+  return { institucion: imp.resumen.institucion ?? bancoSugerido ?? 'Mi banco', tipoCuenta: imp.resumen.tipoCuenta ?? (imp.metodo === 'tabla' ? 'debito' : 'credito'), ultimos4: imp.resumen.ultimos4 ?? '' };
 }
 
 export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: CuentaOpcion[]; pendientes: Importacion[]; bancoSugerido?: string }) {
