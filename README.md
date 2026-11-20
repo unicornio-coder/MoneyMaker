@@ -76,8 +76,16 @@ Funciones para probar de principio a fin:
 - **Lectura con IA en producción:** la llave del servicio está inválida. Los archivos con texto legible que cuadran se leen con reglas; un PDF escaneado no se puede leer.
 - **Ningún PDF real de banco está en las pruebas.** Los ejemplos son documentos sintéticos; lo demás depende de la lectura con IA.
 - **Registro abierto:** cualquiera puede crear una cuenta sin confirmar el correo.
-- **Textos legales:** los términos y el aviso de privacidad son borradores y todavía mencionan un plan de pago que está apagado.
+- **Textos legales:** los términos y el aviso de privacidad ya describen la app de hoy (gratis, por estados de cuenta, y qué se envía al servicio de IA), pero siguen siendo borradores sin revisión de un abogado y falta el domicilio del responsable.
 - **Límites por petición:** el límite de preguntas a Billy vive en memoria por instancia; en Vercel no es un control firme.
+
+## Uso de IA
+
+- **Herramientas:** Claude (Claude Code y sesiones de Claude conectadas al repositorio, a Supabase y a Vercel).
+- **Qué hizo la IA:** escribió el código, las pruebas y las migraciones; corrió tres auditorías el 19 de noviembre (seguridad, uso de principio a fin y verificación de precios contra las páginas oficiales); abrió los PR; y ordenó este README y la bitácora a partir de los mensajes de JC.
+- **Qué hizo JC:** definió el producto y a quién va dirigido; eligió qué construir, varias veces contra la recomendación de la IA (entradas 1 a 4); probó cada versión en producción y detectó fallas que las pruebas no veían (entrada 5); hizo el diagnóstico de escalabilidad de la Sesión 22 con los números de sus tableros; puso el criterio de la decisión de escalabilidad (entrada 6); y decide qué se publica.
+- **Qué no se verificó:** la lectura con IA contra el servicio real (la llave de producción está inválida), y las decisiones técnicas internas que JC aceptó sin revisar (están listadas en la entrada 8 de la bitácora).
+- **Regla que se siguió al escribir:** la IA no redactó motivos que JC no dio. Lo que va entre comillas es literal.
 
 ## Historial de commits
 

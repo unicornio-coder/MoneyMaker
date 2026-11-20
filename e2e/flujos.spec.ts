@@ -39,6 +39,12 @@ test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Ver mi panel/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Conectar mi banco/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Subir estado de cuenta/ })).toBeVisible();
+  // Quien no trae un estado de cuenta a la mano puede descargar uno de ejemplo desde aquí mismo.
+  const ejemplo = page.getByTestId('onboarding-ejemplos').getByRole('link', { name: 'cuenta de nómina' });
+  await expect(ejemplo).toBeVisible();
+  const respuesta = await page.request.get((await ejemplo.getAttribute('href'))!);
+  expect(respuesta.status()).toBe(200);
+  expect(respuesta.headers()['content-type']).toContain('pdf');
   // El archivo elegido aquí viaja a la pantalla de importar y se empieza a leer ahí mismo.
   await page.getByTestId('onboarding-archivo').setInputFiles({ name: 'estado.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 prueba') });
   await expect(page).toHaveURL(/\/app\/importar/);
