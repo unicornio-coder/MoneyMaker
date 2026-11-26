@@ -69,10 +69,13 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       <section className="relative overflow-hidden bg-surface text-fg">
         <span className="pointer-events-none absolute left-1/2 top-[-320px] h-[760px] w-[760px] -translate-x-1/2 rounded-full bg-green-100 blur-[120px]" aria-hidden />
         <div className="relative mx-auto max-w-[1120px] px-5 pb-0 pt-20 text-center md:px-8 md:pt-28">
-          <h1 className="mx-auto max-w-[900px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(40px, 6.6vw, 80px)' }}>
-            Todo tu dinero, en un solo lugar.
+          <span className="mx-auto mb-6 inline-flex items-center gap-2 rounded-pill border border-green/25 bg-green-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-green-dark animate-rise">
+            <span className="h-1.5 w-1.5 rounded-full bg-green" aria-hidden /> Para quien cobra por quincena en México
+          </span>
+          <h1 className="mx-auto max-w-[920px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(40px, 6.6vw, 80px)' }}>
+            Sube tu estado de cuenta. <span className="text-green-dark">Ve qué te sobra.</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-[560px] text-[18px] leading-relaxed text-txt-2 animate-rise [animation-delay:120ms] md:text-[22px]">Tus cuentas, tu quincena, tus suscripciones y tu presupuesto. Sin darnos tus claves.</p>
+          <p className="mx-auto mt-6 max-w-[600px] text-[18px] leading-relaxed text-txt-2 animate-rise [animation-delay:120ms] md:text-[21px]">Leemos el PDF que tu banco ya te manda, encontramos tus suscripciones y meses sin intereses, y armamos tu presupuesto por quincena. Sin darnos tus claves.</p>
           <div className="mx-auto mt-8 max-w-[460px] animate-rise [animation-delay:220ms]">
             {sesion ? (
               <Link href="/app" className="btn-primary mx-auto flex h-[54px] w-full max-w-[320px] items-center justify-center gap-2 text-[16px]">Ir a mi panel <ArrowRight size={18} /></Link>
@@ -90,6 +93,8 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
                 <span className="absolute -right-[3px] top-[150px] h-20 w-[3px] rounded-r bg-[#0f1412]" aria-hidden />
                 <div className="relative overflow-hidden rounded-[45px] bg-canvas">
                   <span className="absolute left-1/2 top-[10px] z-10 h-[24px] w-[92px] -translate-x-1/2 rounded-full bg-[#0f1412]" aria-hidden />
+                  {/* Barra de estado: la captura empieza debajo de la isla, así no tapa el saludo. */}
+                  <div className="flex h-[42px] items-center justify-between px-7 pt-1 text-[12px] font-semibold text-fg" aria-hidden><span>9:41</span><span className="flex items-center gap-1"><span className="h-2 w-3.5 rounded-[2px] border border-fg/70" /></span></div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/landing/inicio.png" alt="Inicio de MoneyMaker: saldo neto, cuentas y suscripciones" width={786} height={1702} className="block w-full" />
                 </div>

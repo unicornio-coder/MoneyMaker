@@ -26,7 +26,7 @@ export function LoginForm({ next, errorInicial }: { next?: string; errorInicial?
         <input type="hidden" name="next" value={next ?? '/app'} />
         <Input name="email" type="email" label="Correo" placeholder="tu@correo.com" autoComplete="email" required autoFocus />
         <div className="relative">
-          <Input name="password" type={ver ? 'text' : 'password'} label="Contraseña" placeholder="••••••••" autoComplete="current-password" className="pr-12" required />
+          <Input name="password" type={ver ? 'text' : 'password'} label="Contraseña" placeholder="Tu contraseña" autoComplete="current-password" className="pr-12" required />
           <button type="button" onClick={() => setVer((v) => !v)} aria-label={ver ? 'Ocultar contraseña' : 'Mostrar contraseña'} className="absolute bottom-3 right-3 text-txt-3 transition-colors hover:text-fg">
             {ver ? <EyeOff size={17} /> : <Eye size={17} />}
           </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import { tomarArchivosPendientes } from '@/lib/archivosPendientes';
+import { EjemplosRapidos } from './EjemplosRapidos';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, Check, AlertCircle, X, RotateCcw, Lock, Pencil, ChevronRight, Trash2 } from 'lucide-react';
@@ -399,6 +400,14 @@ export function Importar({ cuentas, pendientes, bancoSugerido }: { cuentas: Cuen
         <span className="btn-primary mt-4 inline-flex h-10 items-center px-5 text-[12.5px] md:hidden">{TEXTOS.carga.boton_movil}</span>
         <span className="btn-primary mt-4 hidden h-10 items-center px-5 text-[12.5px] md:inline-flex">{TEXTOS.carga.boton}</span>
       </div>
+
+      {!leyendo && items.length === 0 && (
+        <section className="rounded-card-xl border border-edge bg-surface p-4 dark:bg-surface md:p-5" aria-labelledby="titulo-ejemplos">
+          <h2 id="titulo-ejemplos" className="text-[13.5px] font-bold">¿Sin tu estado de cuenta a la mano? Prueba con un ejemplo</h2>
+          <p className="mt-0.5 text-[12px] text-txt-2 dark:text-fg-2">Un toque y lo leemos aquí mismo. Son documentos de prueba, no de un banco real.</p>
+          <EjemplosRapidos className="mt-3" onArchivo={(archivo) => agregar([archivo])} />
+        </section>
+      )}
 
       {aviso && <p className="flex items-center gap-2 rounded-input bg-warning-soft px-3.5 py-2.5 text-[12.5px] font-semibold text-fg dark:bg-surface-2"><AlertCircle size={16} className="text-warning" /> {aviso}</p>}
 

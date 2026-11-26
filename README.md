@@ -71,6 +71,14 @@ Funciones para probar de principio a fin:
 - **Verificación:** pruebas con el mismo mensaje del caso de clase. No se probó el ataque contra el modelo real.
 - **Evidencia:** PR #74 y PR #76 (commits "seguridad: …").
 
+### 8. Despliegue · El primer día con datos reales: dos fallas que encontró JC (17 y 18 de septiembre)
+- **Lo que entregó el IS:** la app completa, probada en modo demo, con datos en memoria. La dio por funcionando: pasaban las 47 pruebas y las capturas de todas las pantallas se veían bien.
+- **Lo que encontró JC al entrar con su cuenta real:** primero un error de servidor al abrir el onboarding: "me sale esto" (con la captura). Ya corregido eso, la lista de bancos salía vacía: "mira no me salen bancos". Al día siguiente, con la lista visible, el botón no hacía nada: "mira sale peor le pico y no sale nadas , ncesito que si funcione , has el flujo para que funicone".
+- **Causa (la encontró la IA después de cada reporte):** el modo demo escondía las dos fallas. El perfil se guardaba con un `upsert`, que Postgres valida como inserción completa, y exigía el correo aunque el perfil ya existiera. La lista de bancos venía de Belvo y el código tenía `.catch(() => [])`: si Belvo fallaba, la pantalla quedaba vacía sin decir por qué, y el botón abría el widget sin mostrar ningún estado ni error.
+- **Decisión de JC:** no dar la conexión por buena hasta verla funcionar él mismo en producción.
+- **Qué se hizo distinto:** el perfil se actualiza solo con lo que cambió (commit `22568d2`); la lista de bancos tiene un catálogo de respaldo y el error queda en el registro (`87ec9a6`); la conexión muestra cada paso y el motivo real de cualquier falla (`b63cae1`). En noviembre JC quitó la conexión bancaria de la app (bitácora, entrada 6), así que hoy la única fuente es el estado de cuenta.
+- **Por qué importa:** es el mismo patrón que la entrada 5, dos meses antes: el código pasaba las pruebas, pero un usuario real no podía usarlo. Ninguna prueba automática corría contra la base de datos real.
+
 ## Lo que hoy no funciona o no está comprobado
 
 - **Lectura con IA en producción:** la llave del servicio está inválida. Los archivos con texto legible que cuadran se leen con reglas; un PDF escaneado no se puede leer.

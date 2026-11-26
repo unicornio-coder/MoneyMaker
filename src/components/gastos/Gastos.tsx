@@ -60,9 +60,11 @@ export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInic
   }
 
   return (
-    <div className="mx-auto max-w-[760px] space-y-6">
+    <div className="mx-auto max-w-[1180px] space-y-6">
       <SelectorPeriodo modo={modo} onModo={cambiarModo} rango={rango} onRango={setRango} />
 
+      <div className="space-y-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-7 lg:space-y-0">
+      <div className="min-w-0 space-y-6 lg:sticky lg:top-[22px]">
       <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="text-[12.5px] font-semibold text-white/70">Gastaste · {rango.etiqueta}</div>
         <Money value={total} animate className="mt-1 block text-[38px] font-bold leading-none tracking-[-1.6px] text-white" />
@@ -78,7 +80,9 @@ export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInic
       </section>
 
       <GraficaCategorias porCategoria={porCategoria} total={total} seleccion={categoriaSel} onSeleccion={setCategoriaSel} />
+      </div>
 
+      <div className="min-w-0 space-y-6">
       <div className="space-y-3">
         {categoriaSel && (
           <button type="button" onClick={() => setCategoriaSel(null)} className="inline-flex h-8 items-center gap-1.5 rounded-pill bg-ink px-3 text-[12px] font-bold text-white dark:bg-white dark:text-ink">
@@ -88,6 +92,8 @@ export function Gastos({ cuentas, movimientos, hoy, cuentaInicial, categoriaInic
         <Historial movimientos={tabla} cuentas={cuentas} hoy={hoy} titulo="Movimientos" onSeleccionar={setMovSel} inicial={12} />
       </div>
       <AgregarEfectivo />
+      </div>
+      </div>
 
       <DetalleMovimiento movimiento={movSel} cuentas={cuentas} onClose={() => setMovSel(null)} />
     </div>
