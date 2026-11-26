@@ -1,7 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-  Home, Repeat, PieChart, Wallet, BarChart3, TrendingUp, Flag, Bell, Upload, Settings, Crown, LifeBuoy, Sparkles,
+  Home, Repeat, PieChart, Wallet, BarChart3, TrendingUp, Flag, Bell, Upload, Settings, Crown, LifeBuoy,
 } from 'lucide-react';
+import { BillyIcono } from '@/components/billy/BillyIcono';
 
 export type Tab = {
   href: string;
@@ -17,7 +18,7 @@ export type Tab = {
 
 export const TABS: Tab[] = [
   { href: '/app', label: 'Inicio', titulo: 'Inicio', icon: Home, grupo: 1, tabbar: 'Inicio' },
-  { href: '/app/billy', label: 'Billy', titulo: 'Billy', icon: Sparkles, grupo: 1, tabbar: null },
+  { href: '/app/billy', label: 'Billy', titulo: 'Billy', icon: BillyIcono, grupo: 1, tabbar: null },
   { href: '/app/fijos', label: 'Suscripciones', titulo: 'Suscripciones', icon: Repeat, grupo: 1, tabbar: 'Suscripciones' },
   { href: '/app/gastos', label: 'Gastos', titulo: 'Gastos', icon: PieChart, grupo: 1, tabbar: 'Gastos' },
   { href: '/app/presupuesto', label: 'Presupuesto', titulo: 'Presupuesto', icon: Wallet, grupo: 1, tabbar: 'Plan' },
