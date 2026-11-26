@@ -1,18 +1,20 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 import '@/styles/globals.css';
 import { ThemeInit } from '@/components/shell/ThemeInit';
 
-const display = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
+// Tipografías dentro del repo (subconjunto latino, variable; licencia SIL OFL en ./fuentes). Antes se bajaban de
+// Google Fonts en cada compilación y una caída de esa descarga tumbaba el despliegue entero (26 nov).
+const display = localFont({
+  src: './fuentes/plus-jakarta-sans-latin-wght-normal.woff2',
+  weight: '200 800',
   variable: '--font-display',
   display: 'swap',
 });
 
-const body = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const body = localFont({
+  src: './fuentes/inter-latin-wght-normal.woff2',
+  weight: '100 900',
   variable: '--font-body',
   display: 'swap',
 });
