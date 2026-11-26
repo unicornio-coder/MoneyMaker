@@ -94,7 +94,8 @@ Funciones para probar de principio a fin:
 ### 11. Diseño · Solo modo día y una portada que promete un resultado (26 de noviembre)
 - **Propuesta del IS:** modo oscuro automático según el sistema, con interruptor; y una portada con el título "Sube tu estado de cuenta. Ve qué te sobra.", una píldora "Para quien cobra por quincena en México" y un campo de correo.
 - **Decisión de JC:** revisar las dos. "Quita el modo nocturno, solo me gusta el modo de día." En la portada, "Sube tu estado de cuenta, ve qué te sobra" se queda "pero no como la principal. En la principal pon todo tu dinero en un solo lugar y ganar más". Quitar la píldora y cambiar "Ir a mi panel" por "Empezar".
-- **Qué se hizo:** título "Todo tu dinero en un solo lugar. Para que ganes más.", la frase anterior como subtítulo y un solo botón "Empezar" que lleva al acceso (commit `b2e6244`). Sin modo oscuro: aunque el teléfono esté en oscuro, la app se ve en claro, y una prueba de accesibilidad lo comprueba (`0efa65d`).
+- **Ajuste final de JC:** "Solo que diga, todo tu dinero en un solo lugar."
+- **Qué se hizo:** título "Todo tu dinero en un solo lugar." (también en la pestaña del navegador y la imagen al compartir), la frase anterior como subtítulo y un solo botón "Empezar" que lleva al acceso (commit `b2e6244`). Sin modo oscuro: aunque el teléfono esté en oscuro, la app se ve en claro, y una prueba de accesibilidad lo comprueba (`0efa65d`).
 
 ## Lo que hoy no funciona o no está comprobado
 

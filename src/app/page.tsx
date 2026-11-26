@@ -2,7 +2,7 @@ import { Landing } from '@/components/landing/Landing';
 import { haySesion } from '@/lib/auth/session';
 
 export const metadata = {
-  title: 'MoneyMaker · Sabe cuánto te queda esta quincena',
+  title: 'MoneyMaker · Todo tu dinero en un solo lugar',
   description: 'Sube el estado de cuenta de tu banco y en dos minutos ves tus suscripciones, tus meses sin intereses y cuánto puedes invertir. Sin claves del banco. Gratis.',
 };
 
