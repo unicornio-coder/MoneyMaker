@@ -2,8 +2,7 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { CASOS, crearPdfEstado } from '../scripts/qa-pdfs.mjs';
 
-// Accesibilidad (axe, WCAG 2.1 AA + buenas prácticas) en claro y oscuro. Sin violaciones serias ni críticas.
-// Única excepción: el azul de gasto/deuda (#2563EB, paleta fija) sobre fondo oscuro se queda en 3.6:1.
+// Accesibilidad (axe, WCAG 2.1 AA + buenas prácticas). Sin violaciones serias ni críticas.
 
 const RUTAS = ['/', '/login', '/registro', '/onboarding', '/app', '/app/billy', '/app/gastos', '/app/fijos', '/app/presupuesto', '/app/patrimonio', '/app/insights', '/app/importar', '/app/ayuda', '/app/ajustes?sec=fuentes'];
 
@@ -18,22 +17,21 @@ test.beforeAll(async ({ request }) => {
   }
 });
 
-for (const tema of ['claro', 'oscuro'] as const) {
-  test(`sin violaciones serias en tema ${tema}`, async ({ page }) => {
-    test.setTimeout(240_000); // 12 rutas × 2 (compilación en frío en CI + axe)
-    await page.addInitScript((t) => { try { localStorage.setItem('mm-theme', t); } catch {} }, tema === 'oscuro' ? 'dark' : 'light');
-    // Sin animaciones: axe mide colores a media transición si no.
-    await page.emulateMedia({ colorScheme: tema === 'oscuro' ? 'dark' : 'light', reducedMotion: 'reduce' });
-    const fallas: string[] = [];
-    for (const ruta of RUTAS) {
-      await page.goto(ruta, { waitUntil: 'networkidle' });
-      await page.waitForTimeout(600);
-      const axe = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']);
-      const res = await (tema === 'oscuro' ? axe.exclude('.text-negative') : axe).analyze();
-      for (const v of res.violations) {
-        if (v.impact === 'serious' || v.impact === 'critical') fallas.push(`${ruta} ${v.id} ×${v.nodes.length}: ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`);
-      }
+// Solo modo día: aunque el sistema pida oscuro (o quede una preferencia vieja guardada), la app se ve en claro.
+test('sin violaciones serias (modo día, aunque el sistema esté en oscuro)', async ({ page }) => {
+  test.setTimeout(240_000); // 14 rutas (compilación en frío en CI + axe)
+  await page.addInitScript(() => { try { localStorage.setItem('mm-theme', 'dark'); } catch {} });
+  // Sin animaciones: axe mide colores a media transición si no.
+  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  const fallas: string[] = [];
+  for (const ruta of RUTAS) {
+    await page.goto(ruta, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => document.documentElement.getAttribute('data-theme'))).toBeNull();
+    const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'best-practice']).analyze();
+    for (const v of res.violations) {
+      if (v.impact === 'serious' || v.impact === 'critical') fallas.push(`${ruta} ${v.id} ×${v.nodes.length}: ${v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | ')}`);
     }
-    expect(fallas, fallas.join('\n')).toEqual([]);
-  });
-}
+  }
+  expect(fallas, fallas.join('\n')).toEqual([]);
+});
