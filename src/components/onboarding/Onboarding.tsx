@@ -10,6 +10,7 @@ import { PanelMarca } from '@/components/auth/PanelMarca';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { dejarArchivosPendientes } from '@/lib/archivosPendientes';
+import { EjemplosRapidos } from '@/components/importar/EjemplosRapidos';
 import { actualizarPerfil } from '@/app/app/ajustes/acciones';
 import { crearContraseña } from '@/lib/auth/actions';
 import type { DatosInicio } from '@/components/inicio/tipos';
@@ -188,16 +189,23 @@ export function Onboarding({ nombre: nombreInicial, perfil, pasoInicial, tieneCo
                   <span className="mt-0.5 block text-[12.5px] text-white/70">PDF, Excel, CSV o Word. Se lee y se descarta.</span>
                 </span>
               </button>
-              <ol className="mt-5 space-y-2 text-[13px] text-txt-2 dark:text-fg-2">
-                {['Eliges el archivo desde tu teléfono o computadora.', 'Lo leemos en un par de minutos, aquí mismo.', 'Revisas lo que encontramos y lo guardas.'].map((t, i) => (
-                  <li key={t} className="flex items-center gap-3"><span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-green-50 font-display text-[12px] font-bold text-green-dark dark:bg-surface-2 dark:text-green-light">{i + 1}</span>{t}</li>
-                ))}
-              </ol>
-              <p className="mt-5 text-[13px] leading-relaxed text-txt-2 dark:text-fg-2" data-testid="onboarding-ejemplos">
-                ¿No tienes uno a la mano? Descarga un estado de cuenta de ejemplo y súbelo aquí:{' '}
-                <a href="/ejemplos/ejemplo-debito-nomina.pdf" download className="font-bold text-green-dark underline dark:text-green-light">cuenta de nómina</a>{' '}o{' '}
-                <a href="/ejemplos/ejemplo-tarjeta-de-credito-1.pdf" download className="font-bold text-green-dark underline dark:text-green-light">tarjeta de crédito</a>. Son documentos de prueba, no de un banco real.
-              </p>
+              <div className="mt-7">
+                <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.8px] text-txt-3"><span className="h-px flex-1 bg-edge-2" />¿No tienes uno a la mano?<span className="h-px flex-1 bg-edge-2" /></div>
+                <p className="mt-3 text-[13.5px] font-semibold">Pruébala en un toque con un estado de cuenta de ejemplo</p>
+                <EjemplosRapidos
+                  className="mt-3"
+                  disabled={pendiente}
+                  onArchivo={(archivo) => {
+                    dejarArchivosPendientes([archivo]);
+                    terminar('/app/importar');
+                  }}
+                />
+                <p className="mt-3 text-[12px] leading-relaxed text-txt-3" data-testid="onboarding-ejemplos">
+                  Son documentos de prueba, no de un banco real. También puedes descargar la{' '}
+                  <a href="/ejemplos/ejemplo-debito-nomina.pdf" download className="font-semibold text-txt-2 underline dark:text-fg-2">cuenta de nómina</a>{' '}o la{' '}
+                  <a href="/ejemplos/ejemplo-tarjeta-de-credito-1.pdf" download className="font-semibold text-txt-2 underline dark:text-fg-2">tarjeta de crédito</a>.
+                </p>
+              </div>
               <p className="mt-5 flex items-center justify-center gap-1.5 text-[12px] text-txt-3"><ShieldCheck size={14} /> Solo lectura. Nunca pedimos las claves de tu banco.</p>
             </>
           )}
