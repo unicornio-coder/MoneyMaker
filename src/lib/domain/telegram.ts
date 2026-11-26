@@ -86,7 +86,15 @@ export function respuestaDeReglas(intencion: Intencion, d: DatosBot, mxn: (n: nu
   if (!d.hayDatos) return 'Todavía no tengo movimientos tuyos. Sube un estado de cuenta en MoneyMaker y vuelve a preguntarme.';
   if (intencion === 'suscripciones') {
     if (!d.suscripciones.length) return 'No encontré suscripciones activas en tus movimientos.';
-    const top = d.suscripciones.slice(0, 3).map((s) => `${s.nombre} ${mxn(s.mensual)}`).join(', ');
+    // El mismo servicio cobrado dos veces sale una sola vez con el aviso: repetirlo en la lista parecía un error y escondía el hallazgo.
+    const grupos = new Map<string, { nombre: string; mensual: number; veces: number }>();
+    for (const s of d.suscripciones) {
+      const clave = s.nombre.trim().toLowerCase();
+      const g = grupos.get(clave);
+      if (g) g.veces += 1;
+      else grupos.set(clave, { nombre: s.nombre, mensual: s.mensual, veces: 1 });
+    }
+    const top = Array.from(grupos.values()).slice(0, 3).map((g) => `${g.nombre} ${mxn(g.mensual)}${g.veces > 1 ? ` (te lo cobran ${g.veces} veces)` : ''}`).join(', ');
     return `Pagas ${mxn(d.totalSuscripciones)} al mes en ${d.suscripciones.length === 1 ? '1 suscripción' : `${d.suscripciones.length} suscripciones`}. Las más caras: ${top}.`;
   }
   if (intencion === 'cobros') {

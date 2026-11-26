@@ -8,7 +8,9 @@ export const metadata = { title: 'Billy · MoneyMaker' };
 export const dynamic = 'force-dynamic';
 
 /** Billy: el asistente de la app. Abre contestando solo "¿cuánto me queda?" con las cifras de Presupuesto. */
-export default async function BillyPage() {
+const PREGUNTAS: Record<string, string> = { suscripciones: '¿Cuánto pago de suscripciones?', cobros: '¿Qué cobros vienen esta semana?' };
+
+export default async function BillyPage({ searchParams }: { searchParams: { p?: string } }) {
   const { usuario, repo, perfil } = await contexto();
   const datos = await datosDelBot(repo, usuario.id).catch(() => null);
   const nombre = (perfil.nombre ?? '').trim().split(' ')[0];
@@ -20,5 +22,11 @@ export default async function BillyPage() {
     : hayDatos
       ? `${hola}Soy Billy. ${respuestaDeReglas('queda', datos, formatMXN)}`
       : `${hola}Soy Billy. Todavía no tengo movimientos tuyos. En cuanto subas un estado de cuenta te digo cuánto te queda de la quincena, cuánto pagas de suscripciones y qué cobros vienen esta semana.`;
-  return <Billy saludo={saludo} hayDatos={hayDatos} />;
+  // Lo que Billy sabe: las mismas tres cifras que contesta, para comprobarlas contra Presupuesto y Suscripciones.
+  const resumen = datos && hayDatos
+    ? { teQueda: datos.teQueda, diasRestantes: datos.diasRestantes, periodoActual: datos.periodoActual, periodo: datos.periodo, totalSuscripciones: datos.totalSuscripciones, nSuscripciones: datos.suscripciones.length, totalProximosCobros: datos.totalProximosCobros, nCobros: datos.proximosCobros.length }
+    : null;
+  // Solo preguntas conocidas desde el enlace (Inicio); "cuánto me queda" ya viene en el saludo.
+  const preguntaInicial = hayDatos && searchParams.p ? PREGUNTAS[searchParams.p] : undefined;
+  return <Billy saludo={saludo} hayDatos={hayDatos} resumen={resumen} preguntaInicial={preguntaInicial} />;
 }

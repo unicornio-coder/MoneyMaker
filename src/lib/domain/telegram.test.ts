@@ -34,6 +34,11 @@ describe('bot de Telegram: datos y respuestas', () => {
     expect(respuestaDeReglas('suscripciones', d, mxn)).toBe('Pagas $378 al mes en 2 suscripciones. Las más caras: Netflix $249, Spotify $129.');
   });
 
+  it('un servicio cobrado dos veces sale una vez, con el aviso', () => {
+    const doble = { ...d, suscripciones: [{ nombre: 'Netflix', mensual: 219 }, { nombre: 'Netflix', mensual: 219 }, { nombre: 'Spotify', mensual: 129 }], totalSuscripciones: 567 };
+    expect(respuestaDeReglas('suscripciones', doble, mxn)).toBe('Pagas $567 al mes en 3 suscripciones. Las más caras: Netflix $219 (te lo cobran 2 veces), Spotify $129.');
+  });
+
   it('avisa cuando el usuario ya se pasó del límite', () => {
     const pasado = armarDatosBot({ rango, vs: { limiteTotal: 9000, gastado: 9400, libres: -400, porDia: 0, diasRestantes: 4 }, recurrentes: [], movimientos: 30, hoy: HOY });
     expect(respuestaDeReglas('queda', pasado, mxn)).toContain('Ya te pasaste por $400');
