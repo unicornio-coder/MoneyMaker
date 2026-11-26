@@ -62,7 +62,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         <span className="pointer-events-none absolute left-1/2 top-[-320px] h-[760px] w-[760px] -translate-x-1/2 rounded-full bg-green-100 blur-[120px]" aria-hidden />
         <div className="relative mx-auto max-w-[1120px] px-5 pb-0 pt-20 text-center md:px-8 md:pt-28">
           <h1 className="mx-auto max-w-[940px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(42px, 7vw, 84px)' }}>
-            Todo tu dinero en un solo lugar. <span className="text-green-dark">Para que ganes más.</span>
+            Todo tu dinero en un <span className="text-green-dark">solo lugar.</span>
           </h1>
           <p className="mx-auto mt-6 font-display text-[20px] font-bold tracking-[-0.4px] text-fg animate-rise [animation-delay:100ms] md:text-[24px]">Sube tu estado de cuenta. Ve qué te sobra.</p>
           <p className="mx-auto mt-2 max-w-[600px] text-[16px] leading-relaxed text-txt-2 animate-rise [animation-delay:160ms] md:text-[18px]">Leemos el PDF que tu banco ya te manda, encontramos tus suscripciones y meses sin intereses, y armamos tu presupuesto por quincena. Sin darnos tus claves.</p>

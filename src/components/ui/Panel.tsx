@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -16,22 +17,29 @@ type Props = {
   className?: string;
 };
 
-/** Overlay + contenedor con animación. Cierra con × u overlay o Escape. */
+/**
+ * Overlay + contenedor con animación. Cierra con × u overlay o Escape.
+ * Se pinta en un portal sobre <body>: un panel abierto desde otro (el modal de cancelar desde el panel de una
+ * suscripción) quedaba atrapado y cortado dentro del primero, porque su animación crea un nuevo contexto de posición.
+ */
 export function Panel({ open, onClose, title, children, mode = 'drawer', dark, className }: Props) {
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
+    const antes = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      document.body.style.overflow = antes;
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !montado) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
       <button type="button" aria-label="Cerrar" onClick={onClose} className="absolute inset-0 animate-fade bg-ink/45 backdrop-blur-[2px]" />
       <div
@@ -62,6 +70,7 @@ export function Panel({ open, onClose, title, children, mode = 'drawer', dark, c
         )}
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(20px,env(safe-area-inset-bottom))]">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

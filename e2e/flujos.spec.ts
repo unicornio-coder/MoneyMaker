@@ -120,7 +120,12 @@ test('cancelar una suscripción: enlace directo, sin cartas', async ({ page, req
   await page.getByRole('button', { name: /Spotify/ }).first().click();
   await expect(page.getByRole('button', { name: /Mandar carta/ })).toHaveCount(0);
   await page.getByRole('button', { name: 'Ver cómo cancelarla' }).click();
-  await expect(page.getByRole('link', { name: /Ir directo a cancelar/ }).last()).toHaveAttribute('href', /spotify\.com/);
+  const irSpotify = page.getByRole('link', { name: /Ir directo a cancelar/ }).last();
+  await expect(irSpotify).toHaveAttribute('href', /spotify\.com/);
+  // El modal sale completo sobre la pantalla, no cortado dentro del panel lateral.
+  const caja = await page.getByRole('heading', { name: 'Cancela Spotify aquí' }).boundingBox();
+  const vista = page.viewportSize()!;
+  expect(caja && caja.x >= 0 && caja.x + caja.width <= vista.width).toBeTruthy();
 });
 
 test('ayuda: preguntas y reporte de problema sin humanos', async ({ page }) => {
