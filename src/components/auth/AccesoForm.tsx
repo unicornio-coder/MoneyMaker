@@ -19,7 +19,7 @@ function Submit({ nuevo }: { nuevo: boolean }) {
   );
 }
 
-const enlace = 'font-semibold text-green-dark underline underline-offset-4 dark:text-green-light';
+const enlace = 'whitespace-nowrap font-semibold text-green-dark underline underline-offset-4 dark:text-green-light';
 
 function ErrorCampo({ id, children }: { id: string; children: React.ReactNode }) {
   return (
@@ -149,7 +149,8 @@ export function AccesoForm({ next, emailInicial }: { next?: string; emailInicial
         )}
 
         <Submit nuevo={nuevo} />
-        {!nuevo && (
+        {/* Si el error ya ofrece "Olvidé mi contraseña", no se repite abajo. */}
+        {!nuevo && !(ePassword?.olvido || errorGeneral?.olvido) && (
           <p className="text-center text-[13px]">
             <Link href="/recuperar" className="font-semibold text-txt-2 underline-offset-4 hover:text-fg hover:underline dark:text-fg-2">Olvidé mi contraseña</Link>
           </p>
