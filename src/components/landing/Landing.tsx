@@ -3,8 +3,6 @@ import { ArrowRight, Check, ChevronRight, Download, FileText, ListChecks, Lock, 
 import { Logo } from '@/components/shell/Logo';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { EscenaConexion } from './EscenaConexion';
-import { FormCorreo } from './FormCorreo';
-import { SiempreClaro } from './SiempreClaro';
 import { Revelar } from './Revelar';
 import { PREGUNTAS } from '@/lib/ayudaPreguntas';
 import { BANCOS } from '@/lib/flags';
@@ -47,19 +45,13 @@ const BUILD = (process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7);
 export function Landing({ sesion = false }: { sesion?: boolean }) {
   return (
     <div className="bg-surface text-fg">
-      <SiempreClaro />
       <header className="sticky top-0 z-30 border-b border-edge bg-surface/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1120px] items-center px-5 md:px-8">
           <Link href="/" className="flex items-center gap-2.5" aria-label="MoneyMaker, inicio"><Logo size={26} /><span className="font-display text-[15px] font-bold">MoneyMaker</span></Link>
           <nav className="ml-auto flex items-center gap-1 text-[13px] font-semibold" aria-label="Principal">
-            {sesion ? (
-              <Link href="/app" className="btn-primary flex h-9 items-center gap-1.5 px-4 text-[13px]">Ir a mi panel <ArrowRight size={14} /></Link>
-            ) : (
-              <>
-                <Link href="/login" className="rounded-pill px-4 py-2 text-fg hover:bg-bg-muted dark:hover:bg-surface-2">Entrar</Link>
-                <Link href="/registro" className="btn-primary flex h-9 items-center px-4 text-[13px]">Empezar</Link>
-              </>
-            )}
+            {/* Un solo acceso: /login entra o crea la cuenta; con sesión abierta lleva directo al panel. */}
+            <Link href="/login" className="rounded-pill px-4 py-2 text-fg hover:bg-bg-muted">Entrar</Link>
+            <Link href="/login" className="btn-primary flex h-9 items-center px-4 text-[13px]">Empezar</Link>
           </nav>
         </div>
       </header>
@@ -69,19 +61,13 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
       <section className="relative overflow-hidden bg-surface text-fg">
         <span className="pointer-events-none absolute left-1/2 top-[-320px] h-[760px] w-[760px] -translate-x-1/2 rounded-full bg-green-100 blur-[120px]" aria-hidden />
         <div className="relative mx-auto max-w-[1120px] px-5 pb-0 pt-20 text-center md:px-8 md:pt-28">
-          <span className="mx-auto mb-6 inline-flex items-center gap-2 rounded-pill border border-green/25 bg-green-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-green-dark animate-rise">
-            <span className="h-1.5 w-1.5 rounded-full bg-green" aria-hidden /> Para quien cobra por quincena en México
-          </span>
-          <h1 className="mx-auto max-w-[920px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(40px, 6.6vw, 80px)' }}>
-            Sube tu estado de cuenta. <span className="text-green-dark">Ve qué te sobra.</span>
+          <h1 className="mx-auto max-w-[940px] font-display font-bold leading-[0.98] tracking-[-2.4px] animate-rise" style={{ fontSize: 'clamp(42px, 7vw, 84px)' }}>
+            Todo tu dinero en un solo lugar. <span className="text-green-dark">Para que ganes más.</span>
           </h1>
-          <p className="mx-auto mt-6 max-w-[600px] text-[18px] leading-relaxed text-txt-2 animate-rise [animation-delay:120ms] md:text-[21px]">Leemos el PDF que tu banco ya te manda, encontramos tus suscripciones y meses sin intereses, y armamos tu presupuesto por quincena. Sin darnos tus claves.</p>
-          <div className="mx-auto mt-8 max-w-[460px] animate-rise [animation-delay:220ms]">
-            {sesion ? (
-              <Link href="/app" className="btn-primary mx-auto flex h-[54px] w-full max-w-[320px] items-center justify-center gap-2 text-[16px]">Ir a mi panel <ArrowRight size={18} /></Link>
-            ) : (
-              <FormCorreo />
-            )}
+          <p className="mx-auto mt-6 font-display text-[20px] font-bold tracking-[-0.4px] text-fg animate-rise [animation-delay:100ms] md:text-[24px]">Sube tu estado de cuenta. Ve qué te sobra.</p>
+          <p className="mx-auto mt-2 max-w-[600px] text-[16px] leading-relaxed text-txt-2 animate-rise [animation-delay:160ms] md:text-[18px]">Leemos el PDF que tu banco ya te manda, encontramos tus suscripciones y meses sin intereses, y armamos tu presupuesto por quincena. Sin darnos tus claves.</p>
+          <div className="mx-auto mt-8 animate-rise [animation-delay:220ms]">
+            <Link href="/login" className="btn-primary mx-auto flex h-[56px] w-full max-w-[320px] items-center justify-center gap-2 text-[17px] font-bold">Empezar <ArrowRight size={19} /></Link>
           </div>
           <p className="mt-3 text-[12.5px] text-txt-2 animate-rise [animation-delay:300ms]">Gratis · Sin tarjeta · Sin claves del banco</p>
           <div className="relative mt-14 animate-rise [animation-delay:380ms] md:mt-20">
@@ -143,7 +129,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
               );
             })}
           </ol>
-          {!sesion && <Link href="/registro" className="btn-primary mx-auto mt-8 flex h-[52px] w-full max-w-[320px] items-center justify-center gap-2 text-[15px]">Subir mi primer estado de cuenta <ArrowRight size={18} /></Link>}
+          {!sesion && <Link href="/login" className="btn-primary mx-auto mt-8 flex h-[52px] w-full max-w-[320px] items-center justify-center gap-2 text-[15px]">Subir mi primer estado de cuenta <ArrowRight size={18} /></Link>}
         </Revelar>
       </Seccion>
 
@@ -189,7 +175,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
         <div className="grid items-center gap-12 md:grid-cols-2">
           <Revelar>
             <Titular align="left" sub="Cuáles pagas, desde cuándo y cuáles no usas. Cancelas en un toque, o mandamos la carta por ti.">Cancela lo que no usas.</Titular>
-            <Link href="/registro" className="mt-8 inline-flex items-center gap-1.5 text-[15px] font-bold text-green-dark dark:text-green-light">Ver mis suscripciones <ChevronRight size={18} /></Link>
+            <Link href="/login" className="mt-8 inline-flex items-center gap-1.5 text-[15px] font-bold text-green-dark dark:text-green-light">Ver mis suscripciones <ChevronRight size={18} /></Link>
           </Revelar>
           <Revelar delay={150}>
             <div className="mx-auto max-w-[420px] rounded-card-xl bg-surface p-3 shadow-hover">
@@ -284,7 +270,7 @@ export function Landing({ sesion = false }: { sesion?: boolean }) {
               <li key={b} className="flex items-center gap-2.5"><Check size={17} className="flex-none text-green-dark dark:text-green-light" /> {b}</li>
             ))}
           </ul>
-          <Link href={sesion ? '/app' : '/registro'} className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">{sesion ? 'Ir a mi panel' : 'Empezar gratis'} <ArrowRight size={18} /></Link>
+          <Link href="/login" className="btn-primary mt-8 flex h-[54px] items-center justify-center gap-2 text-[16px]">Empezar <ArrowRight size={18} /></Link>
         </Revelar>
       </Seccion>
       </main>

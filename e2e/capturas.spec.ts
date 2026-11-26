@@ -22,13 +22,14 @@ test('capturas de login, registro e Inicio con cuentas', async ({ page, request 
     await request.post('/api/imports/confirmar', { data: { items: [{ id: importacion.id }] } });
   }
 
+  // Entrar y crear cuenta son la misma pantalla; /registro llega a /login con el correo que trae.
   await page.goto('/login');
-  await expect(page.getByRole('heading', { name: 'Inicia sesión' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Entra o crea tu cuenta' })).toBeVisible();
   await captura(page, 'login');
 
-  await page.goto('/registro');
-  await expect(page.getByRole('heading', { name: 'Crea tu cuenta' })).toBeVisible();
-  await page.getByLabel('Tu correo').fill('jc@billup.mx');
+  await page.goto('/registro?email=jc%40billup.mx');
+  await expect(page.getByRole('heading', { name: 'Entra o crea tu cuenta' })).toBeVisible();
+  await expect(page.getByLabel('Correo')).toHaveValue('jc@billup.mx');
   await captura(page, 'registro');
 
   await page.goto('/app');

@@ -1,19 +1,13 @@
-import Link from 'next/link';
-import { AccesoTabs } from '@/components/auth/AccesoTabs';
-import { RegistroForm } from '@/components/auth/RegistroForm';
+import { redirect } from 'next/navigation';
 
-export const metadata = { title: 'Crear cuenta · MoneyMaker' };
-
-export default function RegistroPage({ searchParams }: { searchParams: { email?: string } }) {
-  return (
-    <div className="animate-screen">
-      <AccesoTabs activa="crear" />
-      <h1 className="font-display text-[32px] font-bold leading-tight tracking-[-1px]">Crea tu cuenta</h1>
-      <p className="mt-1.5 text-[14px] text-txt-2 dark:text-fg-2">Nombre, correo y contraseña. Es gratis y no pide tarjeta.</p>
-      <RegistroForm emailInicial={searchParams.email} />
-      <p className="mt-6 text-center text-[13px] text-txt-2 dark:text-fg-2">
-        ¿Ya tienes cuenta? <Link href="/login" className="font-semibold text-green-dark underline-offset-4 hover:underline dark:text-green-light">Inicia sesión</Link>
-      </p>
-    </div>
-  );
+/**
+ * Crear cuenta ya no es otra pantalla: /login decide si entra o crea la cuenta. Se conservan los enlaces viejos
+ * (portada, correos) mandando a /login con el correo y la ruta de regreso que traían.
+ */
+export default function RegistroPage({ searchParams }: { searchParams: { email?: string; next?: string } }) {
+  const q = new URLSearchParams();
+  if (typeof searchParams.email === 'string' && searchParams.email) q.set('email', searchParams.email);
+  if (typeof searchParams.next === 'string' && searchParams.next) q.set('next', searchParams.next);
+  const s = q.toString();
+  redirect(s ? `/login?${s}` : '/login');
 }

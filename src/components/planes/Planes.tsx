@@ -8,7 +8,7 @@ import { fechaCorta, formatMXN as mxn } from '@/lib/format';
 import { PRECIOS, ahorroAnual, type Nivel } from '@/lib/domain/plan';
 
 const GRATIS = ['1 banco conectado o 1 estado de cuenta al mes', 'Movimientos con categoría, notas y búsqueda', 'Suscripciones y meses sin intereses detectados', 'Presupuesto por quincena con alertas', 'Cancelación guiada con enlace directo'];
-const PLUS = ['Bancos y estados de cuenta ilimitados', 'Actualización diaria y al abrir la app', '"Cancelar por mí": carta enviada y seguimiento', 'Negociar tu tarifa con carta y guion', 'Resumen del domingo y avisos de cobros', 'Exportar tus movimientos'];
+const PLUS = ['Bancos y estados de cuenta ilimitados', 'Actualización diaria y al abrir la app', 'Enlace directo para cancelar cada suscripción', 'Aviso si un cargo cancelado regresa', 'Resumen del domingo y avisos de cobros', 'Exportar tus movimientos'];
 
 type Props = { plan: 'trial' | 'gratis' | 'plus'; nivel: Nivel; trialTermina: string; planRenueva: string | null; planIntervalo: 'mes' | 'anio' | null; tieneSuscripcion: boolean; cobroActivo: boolean; pago?: string };
 

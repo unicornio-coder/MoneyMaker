@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Search, Moon, Sun, Eye, EyeOff } from 'lucide-react';
+import { Bell, Search, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { tabActual } from '@/lib/nav';
 import { useUI, type Periodo } from '@/lib/store/ui';
@@ -24,8 +24,6 @@ export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: stri
   const tab = tabActual(pathname);
   const periodo = useUI((s) => s.periodo);
   const setPeriodo = useUI((s) => s.setPeriodo);
-  const tema = useUI((s) => s.tema);
-  const toggleTema = useUI((s) => s.toggleTema);
   const ocultar = useUI((s) => s.ocultarSaldos);
   const toggleOcultar = useUI((s) => s.toggleOcultarSaldos);
   const saludo = useSaludo(nombre ?? '');
@@ -56,7 +54,6 @@ export function Topbar({ iniciales, nombre }: { iniciales: string; nombre?: stri
         </button>
         <span className="lg:hidden"><IconBtn onClick={() => setBuscar(true)} label="Buscar"><Search size={18} /></IconBtn></span>
         <IconBtn onClick={toggleOcultar} label={ocultar ? 'Mostrar saldos' : 'Ocultar saldos'}>{ocultar ? <EyeOff size={18} /> : <Eye size={18} />}</IconBtn>
-        <IconBtn onClick={toggleTema} label="Cambiar tema">{tema === 'oscuro' ? <Sun size={18} /> : <Moon size={18} />}</IconBtn>
         <IconBtn href="/app/insights" label="Avisos"><Bell size={18} className={cn(tab.href === '/app/insights' && 'text-green-dark dark:text-green-light')} /></IconBtn>
         <Link href="/app/ajustes" aria-label="Ajustes" className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-ink font-display text-[12px] font-bold text-white dark:bg-white dark:text-ink">
           {iniciales}

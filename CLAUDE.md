@@ -10,7 +10,7 @@ Lee primero `PLAN.md` (qué construimos y en qué orden) y el handoff de diseño
 - Tipografía: Plus Jakarta Sans (títulos, cifras, 600–800) + Inter (cuerpo). `tabular-nums` global.
 - Radios 12/14/18/24, píldoras 999. Sombras suaves de `tokens.css`.
 - Dos layouts del mismo producto: web (sidebar 208 px + topbar 54 px, contenido máx 1264) y móvil (1 columna, tab bar flotante oscura con "+" central). Misma lógica y datos; cambia solo el layout. Una sola app: el cambio es responsive, no dos árboles de componentes.
-- Modo oscuro con tokens `[data-theme="dark"]`; en oscuro los botones primarios van blancos con texto `#0B1F17`.
+- Solo modo día (decisión de producto, nov 2026): no hay interruptor de tema y se ignora `prefers-color-scheme`. Los tokens `[data-theme="dark"]` y las clases `dark:` quedan sin uso.
 - Gráficas: SVG propio (no librerías). Cada tipo tiene su familia de color (Inicio pastillas apiladas verde/oscuro; Gastos barras azules; Presupuesto anillo de ticks verde; Inversiones línea verde). Animar siempre el cambio de selección; los números solo aparecen en el elemento seleccionado.
 - Cada tab tiene estado vacío (icono, título, texto, CTA).
 

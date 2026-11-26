@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import '@/styles/globals.css';
-import { ThemeInit } from '@/components/shell/ThemeInit';
 
 // Tipografías dentro del repo (subconjunto latino, variable; licencia SIL OFL en ./fuentes). Antes se bajaban de
 // Google Fonts en cada compilación y una caída de esa descarga tumbaba el despliegue entero (26 nov).
@@ -39,17 +38,18 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-// Aplica el tema guardado antes del primer render para evitar el parpadeo.
-const themeScript = `(function(){try{var t=localStorage.getItem('mm-theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.setAttribute('data-theme','dark')}}catch(e){}})();`;
+// Solo modo día: decisión de producto (la paleta se pensó para fondo blanco). Quien tenía guardado el modo
+// oscuro vuelve al claro; el script limpia la preferencia vieja antes del primer pintado.
+const limpiarTema = `try{localStorage.removeItem('mm-theme')}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-MX" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <meta name="color-scheme" content="light" />
+        <script dangerouslySetInnerHTML={{ __html: limpiarTema }} />
       </head>
       <body>
-        <ThemeInit />
         {children}
       </body>
     </html>

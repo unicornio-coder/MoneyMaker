@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, ChevronRight, Sparkles, FileUp } from 'lucide-react';
+import { AlertTriangle, ChevronRight, FileUp } from 'lucide-react';
+import { BillyMarca } from '@/components/billy/BillyMarca';
 import type { DatosInicio } from './tipos';
 import { ResumenInicio } from './ResumenInicio';
 import { EmpezarInicio } from './EmpezarInicio';
@@ -49,7 +50,7 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
       {(() => {
         const tarjetaBilly = (
           <Link href="/app/billy" className="card flex items-center gap-3 p-4 text-[13px] transition-shadow hover:shadow-hover lg:hidden" data-testid="tarjeta-billy">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={18} /></span>
+            <BillyMarca size={40} />
             <span className="min-w-0 flex-1">
               <b className="block font-display text-[14px]">{hayCuentas ? 'Pregúntale a Billy' : 'Conoce a Billy'}</b>
               <span className="text-txt-2 dark:text-fg-2">{billyTexto}</span>
@@ -81,7 +82,7 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
         <section className="relative overflow-hidden rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10" data-testid="tarjeta-billy">
           <span className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-green/25 blur-2xl" aria-hidden />
           <div className="relative flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-green-light"><Sparkles size={20} /></span>
+            <BillyMarca size={44} tono="oscuro" />
             <div className="min-w-0">
               <Link href="/app/billy" className="block font-display text-[17px] font-bold tracking-[-0.3px] after:absolute after:inset-0 after:content-['']">{hayCuentas ? 'Pregúntale a Billy' : 'Conoce a Billy'}</Link>
               <p className="text-[12.5px] leading-snug text-white/65">{billyTexto}</p>

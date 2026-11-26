@@ -8,7 +8,7 @@ Finanzas personales para México: subes el estado de cuenta que tu banco ya te m
 
 ## Probar la app en 3 minutos
 
-1. Abre la app y crea una cuenta con correo y contraseña (no hay que confirmar el correo).
+1. Abre la app, toca **Empezar** y escribe correo y contraseña. Si el correo es nuevo te pide tu nombre y crea la cuenta ahí mismo (no hay que confirmar el correo).
 2. En el paso "Sube tu estado de cuenta", toca **Cuenta de nómina** o **Tarjeta de crédito**: la app trae ese estado de cuenta de ejemplo y lo empieza a leer, sin descargar nada. Son documentos de prueba, no de un banco real; también están en [`public/ejemplos/`](public/ejemplos/) por si quieres subirlos a mano. Los mismos dos botones están en Inicio y en Importar.
 3. Revisa lo que se leyó y guarda. Inicio, Gastos, Suscripciones, Presupuesto y Billy se llenan con esas cifras.
 
@@ -17,7 +17,7 @@ Funciones para probar de principio a fin:
 | Función | Dónde | Qué debe pasar |
 |---|---|---|
 | Leer un estado de cuenta | Importar | Banco, periodo y movimientos listos para revisar; al guardar se llenan Inicio, Gastos, Suscripciones y Presupuesto. Los ejemplos son de mediados de 2026, así que las pantallas dicen "Último periodo con datos". |
-| Billy | Menú → Billy | Contesta "¿cuánto me queda?", "¿cuánto pago de suscripciones?" y "¿qué cobros vienen?" con las mismas cifras de Presupuesto y Suscripciones. Nunca dice una cifra que la app no calculó. |
+| Billy | Menú → Billy | Contesta "¿cuánto me queda?", "¿cuánto pago de suscripciones?" y "¿qué cobros vienen?" con las mismas cifras de Presupuesto y Suscripciones. Nunca dice una cifra que la app no calculó. También puedes adjuntar tu estado de cuenta en el chat (clip o arrastrar): Billy dice lo que encontró y, al guardar, contesta con las cifras nuevas. |
 
 ## Decisiones de diseño vs. sugerencias del IS
 
@@ -79,11 +79,28 @@ Funciones para probar de principio a fin:
 - **Qué se hizo distinto:** el perfil se actualiza solo con lo que cambió (commit `22568d2`); la lista de bancos tiene un catálogo de respaldo y el error queda en el registro (`87ec9a6`); la conexión muestra cada paso y el motivo real de cualquier falla (`b63cae1`). En noviembre JC quitó la conexión bancaria de la app (bitácora, entrada 6), así que hoy la única fuente es el estado de cuenta.
 - **Por qué importa:** es el mismo patrón que la entrada 5, dos meses antes: el código pasaba las pruebas, pero un usuario real no podía usarlo. Ninguna prueba automática corría contra la base de datos real.
 
+### 9. Funcionalidad · Cancelar una suscripción: enlace directo, sin cartas (26 de noviembre)
+- **Propuesta del IS:** que la app armara una carta de cancelación con los datos del usuario y la mandara por correo al proveedor (Netflix, Spotify…), además de un botón para "negociar la tarifa".
+- **Decisión de JC:** rechazar. "No le podemos mandar carta. Eso quítalo." Que la app solo lleve al usuario a la página donde se cancela.
+- **Qué se hizo:** el modal muestra el enlace de cancelación de cada proveedor (o su sitio si no lo conocemos), lo deja copiar, explica los pasos y avisa del truco de retención. La app no manda nada en nombre del usuario. Se quitaron la carta en PDF, el formulario y "Negociar mi tarifa". Commit `77ba269`.
+- **Por qué importa (registro de la IA):** con la carta, la app hablaba a nombre del usuario con un tercero y le pedía sus datos para hacerlo. Sin ella, la app no manda correos ni escribe a nadie a nombre del usuario.
+
+### 10. Seguridad · Crear cuenta sin correo de confirmación (26 de noviembre)
+- **Propuesta del IS (anterior):** confirmar cada cuenta nueva con un enlace por correo, que es la práctica estándar para comprobar que el correo es de quien lo escribe.
+- **Decisión de JC:** revisar. Un solo botón "Empezar" que pide correo y contraseña: "si ya tiene clave y contraseña [...] puedes entrar solito, y si no, inicia sesión rápido [...] y ya no que manden un mail. Que manden un mail únicamente si quieren recuperar contraseña."
+- **Qué se hizo:** si el correo ya tiene cuenta y la contraseña es correcta, entra; si la contraseña no coincide, lo dice y ofrece recuperarla; si el correo es nuevo, pide nombre y crea la cuenta ya confirmada en el mismo paso. El correo solo se usa para recuperar la contraseña.
+- **Riesgo que se acepta:** alguien puede abrir una cuenta con un correo que no es suyo. Lo que se mantiene: contraseña de 8 caracteres o más, límite de intentos por IP, y cada usuario solo ve sus datos (RLS). Está en "Lo que hoy no funciona o no está comprobado".
+
+### 11. Diseño · Solo modo día y una portada que promete un resultado (26 de noviembre)
+- **Propuesta del IS:** modo oscuro automático según el sistema, con interruptor; y una portada con el título "Sube tu estado de cuenta. Ve qué te sobra.", una píldora "Para quien cobra por quincena en México" y un campo de correo.
+- **Decisión de JC:** revisar las dos. "Quita el modo nocturno, solo me gusta el modo de día." En la portada, "Sube tu estado de cuenta, ve qué te sobra" se queda "pero no como la principal. En la principal pon todo tu dinero en un solo lugar y ganar más". Quitar la píldora y cambiar "Ir a mi panel" por "Empezar".
+- **Qué se hizo:** título "Todo tu dinero en un solo lugar. Para que ganes más.", la frase anterior como subtítulo y un solo botón "Empezar" que lleva al acceso (commit `b2e6244`). Sin modo oscuro: aunque el teléfono esté en oscuro, la app se ve en claro, y una prueba de accesibilidad lo comprueba (`0efa65d`).
+
 ## Lo que hoy no funciona o no está comprobado
 
 - **Lectura con IA en producción:** la llave del servicio está inválida. Los archivos con texto legible que cuadran se leen con reglas; un PDF escaneado no se puede leer.
 - **Ningún PDF real de banco está en las pruebas.** Los ejemplos son documentos sintéticos; lo demás depende de la lectura con IA.
-- **Registro abierto:** cualquiera puede crear una cuenta sin confirmar el correo.
+- **Registro abierto:** cualquiera puede crear una cuenta sin confirmar el correo (decisión de JC, entrada 10).
 - **Textos legales:** los términos y el aviso de privacidad ya describen la app de hoy (gratis, por estados de cuenta, y qué se envía al servicio de IA), pero siguen siendo borradores sin revisión de un abogado y falta el domicilio del responsable.
 - **Límites por petición:** el límite de preguntas a Billy vive en memoria por instancia; en Vercel no es un control firme.
 
