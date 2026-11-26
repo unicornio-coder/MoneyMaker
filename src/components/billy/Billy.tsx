@@ -75,19 +75,43 @@ export function Billy({ saludo, hayDatos = true, resumen = null, preguntaInicial
   const quitarMensaje = useCallback((id: string) => setMensajes((m) => m.filter((x) => x.id !== id)), []);
 
   // Baja al último mensaje cuando llega uno nuevo o cambia el estado de una lectura (no en cada punto de progreso).
+  // Mientras sigas abajo, también acompaña los cambios de alto (aparecen las sugerencias, carga un logo); si subiste
+  // a releer algo, no te mueve.
   const huella = `${mensajes.length}:${pensando}:${mensajes.map((m) => (m.tipo === 'lectura' ? m.lectura.estado : '')).join('')}`;
-  const primera = useRef(true);
-  useEffect(() => {
-    if (primera.current) {
-      primera.current = false;
-      return;
-    }
+  const conversando = mensajes.length > 1 || pensando;
+  const pegado = useRef(true);
+  const bajadoEn = useRef(0);
+  const bajar = useCallback(() => {
+    bajadoEn.current = Date.now();
     const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
     const el = lista.current;
     // En computadora la conversación tiene su propio scroll; en el teléfono se mueve la página.
     if (el && getComputedStyle(el).overflowY === 'auto') el.scrollTo({ top: el.scrollHeight, behavior });
     else window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
-  }, [huella]);
+  }, []);
+  useEffect(() => {
+    if (!conversando) return;
+    pegado.current = true;
+    bajar();
+  }, [huella, conversando, bajar]);
+  useEffect(() => {
+    const el = lista.current;
+    if (!el || !conversando || typeof ResizeObserver === 'undefined') return;
+    const alMover = () => {
+      pegado.current = getComputedStyle(el).overflowY === 'auto' ? el.scrollHeight - el.scrollTop - el.clientHeight < 96 : document.documentElement.scrollHeight - window.scrollY - window.innerHeight < 96;
+    };
+    // Durante un desplazamiento suave los eventos intermedios aún no están abajo: también cuenta si acabamos de bajar.
+    const ro = new ResizeObserver(() => (pegado.current || Date.now() - bajadoEn.current < 1200) && bajar());
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    el.addEventListener('scroll', alMover, { passive: true });
+    window.addEventListener('scroll', alMover, { passive: true });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener('scroll', alMover);
+      window.removeEventListener('scroll', alMover);
+    };
+  }, [conversando, bajar]);
 
   const preguntar = useCallback(
     async (pregunta: string, opciones: { mostrar?: boolean; etiqueta?: string } = {}) => {
