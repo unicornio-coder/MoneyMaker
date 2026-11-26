@@ -54,7 +54,7 @@ jobs:
       # next/font baja las fuentes de Google al compilar y a veces falla en el runner: un reintento basta.
       - run: npm run build || (sleep 10 && npm run build)
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: capturas-e2e

@@ -35,7 +35,7 @@ jobs:
           ls -la moneymaker-*.dump
       - name: Guardar 30 días
         if: steps.secreto.outputs.hay == 'si'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: respaldo-${{ github.run_id }}
           path: moneymaker-*.dump
