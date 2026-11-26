@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ExternalLink, ListChecks, ChevronRight, Check, ChevronLeft, AlertTriangle, Phone, Copy } from 'lucide-react';
+import { Search, ExternalLink, ChevronRight, Check, ChevronLeft, AlertTriangle, Phone, Copy } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money } from '@/lib/format';
 import { COMERCIOS, type ComercioConocido } from '@/lib/domain/comercios';
@@ -22,6 +22,7 @@ type Paso = 'elegir' | 'detalle' | 'listo';
 const CONOCIDOS = [...COMERCIOS_DESDE_CATALOGO, ...COMERCIOS];
 
 const PASOS_GENERICOS = ['Entra a tu cuenta del servicio (app o sitio web).', 'Busca "Suscripción", "Plan" o "Facturación" en Ajustes o Perfil.', 'Elige "Cancelar suscripción" y confirma. Guarda el correo de confirmación.', 'Vuelve aquí y marca "Ya la cancelé": vigilamos que el cargo no regrese.'];
+const PASO_VOLVER = 'Vuelve aquí y toca "Ya la cancelé": si el cargo regresa, te avisamos.';
 
 /**
  * Flujo de cancelación: elegir servicio → enlace directo a la página donde se cancela, con los pasos → "Ya la cancelé".
@@ -149,10 +150,9 @@ export function ModalCancelar({ open, onClose, recurrentes, inicial }: { open: b
             </div>
           )}
           <ol className="space-y-2 rounded-card border border-edge p-4">
-            {(conocido?.pasosCancelacion ?? PASOS_GENERICOS).map((p, i) => (
+            {(conocido?.pasosCancelacion ? [...conocido.pasosCancelacion, PASO_VOLVER] : PASOS_GENERICOS).map((p, i) => (
               <li key={i} className="flex gap-2.5 text-[12.5px] text-txt-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green-dark">{i + 1}</span>{p}</li>
             ))}
-            <li className="flex gap-2.5 text-[12.5px] text-txt-2"><span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-green-50 text-[10.5px] font-bold text-green-dark"><ListChecks size={11} /></span>Vuelve aquí y toca &ldquo;Ya la cancelé&rdquo;: si el cargo regresa, te avisamos.</li>
           </ol>
           {error && <p className="text-[12.5px] font-semibold text-negative">{error}</p>}
           {r && <Button variant="outline" size="lg" full disabled={pendiente} onClick={yaCancele}><Check size={18} /> Ya la cancelé</Button>}
