@@ -50,7 +50,7 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
   const excedido = resumen.libres < 0;
 
   return (
-    <div className="mx-auto max-w-[760px] space-y-5">
+    <div className="mx-auto max-w-[1180px] space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <ChipGroup label="Periodo" value={periodo} onChange={setPeriodo} options={[{ value: 'q', label: 'Quincena' }, { value: 'mes', label: 'Mes' }, { value: 'anio', label: 'Año' }]} size="sm" className="md:hidden" />
         <div className="hidden md:block" />
@@ -60,6 +60,8 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
         </div>
       </div>
 
+      <div className="space-y-5 lg:grid lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:items-start lg:gap-7 lg:space-y-0">
+      <div className="min-w-0 space-y-4 lg:sticky lg:top-[22px]">
       <section className="rounded-card-xl bg-ink p-5 text-white shadow-dark dark:bg-surface-2 dark:ring-1 dark:ring-white/10">
         <div className="flex items-baseline justify-between gap-3">
           <div className="min-w-0 text-[12.5px] font-semibold text-white/70">Gastado · {rango.etiqueta[0].toUpperCase() + rango.etiqueta.slice(1)}</div>
@@ -84,9 +86,17 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
         )}
       </section>
 
-      <TablaPresupuesto presupuestoId={p.id} lineas={resumen.lineas} />
+      <div className="hidden lg:block">
+        <NotaPresupuesto ingreso={resumen.ingreso} actual={r.actual} pendiente={pendiente} onReproponer={() => start(async () => { await reproponer(periodo, p.inicio); router.refresh(); })} />
+      </div>
+      </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[11.5px] text-txt-3">
+      <div className="min-w-0">
+      <TablaPresupuesto presupuestoId={p.id} lineas={resumen.lineas} />
+      </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[11.5px] text-txt-3 lg:hidden">
         <span>Ingreso del periodo: {money(resumen.ingreso)}. Edita un monto y presiona Enter.</span>
         {r.actual && (
           <button type="button" disabled={pendiente} onClick={() => start(async () => { await reproponer(periodo, p.inicio); router.refresh(); })} className="flex items-center gap-1.5 font-semibold text-txt-2 hover:text-green dark:text-fg-2">
@@ -97,6 +107,20 @@ export function Presupuesto({ presupuestos, rangos, movimientos, cuentas, diasPa
 
       <ModalNuevoPresupuesto open={nuevo} onClose={() => setNuevo(false)} periodo={periodo} inicio={p.inicio} existentes={p.lineas.map((l) => l.categoriaId)} />
       <SubirExcel open={excel} onClose={() => setExcel(false)} periodo={periodo} inicio={p.inicio} />
+    </div>
+  );
+}
+
+/** Pie del resumen en computadora: de dónde sale el límite y cómo volver a proponerlo. */
+function NotaPresupuesto({ ingreso, actual, pendiente, onReproponer }: { ingreso: number; actual: boolean; pendiente: boolean; onReproponer: () => void }) {
+  return (
+    <div className="card space-y-2.5 p-4 text-[12.5px] text-txt-2 dark:text-fg-2">
+      <p>Ingreso del periodo: <b className="text-fg">{money(ingreso)}</b>. El límite de cada categoría se propone con tus últimos movimientos; edita cualquier monto y presiona Enter.</p>
+      {actual && (
+        <button type="button" disabled={pendiente} onClick={onReproponer} className="flex items-center gap-1.5 font-semibold text-green-dark hover:underline dark:text-green-light">
+          <RefreshCw size={13} className={cn(pendiente && 'animate-spin')} /> Volver a proponer con mis datos
+        </button>
+      )}
     </div>
   );
 }

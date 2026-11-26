@@ -11,7 +11,7 @@ test.beforeAll(async ({ request }) => {
 
 test('sin cuentas: tarjeta en Inicio, entrada en el menú y Billy manda a subir el estado de cuenta', async ({ page }, testInfo) => {
   await page.goto('/app');
-  const tarjeta = page.getByTestId('tarjeta-billy');
+  const tarjeta = page.locator('[data-testid="tarjeta-billy"]:visible');
   await expect(tarjeta).toBeVisible();
   await expect(tarjeta).toContainText('Conoce a Billy');
   if (testInfo.project.name === 'escritorio') {
@@ -42,7 +42,7 @@ test('con datos: contesta "cuánto me queda" de entrada con la misma cifra que P
   expect(cifra).toBeTruthy();
 
   await page.goto('/app');
-  await expect(page.getByTestId('tarjeta-billy')).toContainText('Pregúntale a Billy');
+  await expect(page.locator('[data-testid="tarjeta-billy"]:visible')).toContainText('Pregúntale a Billy');
   await page.goto('/app/billy');
   const chat = page.getByRole('log', { name: 'Conversación con Billy' });
   await expect(chat).toContainText('Soy Billy');
