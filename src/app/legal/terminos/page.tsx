@@ -18,7 +18,7 @@ export default function TerminosPage() {
         <h2 className="mt-6 font-display text-[18px] font-bold">3. Conexión con bancos y fuentes</h2>
         <p>Hoy MoneyMaker trabaja con los estados de cuenta que tú subes; no se conecta a tu banco ni te pide sus claves. Al subir un estado de cuenta o autorizar la lectura de alertas de tu correo, autorizas su procesamiento para mostrarte tus movimientos, suscripciones y presupuesto. El archivo se lee y se descarta: no se guarda. Puedes revocar cada conexión y borrar tus datos desde Ajustes.</p>
         <h2 className="mt-6 font-display text-[18px] font-bold">4. Cancelación de suscripciones</h2>
-        <p>La función “Cancelar suscripción” te guía para cancelar servicios de terceros por tu cuenta. La función “Cancelar por mí” genera y envía una carta de cancelación al proveedor en tu nombre, con tu autorización expresa, y agenda un seguimiento; no garantizamos que el proveedor acepte la cancelación ni respondemos por cargos previos a la gestión.</p>
+        <p>La función “Cancelar suscripción” te lleva a la página del proveedor donde se cancela y te da los pasos; la cancelación la haces tú en el sitio del proveedor. MoneyMaker no envía cartas ni gestiona cancelaciones en tu nombre, y no responde por cargos que el proveedor haga antes o después de que canceles.</p>
         <h2 className="mt-6 font-display text-[18px] font-bold">5. Precio</h2>
         <p>Hoy MoneyMaker es gratis y no pide datos de pago. Si en el futuro ofrecemos un plan de pago, te avisaremos antes con su precio y condiciones, y no se te cobrará nada que no hayas aceptado de forma expresa.</p>
         <h2 className="mt-6 font-display text-[18px] font-bold">6. Limitación de responsabilidad</h2>

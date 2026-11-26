@@ -16,7 +16,7 @@ const PANTALLAS = [
     <div className="rounded-14 rounded-card bg-white/10 p-3">
       <div className="text-[12.5px] font-bold">HBO Max cobró $149</div>
       <div className="mt-0.5 text-[11px] text-white/70">Llevas 3 meses pagándolo.</div>
-      <div className="mt-3 flex h-9 items-center justify-center rounded-pill bg-green-light text-[12px] font-bold text-ink">Cancelar por mí</div>
+      <div className="mt-3 flex h-9 items-center justify-center rounded-pill bg-green-light text-[12px] font-bold text-ink">Ir directo a cancelar</div>
     </div>
   ) },
   { titulo: 'Suscripción cancelada', cuerpo: (

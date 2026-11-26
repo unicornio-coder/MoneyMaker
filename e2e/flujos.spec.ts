@@ -55,7 +55,7 @@ test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await expect(page.getByText('Juan Carlos Ostos').first()).toBeVisible();
 });
 
-test('cancelar una suscripción: guiada y por mí', async ({ page, request }, testInfo) => {
+test('cancelar una suscripción: enlace directo, sin cartas', async ({ page, request }, testInfo) => {
   for (const c of CASOS) {
     const r = await request.post('/api/imports', { multipart: { modo: 'sync', archivo: { name: c.archivo, mimeType: 'application/pdf', buffer: await crearPdfEstado({ ...c, archivo: `${testInfo.project.name}-${c.archivo}` }) } } });
     const { importacion } = (await r.json()) as { importacion: { id: string } };
@@ -69,12 +69,14 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
   await expect(modal.getByText('¿Qué quieres cancelar?')).toBeVisible();
   await expect(modal.getByText('Tus suscripciones')).toBeVisible();
 
-  // Guiada: Netflix tiene enlace directo y pasos; "Ya la cancelé" la deja de contar.
+  // Netflix: enlace directo a la página donde se cancela, el enlace para copiar y los pasos. Sin cartas por correo.
   await modal.getByRole('button', { name: /Netflix/ }).click();
-  await expect(modal.getByText('Mandamos la carta por ti')).toBeVisible();
+  await expect(modal.getByRole('heading', { name: 'Cancela Netflix aquí' })).toBeVisible();
   const enlace = modal.getByRole('link', { name: /Ir directo a cancelar/ });
   await expect(enlace).toHaveAttribute('href', /netflix\.com/);
   await expect(enlace).toHaveAttribute('target', '_blank');
+  await expect(modal.getByRole('button', { name: /Copiar enlace/ })).toBeVisible();
+  await expect(modal.getByText(/carta/i)).toHaveCount(0);
   await modal.getByRole('button', { name: 'Ya la cancelé' }).click();
   await expect(modal.getByRole('heading', { name: 'Listo' })).toBeVisible();
   await expect(modal.getByText(/Ahorras \$[\d,]+ al año/)).toBeVisible();
@@ -82,24 +84,11 @@ test('cancelar una suscripción: guiada y por mí', async ({ page, request }, te
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.locator('li', { hasText: 'Netflix' })).toHaveCount(0);
 
-  // Por mí: solo pide el correo del servicio (opcional) y la autorización.
-  await page.getByRole('button', { name: 'Cancelar una suscripción' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Spotify/ }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Mandar carta por correo' }).click();
-  await expect(page.getByRole('dialog').getByText('Cancelar Spotify por ti')).toBeVisible();
-  await expect(page.getByRole('dialog').getByLabel('Nombre en la cuenta')).toHaveCount(0);
-  await page.getByRole('dialog').getByRole('button', { name: 'Mandar carta' }).click();
-  await expect(page.getByRole('dialog').getByText('Marca la autorización')).toBeVisible();
-  await page.getByRole('dialog').getByRole('checkbox').check();
-  await page.getByRole('dialog').getByRole('button', { name: 'Mandar carta' }).click();
-  await expect(page.getByRole('dialog').getByRole('heading', { name: 'Solicitud recibida' })).toBeVisible();
-  // La carta de cancelación se descarga como PDF con los datos del perfil.
-  const carta = page.getByRole('dialog').getByRole('link', { name: /Descargar carta de cancelación/ });
-  await expect(carta).toHaveAttribute('href', /\/api\/cancelacion\/carta\?recurrente=.+/);
-  const pdf = await request.get((await carta.getAttribute('href'))!);
-  expect(pdf.status()).toBe(200);
-  expect(pdf.headers()['content-type']).toBe('application/pdf');
-  expect(pdf.headers()['content-disposition']).toContain('cancelacion-spotify.pdf');
+  // Desde el detalle de otra suscripción: "Ver cómo cancelarla" abre el mismo enlace y pasos; ya no existe "Mandar carta".
+  await page.getByRole('button', { name: /Spotify/ }).first().click();
+  await expect(page.getByRole('button', { name: /Mandar carta/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Ver cómo cancelarla' }).click();
+  await expect(page.getByRole('link', { name: /Ir directo a cancelar/ }).last()).toHaveAttribute('href', /spotify\.com/);
 });
 
 test('ayuda: preguntas y reporte de problema sin humanos', async ({ page }) => {
@@ -108,7 +97,7 @@ test('ayuda: preguntas y reporte de problema sin humanos', async ({ page }) => {
   const pregunta = page.getByRole('button', { name: '¿Cómo cancelo una suscripción?' });
   await pregunta.click();
   await expect(pregunta).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.getByText(/Mandar carta por correo/)).toBeVisible();
+  await expect(page.getByText(/te lleva directo a la página donde se cancela/)).toBeVisible();
 
   // Validación: el reporte necesita asunto y detalle.
   await page.getByRole('button', { name: 'Enviar reporte' }).click();

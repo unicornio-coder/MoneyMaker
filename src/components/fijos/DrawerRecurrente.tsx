@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, ExternalLink, Check, Trash2, FileDown, Phone, Mail, Handshake } from 'lucide-react';
+import { Bell, ExternalLink, Check, Trash2, Phone, ListChecks } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { money, fechaCorta } from '@/lib/format';
 import { COMERCIOS } from '@/lib/domain/comercios';
@@ -15,14 +15,12 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { crearEvento, eliminarRecurrente, marcarCancelada, marcarNoRecurrente } from '@/app/app/fijos/acciones';
 import { categoria } from '@/lib/domain/categorias';
-import { ModalCancelar, urlCarta } from './ModalCancelar';
-import { ModalNegociar } from './ModalNegociar';
+import { ModalCancelar } from './ModalCancelar';
 
 export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose, hoy }: { recurrente: Recurrente | null; ingresoMensual: number; onClose: () => void; hoy?: string }) {
   const [modo, setModo] = useState<'detalle' | 'listo'>('detalle');
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cancelando, setCancelando] = useState(false);
-  const [negociando, setNegociando] = useState(false);
   const [pendiente, start] = useTransition();
   const router = useRouter();
   if (!r) return null;
@@ -75,11 +73,8 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose, hoy }
         <div className="py-10 text-center">
           <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-light text-ink"><Check size={28} strokeWidth={3} /></span>
           <h3 className="font-display text-[20px] font-bold">Listo</h3>
-          <p className="mt-1.5 text-[13px] text-white/70">{r.canceladoAt || pendiente ? `Dejamos de contar ${r.nombre}. Te avisamos si el cargo vuelve a aparecer.` : `Tu carta de cancelación de ${r.nombre} ya salió a tu correo. En 10 días te preguntamos si ya se confirmó.`}</p>
+          <p className="mt-1.5 text-[13px] text-white/70">Dejamos de contar {r.nombre}. Te avisamos si el cargo vuelve a aparecer.</p>
           <p className="mt-3 font-display text-[16px] font-bold text-green-light">Ahorras {money(mensual * 12)} al año</p>
-          {!r.canceladoAt && (
-            <a href={urlCarta(r.id)} className="mx-auto mt-5 flex h-11 w-fit items-center gap-2 rounded-pill border border-white/25 px-4 text-[13px] font-semibold hover:bg-white/8"><FileDown size={16} /> Descargar carta de cancelación (PDF)</a>
-          )}
           <Button variant="white" className="mt-6" onClick={cerrar}>Cerrar</Button>
         </div>
       ) : (
@@ -120,23 +115,18 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose, hoy }
                   {conocido.requiereLlamada ? <Phone size={17} /> : <ExternalLink size={17} />} {conocido.requiereLlamada ? `Llamar a ${r.nombre}` : `Cancelar en ${r.nombre}`}
                 </a>
               )}
-              <button type="button" onClick={() => setCancelando(true)} className={cn('flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] font-display text-[15px] font-bold', conocido?.cancelarUrl ? 'border border-white/25 text-white hover:bg-white/8' : 'bg-green-light text-ink hover:bg-white')}>
-                <Mail size={17} /> Mandar carta por correo
+              {/* Sin cartas: el enlace directo y los pasos para cancelarla uno mismo. */}
+              <button type="button" onClick={() => setCancelando(true)} className={cn('flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] font-display text-[15px] font-bold', conocido?.cancelarUrl ? 'border border-white/25 text-white hover:bg-white/10' : 'bg-green-light text-ink hover:bg-white')}>
+                <ListChecks size={17} /> Ver cómo cancelarla
               </button>
               <button type="button" onClick={yaCancele} disabled={pendiente} className="flex h-11 w-full items-center justify-center gap-2 rounded-[14px] border border-white/25 text-[13px] font-semibold hover:bg-white/8"><Check size={16} /> Ya la cancelé</button>
               {conocido?.truco && <p className="text-[11.5px] leading-relaxed text-white/60">{conocido.truco}</p>}
             </div>
           )}
-          {r.tipo === 'servicio' && !r.canceladoAt && (
-            <button type="button" onClick={() => setNegociando(true)} className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-green-light font-display text-[15px] font-bold text-ink hover:bg-white">
-              <Handshake size={17} /> Negociar mi tarifa
-            </button>
-          )}
           <button type="button" onClick={borrar} disabled={pendiente} className="flex h-10 w-full items-center justify-center gap-1.5 text-[12.5px] font-semibold text-white/60 hover:text-white"><Trash2 size={14} /> {r.origen === 'detectado' ? 'No es recurrente' : 'Quitar'}</button>
         </div>
       )}
-      {cancelando && <ModalCancelar open onClose={() => { setCancelando(false); router.refresh(); }} recurrentes={[r]} inicial={r} pasoInicial="formulario" />}
-      {negociando && <ModalNegociar recurrente={r} onClose={() => { setNegociando(false); router.refresh(); }} />}
+      {cancelando && <ModalCancelar open onClose={() => { setCancelando(false); router.refresh(); }} recurrentes={[r]} inicial={r} />}
     </Panel>
   );
 }
