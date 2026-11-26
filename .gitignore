@@ -15,3 +15,6 @@ supabase/.temp
 qa/cuentas.local.md
 test-results
 playwright-report
+
+# Copias temporales de trabajo de agentes
+.claude/worktrees/
