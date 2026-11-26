@@ -6,6 +6,7 @@ import { money } from '@/lib/format';
 import { costoMensual, proximoCobro } from '@/lib/domain/recurrentes';
 import { fechaCorta } from '@/lib/format';
 import type { Recurrente } from '@/lib/domain/tipos';
+import { deISO } from '@/lib/domain/fechas';
 import { Avatar } from '@/components/ui/Avatar';
 
 const GRUPOS: { id: string; titulo: string; filtro: (r: Recurrente) => boolean }[] = [
@@ -16,7 +17,9 @@ const GRUPOS: { id: string; titulo: string; filtro: (r: Recurrente) => boolean }
   { id: 'otros', titulo: 'Otros fijos', filtro: (r) => r.tipo === 'otro' },
 ];
 
-export function TablasRecurrentes({ recurrentes, onAbrir, seccionInicial }: { recurrentes: Recurrente[]; onAbrir: (id: string) => void; seccionInicial?: string }) {
+export function TablasRecurrentes({ recurrentes, onAbrir, seccionInicial, hoy }: { recurrentes: Recurrente[]; onAbrir: (id: string) => void; seccionInicial?: string; hoy: string }) {
+  // "Hoy" llega del servidor (fecha civil de CDMX): con new Date() el servidor (UTC) y el navegador calculaban distinto el próximo cobro.
+  const fechaHoy = deISO(hoy);
   const refs = useRef<Record<string, HTMLDivElement | null>>({});
   // Cada tarjeta muestra 4 y abre el resto: antes la lista se cortaba a media fila sin barra visible.
   const [abiertos, setAbiertos] = useState<Record<string, boolean>>({});
@@ -46,7 +49,7 @@ export function TablasRecurrentes({ recurrentes, onAbrir, seccionInicial }: { re
                       <div className="truncate text-[13px] font-bold">{r.nombre}</div>
                       <div className="truncate text-[11px] text-white/60">
                         {r.tipo === 'msi' && r.msiCuotasTotal ? `Cuota ${r.msiCuotasPagadas ?? 0} de ${r.msiCuotasTotal} · ` : ''}
-                        {`próximo ${fechaCorta(proximoCobro(r))}`}
+                        {`próximo ${fechaCorta(proximoCobro(r, fechaHoy))}`}
                         {r.veces === 1 && r.tipo === 'suscripcion' ? ' · nueva' : ''}
                       </div>
                     </div>

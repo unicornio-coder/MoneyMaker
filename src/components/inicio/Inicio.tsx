@@ -2,17 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Home, AlertTriangle, ChevronRight, Sparkles, FileUp } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Sparkles, FileUp } from 'lucide-react';
 import type { DatosInicio } from './tipos';
 import { ResumenInicio } from './ResumenInicio';
+import { EmpezarInicio } from './EmpezarInicio';
 import { Cuentas } from './Cuentas';
 import { SuscripcionesProximas } from './SuscripcionesProximas';
 import { DrawerCuenta } from './DrawerCuenta';
 import { Historial } from '@/components/movimientos/Historial';
 import { HojaAgregarCuenta } from '@/components/cuentas/HojaAgregarCuenta';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { TEXTOS } from '@/lib/textos';
-import { BANCOS } from '@/lib/flags';
 
 type Bloque = 'cuentas' | 'suscripciones' | 'movimientos';
 const BLOQUE_POR_META: Record<string, Bloque> = { suscripciones: 'suscripciones', deudas: 'cuentas', casa: 'cuentas', invertir: 'cuentas', ahorrar: 'movimientos', familia: 'movimientos' };
@@ -32,7 +30,6 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
   const [agregarAbierto, setAgregarAbierto] = useState(false);
   const cuenta = datos.cuentas.find((c) => c.id === cuentaSel) ?? null;
   const hayCuentas = datos.cuentas.length > 0;
-  const vacio = TEXTOS.vacios.inicio;
   const rotas = datos.fuentes.filter((f) => f.estado === 'roto' || f.estado === 'mfa');
 
   const billyTexto = hayCuentas ? <>&ldquo;¿Cuánto me queda?&rdquo; Te contesta aquí mismo, con tus cifras.</> : 'Te dice cuánto te queda, qué pagas de suscripciones y qué cobros vienen. Empieza con tu estado de cuenta.';
@@ -48,25 +45,35 @@ export function Inicio({ datos, cuentaInicial }: { datos: DatosInicio; cuentaIni
           <span className="font-semibold text-green-dark dark:text-green-light">Reconectar</span>
         </Link>
       )}
-      {/* Billy siempre arriba en el teléfono, con o sin cuentas: es la puerta a "¿cuánto me queda?". En computadora vive en la columna derecha. */}
-      <Link href="/app/billy" className="card flex items-center gap-3 p-4 text-[13px] transition-shadow hover:shadow-hover lg:hidden" data-testid="tarjeta-billy">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={18} /></span>
-        <span className="min-w-0 flex-1">
-          <b className="block font-display text-[14px]">{hayCuentas ? 'Pregúntale a Billy' : 'Conoce a Billy'}</b>
-          <span className="text-txt-2 dark:text-fg-2">{billyTexto}</span>
-        </span>
-        <ChevronRight size={18} className="shrink-0 text-txt-3" />
-      </Link>
-      {hayCuentas ? <ResumenInicio cuentas={datos.cuentas} quincena={datos.quincena ?? null} /> : <EmptyState icon={Home} titulo={vacio.titulo} texto={vacio.texto} cta={BANCOS ? { label: vacio.cta, onClick: () => setAgregarAbierto(true) } : { label: vacio.cta, href: '/app/importar' }} />}
-      {ordenBloques(datos.metas ?? []).map((b) =>
-        b === 'cuentas' ? (
-          <Cuentas key={b} cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
-        ) : !hayCuentas ? null : b === 'suscripciones' ? (
-          <div key={b} className="lg:hidden"><SuscripcionesProximas recurrentes={datos.recurrentes} hoy={datos.hoy} /></div>
-        ) : (
-          <Historial key={b} movimientos={datos.movimientos} cuentas={datos.cuentas} hoy={datos.hoy} titulo="Movimientos recientes" simple inicial={hayCuentas ? 6 : 5} verTodosHref="/app/gastos" />
-        ),
-      )}
+      {/* Billy en el teléfono: arriba con datos (es la puerta a "¿cuánto me queda?"); sin datos va después del primer paso. En computadora vive en la columna derecha. */}
+      {(() => {
+        const tarjetaBilly = (
+          <Link href="/app/billy" className="card flex items-center gap-3 p-4 text-[13px] transition-shadow hover:shadow-hover lg:hidden" data-testid="tarjeta-billy">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={18} /></span>
+            <span className="min-w-0 flex-1">
+              <b className="block font-display text-[14px]">{hayCuentas ? 'Pregúntale a Billy' : 'Conoce a Billy'}</b>
+              <span className="text-txt-2 dark:text-fg-2">{billyTexto}</span>
+            </span>
+            <ChevronRight size={18} className="shrink-0 text-txt-3" />
+          </Link>
+        );
+        if (!hayCuentas) return <><EmpezarInicio />{tarjetaBilly}</>;
+        return (
+          <>
+            {tarjetaBilly}
+            <ResumenInicio cuentas={datos.cuentas} quincena={datos.quincena ?? null} />
+            {ordenBloques(datos.metas ?? []).map((b) =>
+              b === 'cuentas' ? (
+                <Cuentas key={b} cuentas={datos.cuentas} onAbrir={setCuentaSel} onAgregar={() => setAgregarAbierto(true)} />
+              ) : b === 'suscripciones' ? (
+                <div key={b} className="lg:hidden"><SuscripcionesProximas recurrentes={datos.recurrentes} hoy={datos.hoy} /></div>
+              ) : (
+                <Historial key={b} movimientos={datos.movimientos} cuentas={datos.cuentas} hoy={datos.hoy} titulo="Movimientos recientes" simple inicial={6} verTodosHref="/app/gastos" />
+              ),
+            )}
+          </>
+        );
+      })()}
       </div>
 
       {/* Columna derecha en computadora: Billy con preguntas listas, lo que viene y subir otro estado. */}

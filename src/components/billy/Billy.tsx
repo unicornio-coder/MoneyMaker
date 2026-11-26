@@ -47,15 +47,16 @@ export function Billy({ saludo, hayDatos = true, resumen = null, preguntaInicial
   return (
     <div className="mx-auto grid max-w-[1080px] gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
     <div className="flex min-w-0 flex-col gap-4">
-      <header className="flex items-center gap-3">
+      {/* La barra de arriba ya tiene el título (h1); aquí solo la presentación, y en el teléfono ni eso: el chat primero. */}
+      <header className="hidden items-center gap-3 md:flex">
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-green-light dark:bg-surface-2"><Sparkles size={20} /></span>
         <div>
-          <h1 className="font-display text-[22px] font-bold tracking-[-0.4px]">Billy</h1>
+          <p className="font-display text-[22px] font-bold tracking-[-0.4px]">Billy</p>
           <p className="text-[12.5px] text-txt-2 dark:text-fg-2">Tu asistente. Contesta con las cifras de tu Presupuesto y tus Suscripciones.</p>
         </div>
       </header>
 
-      <div className="card flex min-h-[320px] flex-col gap-3 p-4" role="log" aria-live="polite" aria-label="Conversación con Billy">
+      <div className="card flex min-h-[260px] flex-col gap-3 p-4 md:min-h-[320px]" role="log" aria-live="polite" aria-label="Conversación con Billy">
         {mensajes.map((m, i) => (
           <p key={i} className={cn('max-w-[85%] whitespace-pre-line rounded-[18px] px-4 py-2.5 text-[14px] leading-relaxed animate-rise', m.de === 'yo' ? 'self-end bg-ink text-white dark:bg-white dark:text-ink' : 'self-start bg-bg-muted text-fg dark:bg-surface-2')}>{m.texto}</p>
         ))}
@@ -66,9 +67,9 @@ export function Billy({ saludo, hayDatos = true, resumen = null, preguntaInicial
         <div ref={fin} />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-3.5 flex gap-2 overflow-x-auto px-3.5 pb-0.5 md:mx-0 md:flex-wrap md:px-0">
         {SUGERENCIAS.map((s) => (
-          <button key={s} type="button" disabled={pendiente} onClick={() => enviar(s)} className="rounded-pill border border-line-2 bg-surface px-3.5 py-2 text-[12.5px] font-semibold text-fg transition-colors hover:bg-bg-muted disabled:opacity-60 dark:border-edge dark:hover:bg-surface-2">{s}</button>
+          <button key={s} type="button" disabled={pendiente} onClick={() => enviar(s)} className="shrink-0 whitespace-nowrap rounded-pill border border-line-2 bg-surface px-3.5 py-2 text-[12.5px] font-semibold text-fg transition-colors hover:bg-bg-muted disabled:opacity-60 dark:border-edge dark:hover:bg-surface-2">{s}</button>
         ))}
       </div>
 
