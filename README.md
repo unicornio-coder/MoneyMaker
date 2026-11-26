@@ -9,8 +9,8 @@ Finanzas personales para México: subes el estado de cuenta que tu banco ya te m
 ## Probar la app en 3 minutos
 
 1. Abre la app y crea una cuenta con correo y contraseña (no hay que confirmar el correo).
-2. En el paso "Sube tu estado de cuenta", descarga uno de los dos ejemplos que ofrece la pantalla y súbelo. Son documentos de prueba, no de un banco real. También están en [`public/ejemplos/`](public/ejemplos/).
-3. Revisa lo que se leyó y guarda.
+2. En el paso "Sube tu estado de cuenta", toca **Cuenta de nómina** o **Tarjeta de crédito**: la app trae ese estado de cuenta de ejemplo y lo empieza a leer, sin descargar nada. Son documentos de prueba, no de un banco real; también están en [`public/ejemplos/`](public/ejemplos/) por si quieres subirlos a mano. Los mismos dos botones están en Inicio y en Importar.
+3. Revisa lo que se leyó y guarda. Inicio, Gastos, Suscripciones, Presupuesto y Billy se llenan con esas cifras.
 
 Funciones para probar de principio a fin:
 
