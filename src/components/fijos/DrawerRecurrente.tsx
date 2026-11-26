@@ -18,7 +18,7 @@ import { categoria } from '@/lib/domain/categorias';
 import { ModalCancelar, urlCarta } from './ModalCancelar';
 import { ModalNegociar } from './ModalNegociar';
 
-export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { recurrente: Recurrente | null; ingresoMensual: number; onClose: () => void }) {
+export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose, hoy }: { recurrente: Recurrente | null; ingresoMensual: number; onClose: () => void; hoy?: string }) {
   const [modo, setModo] = useState<'detalle' | 'listo'>('detalle');
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cancelando, setCancelando] = useState(false);
@@ -32,7 +32,7 @@ export function DrawerRecurrente({ recurrente: r, ingresoMensual, onClose }: { r
   const esMsi = r.tipo === 'msi';
   const mensual = esMsi ? r.monto : costoMensual(r);
   const pctIngreso = ingresoMensual > 0 ? (mensual / ingresoMensual) * 100 : null;
-  const proximo = proximoCobro(r);
+  const proximo = proximoCobro(r, hoy ? deISO(hoy) : undefined);
   const meses = r.primerCargo ? Math.max(1, Math.round((Date.now() - deISO(r.primerCargo).getTime()) / (30.4 * 86_400_000)) + 1) : r.veces;
   const diasParaCobro = Math.max(0, Math.round((proximo.getTime() - Date.now()) / 86_400_000));
 

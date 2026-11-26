@@ -73,14 +73,14 @@ export function Fijos({ recurrentes, eventos, cuentas, ingresoMensual, hoy, inic
 
       {vista === 'tablas' ? (
         <>
-          <TablasRecurrentes recurrentes={activos} onAbrir={setSel} seccionInicial={inicial.seccion} />
+          <TablasRecurrentes recurrentes={activos} onAbrir={setSel} seccionInicial={inicial.seccion} hoy={hoy} />
           <ProximosCobros recurrentes={activos} hoy={hoy} onAbrir={setSel} />
         </>
       ) : (
         <Calendario recurrentes={activos} eventos={eventos} cuentas={cuentas} hoy={hoy} onAbrir={setSel} pagoCuentaId={inicial.pagoCuentaId} />
       )}
 
-      <DrawerRecurrente recurrente={seleccionado} ingresoMensual={ingresoMensual} onClose={() => setSel(null)} />
+      <DrawerRecurrente recurrente={seleccionado} ingresoMensual={ingresoMensual} onClose={() => setSel(null)} hoy={hoy} />
       <ModalNuevoRecurrente open={nuevo} onClose={() => setNuevo(false)} cuentas={cuentas} />
       <ModalCancelar open={cancelar} onClose={() => setCancelar(false)} recurrentes={recurrentes} />
     </div>
