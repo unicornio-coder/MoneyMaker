@@ -40,7 +40,7 @@ jobs:
             echo "estado=ok" >> "$GITHUB_OUTPUT"
           fi
       - name: Abrir o cerrar el issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           ESTADO: ${{ steps.prueba.outputs.estado }}
           FALLOS: ${{ steps.prueba.outputs.fallos }}
