@@ -17,7 +17,7 @@ Funciones para probar de principio a fin:
 | Función | Dónde | Qué debe pasar |
 |---|---|---|
 | Leer un estado de cuenta | Importar | Banco, periodo y movimientos listos para revisar; al guardar se llenan Inicio, Gastos, Suscripciones y Presupuesto. Los ejemplos son de mediados de 2026, así que las pantallas dicen "Último periodo con datos". |
-| Billy | Menú → Billy | Contesta "¿cuánto me queda?", "¿cuánto pago de suscripciones?" y "¿qué cobros vienen?" con las mismas cifras de Presupuesto y Suscripciones. Nunca dice una cifra que la app no calculó. |
+| Billy | Menú → Billy | Contesta "¿cuánto me queda?", "¿cuánto pago de suscripciones?" y "¿qué cobros vienen?" con las mismas cifras de Presupuesto y Suscripciones. Nunca dice una cifra que la app no calculó. También puedes adjuntar tu estado de cuenta en el chat (clip o arrastrar): Billy dice lo que encontró y, al guardar, contesta con las cifras nuevas. |
 
 ## Decisiones de diseño vs. sugerencias del IS
 
