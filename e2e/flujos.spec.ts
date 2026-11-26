@@ -9,6 +9,38 @@ test.beforeAll(async ({ request }) => {
   await request.post('/api/qa/reset');
 });
 
+test('acceso: una sola pantalla con correo, contraseña y "Continuar"', async ({ page }) => {
+  // /registro ya no es otra pantalla: llega a /login con el correo que traía (la portada lo manda así).
+  await page.goto('/registro?email=ana%40correo.mx');
+  await expect(page).toHaveURL(/\/login\?email=ana%40correo\.mx$/);
+  await expect(page.getByRole('heading', { name: 'Entra o crea tu cuenta' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Acceso' })).toHaveCount(0);
+  await expect(page.getByLabel('Correo')).toHaveValue('ana@correo.mx');
+  await expect(page.getByLabel('¿Cómo te llamas?')).toHaveCount(0);
+
+  // Ver u ocultar la contraseña.
+  const password = page.getByLabel('Contraseña', { exact: true });
+  await password.fill('secreta123');
+  await expect(password).toHaveAttribute('type', 'password');
+  await page.getByRole('button', { name: 'Mostrar contraseña' }).click();
+  await expect(password).toHaveAttribute('type', 'text');
+  await page.getByRole('button', { name: 'Ocultar contraseña' }).click();
+  await expect(password).toHaveAttribute('type', 'password');
+
+  // Errores en línea, junto al campo, y se ocultan al corregir.
+  await page.getByLabel('Correo').fill('ana@');
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByText('Escribe un correo válido.')).toBeVisible();
+  await expect(page.getByLabel('Correo')).toHaveAttribute('aria-invalid', 'true');
+  await page.getByLabel('Correo').fill('ana@correo.mx');
+  await expect(page.getByText('Escribe un correo válido.')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Olvidé mi contraseña' })).toHaveAttribute('href', '/recuperar');
+
+  // En demo no hay Auth real: "Continuar" entra directo al panel.
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page).toHaveURL(/\/app$/);
+});
+
 test('onboarding: cuenta, metas y conectar', async ({ page }) => {
   await page.goto('/onboarding');
   await expect(page.getByRole('heading', { name: 'Te damos la bienvenida a MoneyMaker' })).toBeVisible();
