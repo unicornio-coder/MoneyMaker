@@ -16,7 +16,9 @@ const ESCENARIOS = [
 
 /** Simulador: qué pasaría si lo que te sobra cada quincena fuera a criptomonedas. Es una cuenta con supuestos, no una recomendación. */
 export function SimuladorCripto({ sobrante }: { sobrante: number | null }) {
-  const [aporte, setAporte] = useState(sobrante && sobrante > 0 ? Math.round(sobrante) : 500);
+  // Texto y no número: con un número, al borrar quedaba un 0 y lo escrito se pegaba detrás ("020000").
+  const [aporteTexto, setAporteTexto] = useState(String(sobrante && sobrante > 0 ? Math.round(sobrante) : 500));
+  const aporte = Math.min(1_000_000, Number(aporteTexto) || 0);
   const [años, setAños] = useState(3);
   const aportado = aporte * años * 24;
   return (
@@ -32,7 +34,22 @@ export function SimuladorCripto({ sobrante }: { sobrante: number | null }) {
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block" htmlFor="aporte-cripto">
           <span className="mb-1.5 block text-[12.5px] font-semibold">Aportación por quincena</span>
-          <input id="aporte-cripto" type="number" inputMode="numeric" min={0} max={1000000} step={50} value={aporte} onChange={(e) => setAporte(Math.max(0, Math.min(1_000_000, Number(e.target.value) || 0)))} className="input h-12 w-full text-[15px] font-bold" />
+          <span className="relative block">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-txt-2">$</span>
+            <input
+              id="aporte-cripto"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="500"
+              value={aporteTexto ? Number(aporteTexto).toLocaleString('es-MX') : ''}
+              onChange={(e) => {
+                const digitos = e.target.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 7);
+                setAporteTexto(Number(digitos) > 1_000_000 ? '1000000' : digitos);
+              }}
+              className="input h-12 w-full pl-8 text-[15px] font-bold tabular-nums"
+            />
+          </span>
         </label>
         <div>
           <span className="mb-1.5 block text-[12.5px] font-semibold">Plazo</span>
